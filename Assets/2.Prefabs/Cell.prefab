@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8022451305860947266}
   - component: {fileID: 5805453219535601041}
   - component: {fileID: 776702051652466097}
+  - component: {fileID: -894013092900224827}
   m_Layer: 5
   m_Name: Cell
   m_TagString: Untagged
@@ -75,3 +76,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &-894013092900224827
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7066565143273184599}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d335eeb623e7b304eafee04f4fd6354d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BoardCell
+  _x: 0
+  _y: 0
+  _image: {fileID: 0}
