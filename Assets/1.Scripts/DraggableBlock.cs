@@ -6,10 +6,11 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 {
     public Canvas _canvas;
     public BoardManager _boardManager;
+    public BlockShape _shape;
 
     private RectTransform _rectTransform;
     private Vector2 _originalAncoredPos; // 블록 원래 위치
-    private Transform _originalParent; 
+    private Transform _originalParent;
 
     private void Awake()
     {
@@ -50,6 +51,7 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
             _rectTransform.position = cellRect.position;
             _boardManager.SetFilled(targetCell._x, targetCell._y, true);
+            enabled = false;
         }
 
         else
