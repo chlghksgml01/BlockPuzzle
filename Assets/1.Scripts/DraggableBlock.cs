@@ -1,16 +1,25 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 // IBeginDragHandler, IDragHandler, IEndDragHandler 인터페이스 구현 -> EventSystem에서 드래그 이벤트 감지 가능
-public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IBlockSelectable
 {
     public Canvas _canvas;
     public BoardManager _boardManager;
     public BlockShape _shape;
 
+    public Sprite blockSprite;
     private RectTransform _rectTransform;
-    private Vector2 _originalAncoredPos; // 블록 원래 위치
+    private Vector2 _originalPos;
     private Transform _originalParent;
+
+    private List<Image> _bodyTiles = new List<Image>();
+
+    private GameObject _previewRoot;
+    private List<Image> _previewTiles = new List<Image>();
+    private bool _previewValid;
 
     private void Awake()
     {
@@ -19,8 +28,25 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
     private void Start()
     {
-        _originalAncoredPos = _rectTransform.anchoredPosition;
+        _originalPos = _rectTransform.anchoredPosition;
         _originalParent = _rectTransform.parent;
+
+        GetComponent<Image>().sprite = blockSprite;
+
+        var rootImage = GetComponent<Image>();
+        if(rootImage != null && blockSprite != null)
+        {
+            rootImage.sprite = blockSprite;
+            rootImage.raycastTarget = true;
+            rootImage.color = Color.white;
+        }
+
+        CreateBodyTiles();
+    }
+
+    private void CreateBodyTiles()
+    {
+
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -56,8 +82,16 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
         else
         {
-            _rectTransform.anchoredPosition = _originalAncoredPos;
+            _rectTransform.anchoredPosition = _originalPos;
             _rectTransform.SetParent(_originalParent);
         }
+    }
+
+    public void OnSelect(PointerEventData eventData)
+    {
+    }
+
+    public void OnRelease(PointerEventData eventData)
+    {
     }
 }
