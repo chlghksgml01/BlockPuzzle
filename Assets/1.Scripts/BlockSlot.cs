@@ -18,7 +18,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
     public void SetBlock(DraggableBlock block)
     {
-        DraggableBlock currentBlock = Instantiate(block, transform.position, transform.rotation);
+        DraggableBlock currentBlock = Instantiate(block, transform.position, transform.rotation, this.transform);
         currentBlock.InitDraggableBlock(_canvas);
     }
 

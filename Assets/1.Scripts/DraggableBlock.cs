@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -17,10 +16,6 @@ public class DraggableBlock : MonoBehaviour
 
     private List<Image> _bodyTiles = new List<Image>();
 
-    private GameObject _previewRoot;
-    private List<Image> _previewTiles = new List<Image>();
-    private bool _previewValid;
-
     private void Awake()
     {
         _rectTransform = GetComponent<RectTransform>();
@@ -28,16 +23,6 @@ public class DraggableBlock : MonoBehaviour
 
     private void Start()
     {
-        GetComponent<Image>().sprite = blockSprite;
-
-        var rootImage = GetComponent<Image>();
-        if (rootImage != null && blockSprite != null)
-        {
-            rootImage.sprite = blockSprite;
-            rootImage.raycastTarget = false;
-            rootImage.color = Color.white;
-        }
-
         CreateBodyTiles();
     }
 
@@ -54,6 +39,24 @@ public class DraggableBlock : MonoBehaviour
         if (_shape == null || _shape._cellOffsets == null)
             return;
 
+        int minX = int.MaxValue;
+        int maxX = int.MinValue;
+        int minY = int.MaxValue;
+        int maxY = int.MinValue;
+
+        foreach (var offset in _shape._cellOffsets)
+        {
+            if (offset.x < minX) minX = offset.x;
+            if (offset.x > maxX) maxX = offset.x;
+            if (offset.y < minY) minY = offset.y;
+            if (offset.y > maxY) maxY = offset.y;
+        }
+
+        float centerX = (minX + maxX) / 2f;
+        float centerY = (minY + maxY) / 2f;
+
+        Vector2 tileSize = _rectTransform.sizeDelta;
+
         foreach (var offset in _shape._cellOffsets)
         {
             GameObject tileObj = new GameObject("BodyTile");
@@ -65,13 +68,15 @@ public class DraggableBlock : MonoBehaviour
             tileImage.raycastTarget = false;
             tileImage.color = Color.white;
 
-            // 위치 설정 (셀 크기 1:1 가정, 필요시 조정)
             RectTransform tileRect = tileObj.GetComponent<RectTransform>();
             tileRect.anchorMin = new Vector2(0.5f, 0.5f);
             tileRect.anchorMax = new Vector2(0.5f, 0.5f);
             tileRect.pivot = new Vector2(0.5f, 0.5f);
-            tileRect.sizeDelta = _rectTransform.sizeDelta; // 부모와 동일 크기 사용
-            tileRect.anchoredPosition = new Vector2(offset.x * tileRect.sizeDelta.x, offset.y * tileRect.sizeDelta.y);
+            tileRect.sizeDelta = tileSize;
+
+            float localX = (offset.x - centerX) * tileSize.x;
+            float localY = (offset.y - centerY) * tileSize.y;
+            tileRect.anchoredPosition = new Vector2(localX, localY);
 
             _bodyTiles.Add(tileImage);
         }
@@ -100,6 +105,5 @@ public class DraggableBlock : MonoBehaviour
     public void InitDraggableBlock(Canvas canvas)
     {
         _canvas = canvas;
-        transform.SetParent(_canvas.transform);
     }
 }
