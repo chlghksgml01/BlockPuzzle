@@ -1,19 +1,19 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 // IBeginDragHandler, IDragHandler, IEndDragHandler 인터페이스 구현 -> EventSystem에서 드래그 이벤트 감지 가능
-public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IBlockSelectable
+public class DraggableBlock : MonoBehaviour
 {
-    public Canvas _canvas;
-    public BoardManager _boardManager;
+    private Canvas _canvas;
     public BlockShape _shape;
 
     public Sprite blockSprite;
     private RectTransform _rectTransform;
-    private Vector2 _originalPos;
-    private Transform _originalParent;
+
+    public float _xOffset = 5f;
 
     private List<Image> _bodyTiles = new List<Image>();
 
@@ -28,16 +28,13 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
     private void Start()
     {
-        _originalPos = _rectTransform.anchoredPosition;
-        _originalParent = _rectTransform.parent;
-
         GetComponent<Image>().sprite = blockSprite;
 
         var rootImage = GetComponent<Image>();
-        if(rootImage != null && blockSprite != null)
+        if (rootImage != null && blockSprite != null)
         {
             rootImage.sprite = blockSprite;
-            rootImage.raycastTarget = true;
+            rootImage.raycastTarget = false;
             rootImage.color = Color.white;
         }
 
@@ -46,44 +43,37 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
 
     private void CreateBodyTiles()
     {
-
-    }
-
-    public void OnBeginDrag(PointerEventData eventData)
-    {
-        // 드래그 한 블록 가장 맨 위로
-        _rectTransform.SetAsLastSibling();
-    }
-
-    public void OnDrag(PointerEventData eventData)
-    {
-        Vector2 localPoint;
-        RectTransform canvasRect = _canvas.transform as RectTransform;
-
-        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, eventData.position, _canvas.worldCamera, out localPoint))
+        // 기존 타일 제거
+        foreach (var tile in _bodyTiles)
         {
-            // RectTransform : UI -> anchoredPosition이 월드 좌표보다 더 정확
-            _rectTransform.anchoredPosition = localPoint;
+            if (tile != null)
+                Destroy(tile.gameObject);
         }
-    }
+        _bodyTiles.Clear();
 
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        BoardCell targetCell = _boardManager.GetClosestCell(eventData.position);
+        if (_shape == null || _shape._cellOffsets == null)
+            return;
 
-        if (targetCell != null && !_boardManager.IsFilled(targetCell._x, targetCell._y))
+        foreach (var offset in _shape._cellOffsets)
         {
-            RectTransform cellRect = targetCell.GetComponent<RectTransform>();
+            GameObject tileObj = new GameObject("BodyTile");
+            tileObj.transform.SetParent(this.transform, false);
 
-            _rectTransform.position = cellRect.position;
-            _boardManager.SetFilled(targetCell._x, targetCell._y, true);
-            enabled = false;
-        }
+            // Image 컴포넌트 추가 및 설정
+            Image tileImage = tileObj.AddComponent<Image>();
+            tileImage.sprite = blockSprite;
+            tileImage.raycastTarget = false;
+            tileImage.color = Color.white;
 
-        else
-        {
-            _rectTransform.anchoredPosition = _originalPos;
-            _rectTransform.SetParent(_originalParent);
+            // 위치 설정 (셀 크기 1:1 가정, 필요시 조정)
+            RectTransform tileRect = tileObj.GetComponent<RectTransform>();
+            tileRect.anchorMin = new Vector2(0.5f, 0.5f);
+            tileRect.anchorMax = new Vector2(0.5f, 0.5f);
+            tileRect.pivot = new Vector2(0.5f, 0.5f);
+            tileRect.sizeDelta = _rectTransform.sizeDelta; // 부모와 동일 크기 사용
+            tileRect.anchoredPosition = new Vector2(offset.x * tileRect.sizeDelta.x, offset.y * tileRect.sizeDelta.y);
+
+            _bodyTiles.Add(tileImage);
         }
     }
 
@@ -91,7 +81,25 @@ public class DraggableBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IE
     {
     }
 
+    public void MoveToPointer(Vector2 screenPosition)
+    {
+        Vector2 localPoint;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            _canvas.transform as RectTransform,
+            screenPosition,
+            _canvas.worldCamera,
+            out localPoint);
+
+        _rectTransform.anchoredPosition = new Vector2(localPoint.x + _xOffset, localPoint.y);
+    }
+
     public void OnRelease(PointerEventData eventData)
     {
+    }
+
+    public void InitDraggableBlock(Canvas canvas)
+    {
+        _canvas = canvas;
+        transform.SetParent(_canvas.transform);
     }
 }

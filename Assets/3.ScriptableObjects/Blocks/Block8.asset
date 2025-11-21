@@ -10,8 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbcc378db91c1e94f9783e4d028b778d, type: 3}
-  m_Name: Block7
+  m_Name: Block8
   m_EditorClassIdentifier: Assembly-CSharp::BlockShape
   _cellOffsets:
-  - {x: -1, y: 0}
   - {x: 0, y: 0}
