@@ -59,4 +59,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DraggableBlock
   _shape: {fileID: 11400000, guid: ec079ac5041e48143b5ae55ec1cc1678, type: 2}
   blockSprite: {fileID: 21300000, guid: fb6ee944397fe4f43b7d396aa6ccdc5a, type: 3}
-  _xOffset: 5
+  _slotBlockSize: 80
+  _boardBlockSize: 112
+  _dragYOffset: 2

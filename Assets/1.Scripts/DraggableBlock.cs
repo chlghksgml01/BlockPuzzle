@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-// IBeginDragHandler, IDragHandler, IEndDragHandler 인터페이스 구현 -> EventSystem에서 드래그 이벤트 감지 가능
 public class DraggableBlock : MonoBehaviour
 {
     private Canvas _canvas;
@@ -12,9 +11,11 @@ public class DraggableBlock : MonoBehaviour
     public Sprite blockSprite;
     private RectTransform _rectTransform;
 
-    public float _xOffset = 5f;
+    public float _slotBlockSize = 80f;
+    public float _boardBlockSize = 112f;
+    public float _dragYOffset = 2f;
 
-    private List<Image> _bodyTiles = new List<Image>();
+    private List<RectTransform> _bodyBlocks = new List<RectTransform>();
 
     private void Awake()
     {
@@ -28,14 +29,6 @@ public class DraggableBlock : MonoBehaviour
 
     private void CreateBodyTiles()
     {
-        // 기존 타일 제거
-        foreach (var tile in _bodyTiles)
-        {
-            if (tile != null)
-                Destroy(tile.gameObject);
-        }
-        _bodyTiles.Clear();
-
         if (_shape == null || _shape._cellOffsets == null)
             return;
 
@@ -55,14 +48,13 @@ public class DraggableBlock : MonoBehaviour
         float centerX = (minX + maxX) / 2f;
         float centerY = (minY + maxY) / 2f;
 
-        Vector2 tileSize = _rectTransform.sizeDelta;
+        Vector2 tileSize = new Vector2(_slotBlockSize, _slotBlockSize);
 
         foreach (var offset in _shape._cellOffsets)
         {
             GameObject tileObj = new GameObject("BodyTile");
             tileObj.transform.SetParent(this.transform, false);
 
-            // Image 컴포넌트 추가 및 설정
             Image tileImage = tileObj.AddComponent<Image>();
             tileImage.sprite = blockSprite;
             tileImage.raycastTarget = false;
@@ -78,7 +70,7 @@ public class DraggableBlock : MonoBehaviour
             float localY = (offset.y - centerY) * tileSize.y;
             tileRect.anchoredPosition = new Vector2(localX, localY);
 
-            _bodyTiles.Add(tileImage);
+            _bodyBlocks.Add(tileRect);
         }
     }
 
@@ -95,7 +87,9 @@ public class DraggableBlock : MonoBehaviour
             _canvas.worldCamera,
             out localPoint);
 
-        _rectTransform.anchoredPosition = new Vector2(localPoint.x + _xOffset, localPoint.y);
+        _rectTransform.anchoredPosition = new Vector2(localPoint.x, localPoint.y + _dragYOffset);
+
+        Debug.Log("RectTransform Position : " + localPoint);
     }
 
     public void OnRelease(PointerEventData eventData)
@@ -105,5 +99,23 @@ public class DraggableBlock : MonoBehaviour
     public void InitDraggableBlock(Canvas canvas)
     {
         _canvas = canvas;
+    }
+
+    public void SetBlockScale(float targetSize)
+    {
+        Vector2 center = Vector2.zero;
+        foreach (RectTransform rectTransform in _bodyBlocks)
+            center += rectTransform.anchoredPosition;
+        center /= _bodyBlocks.Count;
+
+        foreach (RectTransform rectTransform in _bodyBlocks)
+        {
+            float currentSize = rectTransform.sizeDelta.x;
+            float scale = targetSize / currentSize;
+
+            Vector2 offset = rectTransform.anchoredPosition - center;
+            rectTransform.anchoredPosition = center + offset * scale;
+            rectTransform.sizeDelta = new Vector2(targetSize, targetSize);
+        }
     }
 }

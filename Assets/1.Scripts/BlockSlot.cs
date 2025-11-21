@@ -1,29 +1,32 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using static Unity.Collections.AllocatorManager;
 
 // BlockSlot에 PreviewBlock이 있음 - PreviewBlock : DraggableBlock의 미리보기 버전
 // BlockSlot를 선택하면 PreviewBlock 이랑 똑같은 모양의 DraggableBlock이 포인터의 살짝 위쪽에 생성(x좌표는 같음)
 // 이 DraggableBlock을 끌어서 Board 위에 올려놓으면 BoardManager에서 해당 위치에 블록을 놓을 수 있는지 검사
 public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler
 {
-    public DraggableBlock _previewBlock;
     public Canvas _canvas;
-    public DraggableBlock _block;
+    public DraggableBlock _blockPrefab;
+
+    private DraggableBlock _block;
 
     private void Awake()
     {
         // 임시 코드
-        SetBlock(_block);
+        SetBlock(_blockPrefab);
     }
 
     public void SetBlock(DraggableBlock block)
     {
-        DraggableBlock currentBlock = Instantiate(block, transform.position, transform.rotation, this.transform);
-        currentBlock.InitDraggableBlock(_canvas);
+        _block = Instantiate(block, transform.position, transform.rotation, this.transform);
+        _block.InitDraggableBlock(_canvas);
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
+        _block.SetBlockScale(_block._boardBlockSize);
     }
 
     public void OnPointerUp(PointerEventData eventData)
