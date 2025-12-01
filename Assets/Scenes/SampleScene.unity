@@ -791,6 +791,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6015a3deb696d44daab6c5b05a87110, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BoardManager
+  _dontDestroyOnLoad: 0
   _width: 9
   _height: 9
   _boardRoot: {fileID: 27546566}

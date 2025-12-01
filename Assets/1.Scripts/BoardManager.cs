@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class BoardManager : MonoBehaviour
+public class BoardManager : Singleton<BoardManager>
 {
     public int _width = 9;
     public int _height = 9;
@@ -10,7 +10,7 @@ public class BoardManager : MonoBehaviour
 
     public BoardCell[,] _cells;
 
-    private void Awake()
+    override protected void OnAwake()
     {
         GenerateBoard();
     }
