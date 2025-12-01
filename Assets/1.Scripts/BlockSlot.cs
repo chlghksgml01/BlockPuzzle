@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
-using static Unity.Collections.AllocatorManager;
+using static UnityEngine.Rendering.ProbeAdjustmentVolume;
 
 // BlockSlot에 PreviewBlock이 있음 - PreviewBlock : DraggableBlock의 미리보기 버전
 // BlockSlot를 선택하면 PreviewBlock 이랑 똑같은 모양의 DraggableBlock이 포인터의 살짝 위쪽에 생성(x좌표는 같음)
@@ -25,13 +25,26 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        _block.SetBlockScale(_block._boardBlockSize);
+        if (_block != null)
+        {
+            _block.MoveToPointer(transform as RectTransform, eventData.position);
+            _block.SetBlockScale(_block._boardBlockSize);
+        }
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        _block.SetBlockScale(_block._slotBlockSize);
-        (_block.transform as RectTransform).anchoredPosition = Vector2.zero;
+        if (_block != null)
+        {
+            _block.SetBlockScale(_block._slotBlockSize);
+
+            if (!_block.CanPlaceBlock())
+                (_block.transform as RectTransform).anchoredPosition = Vector2.zero;
+            else
+            {
+
+            }
+        }
     }
 
     public void OnDrag(PointerEventData eventData)

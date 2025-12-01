@@ -39,12 +39,44 @@ public class BoardManager : Singleton<BoardManager>
         _cells[x, y].SetFilled(filled);
     }
 
-    public BoardCell GetClosestCell(Vector2 screenPosition, float maxDistance = 50f)
+    public bool CanPlaceBlock(Vector2 screenPosition, BlockShape blockShape, float maxDistance = 50f)
     {
-        BoardCell closest = null;
-        float closestDist = float.MaxValue;
+        float closestDist;
+        BoardCell baseClosest = GetClosestBoardCell(screenPosition, out closestDist);
 
-        for (int y = 0; y < _height; y++)
+        if (baseClosest == null || closestDist > maxDistance)
+            return false;
+
+        // 블럭 배치 가능 여부 검사
+        foreach (Vector2Int offset in blockShape._cellOffsets)
+        {
+            int tx = baseClosest._x + offset.x;
+            int ty = baseClosest._y + offset.y;
+
+            // 보드 범위 벗어나면 불가
+            if (tx < 0 || tx >= _width || ty < 0 || ty >= _height)
+                return false;
+
+            // 그 칸이 채워져 있으면 불가
+            if (_cells[tx, ty].IsFilled)
+                return false;
+        }
+
+        PlaceBlock(screenPosition, blockShape, maxDistance);
+        return true;
+    }
+
+    private void PlaceBlock(Vector2 screenPosition, BlockShape blockShape, float maxDistance)
+    {
+    }
+
+    private BoardCell GetClosestBoardCell(Vector2 screenPosition, out float closestDist)
+    {
+        BoardCell baseClosest = null;
+        closestDist = float.MaxValue;
+
+        // pivot 기준으로 가장 가까운 Board Cell 찾기
+        for (int y = _height - 1; y >= 0; y--)   // 아래쪽부터 검사
         {
             for (int x = 0; x < _width; x++)
             {
@@ -55,14 +87,12 @@ public class BoardManager : Singleton<BoardManager>
                 if (dist < closestDist)
                 {
                     closestDist = dist;
-                    closest = _cells[x, y];
+                    baseClosest = _cells[x, y];
                 }
             }
         }
 
-        if (closestDist > maxDistance)
-            return null;
-
-        return closest;
+        return baseClosest;
     }
+
 }

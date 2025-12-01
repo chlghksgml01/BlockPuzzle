@@ -6,12 +6,14 @@ using UnityEngine.UI;
 public class DraggableBlock : MonoBehaviour
 {
     public BlockShape _shape;
+    BoardManager BoardManager => BoardManager.Instance;
 
     public Sprite blockSprite;
     private RectTransform _rectTransform;
 
     public float _slotBlockSize = 80f;
-    public float _boardBlockSize = 112f;
+    public float _boardBlockSize = 106f;
+    public float _blockYOffset = 200f;
 
     private List<RectTransform> _bodyBlocks = new List<RectTransform>();
 
@@ -72,19 +74,21 @@ public class DraggableBlock : MonoBehaviour
         }
     }
 
-    public void OnSelect(PointerEventData eventData)
+    public void MoveToPointer(RectTransform slotRect, Vector2 screenMousePosition)
     {
-    }
-
-    public void MoveToPointer(RectTransform slotRect, Vector2 screenPosition)
-    {
+        // 블럭 이동
         Vector2 localPoint;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(slotRect, screenPosition, null, out localPoint);
-        _rectTransform.anchoredPosition = new Vector2(localPoint.x, localPoint.y);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(slotRect, screenMousePosition, null, out localPoint);
+        _rectTransform.anchoredPosition = new Vector2(localPoint.x, localPoint.y + _blockYOffset);
     }
 
-    public void OnRelease(PointerEventData eventData)
+    public bool CanPlaceBlock()
     {
+        Vector3 blockScreenPos = RectTransformUtility.WorldToScreenPoint(null, transform.position);
+
+        if (BoardManager.CanPlaceBlock(blockScreenPos, _shape))
+            return true;
+        return false;
     }
 
     public void SetBlockScale(float targetSize)
