@@ -30,6 +30,8 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
     public void OnPointerUp(PointerEventData eventData)
     {
+        _block.SetBlockScale(_block._slotBlockSize);
+        (_block.transform as RectTransform).anchoredPosition = Vector2.zero;
     }
 
     public void OnDrag(PointerEventData eventData)
