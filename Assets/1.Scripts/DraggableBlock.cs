@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 public class DraggableBlock : MonoBehaviour
 {
-    private Canvas _canvas;
     public BlockShape _shape;
 
     public Sprite blockSprite;
@@ -13,7 +12,6 @@ public class DraggableBlock : MonoBehaviour
 
     public float _slotBlockSize = 80f;
     public float _boardBlockSize = 112f;
-    public float _dragYOffset = 2f;
 
     private List<RectTransform> _bodyBlocks = new List<RectTransform>();
 
@@ -78,27 +76,15 @@ public class DraggableBlock : MonoBehaviour
     {
     }
 
-    public void MoveToPointer(Vector2 screenPosition)
+    public void MoveToPointer(RectTransform slotRect, Vector2 screenPosition)
     {
         Vector2 localPoint;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            _canvas.transform as RectTransform,
-            screenPosition,
-            _canvas.worldCamera,
-            out localPoint);
-
-        _rectTransform.anchoredPosition = new Vector2(localPoint.x, localPoint.y + _dragYOffset);
-
-        Debug.Log("RectTransform Position : " + localPoint);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(slotRect, screenPosition, null, out localPoint);
+        _rectTransform.anchoredPosition = new Vector2(localPoint.x, localPoint.y);
     }
 
     public void OnRelease(PointerEventData eventData)
     {
-    }
-
-    public void InitDraggableBlock(Canvas canvas)
-    {
-        _canvas = canvas;
     }
 
     public void SetBlockScale(float targetSize)

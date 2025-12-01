@@ -21,7 +21,6 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     public void SetBlock(DraggableBlock block)
     {
         _block = Instantiate(block, transform.position, transform.rotation, this.transform);
-        _block.InitDraggableBlock(_canvas);
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -37,7 +36,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     {
         if (_block != null)
         {
-            _block.MoveToPointer(eventData.position);
+            _block.MoveToPointer(transform as RectTransform, eventData.position);
         }
     }
 }
