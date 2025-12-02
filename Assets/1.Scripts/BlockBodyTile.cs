@@ -16,6 +16,15 @@ public class BlockBodyTile : MonoBehaviour
             _handler.OnTileEnterCell();
         }
     }
+
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Cell"))
+        {
+            _handler.OnTileStayCell();
+        }
+    }
+
     private void OnTriggerExit2D(Collider2D collision)
     {
         if (collision.CompareTag("Cell"))

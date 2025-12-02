@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -10,6 +11,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     public DraggableBlock _blockPrefab;
 
     private DraggableBlock _block;
+    public static event Action<Sprite> OnSlotPointerUp;
 
     private void Awake()
     {
@@ -37,11 +39,18 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         {
             _block.SetBlockScale(_block._slotBlockSize);
 
-            if (!_block.CanPlaceBlock)
-                (_block.transform as RectTransform).anchoredPosition = Vector2.zero;
+            if (BoardManager.Instance.CanPlaceBlock)
+            {
+                OnSlotPointerUp?.Invoke(_block._blockSprite);
+
+                Destroy(_block.gameObject);
+                _block = null;
+                // 새로운 블럭 넣는 로직 추가 필요
+            }
+
             else
             {
-
+                (_block.transform as RectTransform).anchoredPosition = Vector2.zero;
             }
         }
     }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.UI;
 using UnityEngine.UI;
 
 public class DraggableBlock : MonoBehaviour, IBlockTileHandler
@@ -16,7 +17,6 @@ public class DraggableBlock : MonoBehaviour, IBlockTileHandler
     private List<RectTransform> _bodyBlocks = new List<RectTransform>();
 
     private int _cellCheckCount = 0;
-    public bool CanPlaceBlock { get; private set; }
 
     private void Awake()
     {
@@ -107,12 +107,18 @@ public class DraggableBlock : MonoBehaviour, IBlockTileHandler
     {
         _cellCheckCount++;
         if (_shape._cellOffsets.Length == _cellCheckCount)
-            CanPlaceBlock = true;
+            BoardManager.Instance.CanPlaceBlock = true;
+    }
+
+    public void OnTileStayCell()
+    {
+        if (_shape._cellOffsets.Length == _cellCheckCount)
+            BoardManager.Instance.CanPlaceBlock = true;
     }
 
     public void OnTileExitCell()
     {
         _cellCheckCount--;
-        CanPlaceBlock = false;
+        BoardManager.Instance.CanPlaceBlock = false;
     }
 }

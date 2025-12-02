@@ -1,4 +1,3 @@
-using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +8,27 @@ public class BoardCell : MonoBehaviour
     public int _y { get; set; }
 
     public bool IsFilled { get; private set; }
+    private bool IsCollision { get; set; }
+
+    private void OnEnable()
+    {
+        BlockSlot.OnSlotPointerUp += HandleSlotPointerUp;
+    }
+
+    private void OnDisable()
+    {
+        BlockSlot.OnSlotPointerUp -= HandleSlotPointerUp;
+    }
+
+    private void HandleSlotPointerUp(Sprite blockSprite)
+    {
+        if (IsCollision)
+        {
+            SetFilled(true);
+            _image.sprite = blockSprite;
+            _image.color = new Color(1f, 1f, 1f, 1f);
+        }
+    }
 
     private void Awake()
     {
@@ -29,25 +49,51 @@ public class BoardCell : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag("BodyTile"))
+        if (IsFilled)
         {
-            _image.sprite = BoardManager.Instance._previewSprite;
-            _image.color = new Color(1f, 1f, 1f, BoardManager.Instance._previewAlpha);
+            BoardManager.Instance.CanPlaceBlock = false;
+            return;
+        }
+        if (collision.CompareTag("BodyTile") && BoardManager.Instance.CanPlaceBlock)
+        {
+            UpdateCellCollision(true);
         }
     }
 
     private void OnTriggerStay2D(Collider2D collision)
     {
-        if (collision.CompareTag("BodyTile"))
+        if (IsFilled)
         {
-            _image.sprite = BoardManager.Instance._previewSprite;
-            _image.color = new Color(1f, 1f, 1f, BoardManager.Instance._previewAlpha);
+            BoardManager.Instance.CanPlaceBlock = false;
+            return;
+        }
+        if (collision.CompareTag("BodyTile") && BoardManager.Instance.CanPlaceBlock)
+        {
+            UpdateCellCollision(true);
         }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
+        if (IsFilled)
+            return;
+
         if (collision.CompareTag("BodyTile"))
+        {
+            UpdateCellCollision(false);
+        }
+    }
+
+    private void UpdateCellCollision(bool isCollision)
+    {
+        IsCollision = isCollision;
+
+        if (isCollision)
+        {
+            _image.sprite = BoardManager.Instance._previewSprite;
+            _image.color = new Color(1f, 1f, 1f, BoardManager.Instance._previewAlpha);
+        }
+        else
         {
             _image.sprite = null;
             _image.color = new Color(1f, 1f, 1f, 0f);

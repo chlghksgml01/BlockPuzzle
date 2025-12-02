@@ -15,6 +15,7 @@ public class BoardManager : Singleton<BoardManager>
     public float cellColSizePercent = 0.6f;
 
     public float BoardCellSize { get; set; }
+    public bool CanPlaceBlock { get; set; }
 
     override protected void OnAwake()
     {
