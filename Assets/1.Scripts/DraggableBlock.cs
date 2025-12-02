@@ -15,7 +15,8 @@ public class DraggableBlock : MonoBehaviour
 
     private List<RectTransform> _bodyBlocks = new List<RectTransform>();
 
-    private int _cellCheckCount = 0;
+    private HashSet<BoardCell> _overlappedCells = new HashSet<BoardCell>();
+    public List<BoardCell> _previewCells = new List<BoardCell>();
 
     private void Awake()
     {
@@ -102,18 +103,53 @@ public class DraggableBlock : MonoBehaviour
         }
     }
 
-    public void OnTileEnterCell()
+    public void OnTileEnterCell(BoardCell cell)
     {
-        _cellCheckCount++;
+        _overlappedCells.Add(cell);
+        UpdatePreview();
     }
 
-    public void OnTileExitCell()
+    public void OnTileExitCell(BoardCell cell)
     {
-        _cellCheckCount--;
+        _overlappedCells.Remove(cell);
+        UpdatePreview();
+    }
+
+    public void UpdatePreview()
+    {
+        BoardManager.Instance.ClearAllPreview();
+
+        // 배치 가능 검사
+        if (!IsAllBodyBlockPlaceable())
+        {
+            BoardManager.Instance.CanPlaceBlock = false;
+            return;
+        }
+
+        // 배치 가능한 셀에만 프리뷰 켜기
+        foreach (var cell in _previewCells)
+        {
+            cell.UpdateCellCollision(true);
+        }
+
+        BoardManager.Instance.CanPlaceBlock = true;
     }
 
     public bool IsAllBodyBlockPlaceable()
     {
-        return _cellCheckCount == _bodyBlocks.Count;
+        _previewCells.Clear();
+        _previewCells.AddRange(_overlappedCells);
+
+        if (_overlappedCells.Count != _bodyBlocks.Count)
+            return false;
+        return true;
+    }
+
+    public void PlaceBlock()
+    {
+        foreach (BoardCell previewCell in _previewCells)
+        {
+            previewCell.PlaceBlock(_blockSprite);
+        }
     }
 }

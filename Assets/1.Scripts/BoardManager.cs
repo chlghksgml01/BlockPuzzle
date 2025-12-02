@@ -46,4 +46,10 @@ public class BoardManager : Singleton<BoardManager>
     {
         _cells[x, y].SetFilled(filled);
     }
+
+    public void ClearAllPreview()
+    {
+        foreach (BoardCell cell in _cells)
+            cell.UpdateCellCollision(false);
+    }
 }

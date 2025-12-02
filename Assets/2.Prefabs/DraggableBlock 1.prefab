@@ -57,7 +57,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e48be63544956ab41b068ce38a85be48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DraggableBlock
-  _shape: {fileID: 11400000, guid: ec079ac5041e48143b5ae55ec1cc1678, type: 2}
+  _shape: {fileID: 11400000, guid: fea64e24604ffbc45912d37c18cecd9e, type: 2}
   _blockSprite: {fileID: 21300000, guid: fb6ee944397fe4f43b7d396aa6ccdc5a, type: 3}
   _bodyTilePrefab: {fileID: 5281581779867249833, guid: 1937229b9825fb04bbcb05ac34891f3a, type: 3}
   _slotBlockSize: 80
