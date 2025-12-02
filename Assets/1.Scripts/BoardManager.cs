@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BoardManager : Singleton<BoardManager>
 {
@@ -9,6 +10,10 @@ public class BoardManager : Singleton<BoardManager>
     public GameObject _cellPrefab;
 
     public BoardCell[,] _cells;
+    public Sprite _previewSprite;
+    public float _previewAlpha = 0.6f;
+
+    public float BoardCellSize;
 
     override protected void OnAwake()
     {
@@ -18,12 +23,15 @@ public class BoardManager : Singleton<BoardManager>
     private void GenerateBoard()
     {
         _cells = new BoardCell[_width, _height];
+        BoardCellSize = _boardRoot.GetComponent<GridLayoutGroup>().cellSize.x;
+        Vector2 cellColSize = new Vector2(BoardCellSize / 2, BoardCellSize / 2);
 
         for (int x = 0; x < _width; x++)
         {
             for (int y = 0; y < _height; y++)
             {
                 GameObject cell = Instantiate(_cellPrefab, _boardRoot);
+                cell.GetComponent<BoxCollider2D>().size = cellColSize;
                 _cells[x, y] = cell.GetComponent<BoardCell>();
             }
         }
@@ -41,29 +49,8 @@ public class BoardManager : Singleton<BoardManager>
 
     public bool CanPlaceBlock(Vector2 screenPosition, BlockShape blockShape, float maxDistance = 50f)
     {
-        float closestDist;
-        BoardCell baseClosest = GetClosestBoardCell(screenPosition, out closestDist);
-
-        if (baseClosest == null || closestDist > maxDistance)
-            return false;
-
-        // 블럭 배치 가능 여부 검사
-        foreach (Vector2Int offset in blockShape._cellOffsets)
-        {
-            int tx = baseClosest._x + offset.x;
-            int ty = baseClosest._y + offset.y;
-
-            // 보드 범위 벗어나면 불가
-            if (tx < 0 || tx >= _width || ty < 0 || ty >= _height)
-                return false;
-
-            // 그 칸이 채워져 있으면 불가
-            if (_cells[tx, ty].IsFilled)
-                return false;
-        }
-
+        return false;
         PlaceBlock(screenPosition, blockShape, maxDistance);
-        return true;
     }
 
     private void PlaceBlock(Vector2 screenPosition, BlockShape blockShape, float maxDistance)
@@ -94,5 +81,4 @@ public class BoardManager : Singleton<BoardManager>
 
         return baseClosest;
     }
-
 }

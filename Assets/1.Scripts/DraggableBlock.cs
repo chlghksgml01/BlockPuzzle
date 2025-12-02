@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class DraggableBlock : MonoBehaviour
@@ -8,11 +7,11 @@ public class DraggableBlock : MonoBehaviour
     public BlockShape _shape;
     BoardManager BoardManager => BoardManager.Instance;
 
-    public Sprite blockSprite;
+    public Sprite _blockSprite;
     private RectTransform _rectTransform;
+    public GameObject _bodyTilePrefab;
 
     public float _slotBlockSize = 80f;
-    public float _boardBlockSize = 106f;
     public float _blockYOffset = 200f;
 
     private List<RectTransform> _bodyBlocks = new List<RectTransform>();
@@ -52,11 +51,11 @@ public class DraggableBlock : MonoBehaviour
 
         foreach (var offset in _shape._cellOffsets)
         {
-            GameObject tileObj = new GameObject("BodyTile");
-            tileObj.transform.SetParent(this.transform, false);
+            GameObject tileObj = Instantiate(_bodyTilePrefab, transform, false);
+            tileObj.GetComponent<BoxCollider2D>().size = tileSize;
 
-            Image tileImage = tileObj.AddComponent<Image>();
-            tileImage.sprite = blockSprite;
+            Image tileImage = tileObj.GetComponent<Image>();
+            tileImage.sprite = _blockSprite; // 나중에 랜덤으로 바꾸기
             tileImage.raycastTarget = false;
             tileImage.color = Color.white;
 
@@ -106,6 +105,8 @@ public class DraggableBlock : MonoBehaviour
             Vector2 offset = rectTransform.anchoredPosition - center;
             rectTransform.anchoredPosition = center + offset * scale;
             rectTransform.sizeDelta = new Vector2(targetSize, targetSize);
+
+            rectTransform.GetComponent<BoxCollider2D>().size = new Vector2(targetSize, targetSize);
         }
     }
 }
