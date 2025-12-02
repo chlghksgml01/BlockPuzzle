@@ -37,7 +37,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         {
             _block.SetBlockScale(_block._slotBlockSize);
 
-            if (!_block.CanPlaceBlock())
+            if (!_block.CanPlaceBlock)
                 (_block.transform as RectTransform).anchoredPosition = Vector2.zero;
             else
             {

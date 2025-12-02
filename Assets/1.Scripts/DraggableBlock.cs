@@ -2,10 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class DraggableBlock : MonoBehaviour
+public class DraggableBlock : MonoBehaviour, IBlockTileHandler
 {
     public BlockShape _shape;
-    BoardManager BoardManager => BoardManager.Instance;
 
     public Sprite _blockSprite;
     private RectTransform _rectTransform;
@@ -15,6 +14,9 @@ public class DraggableBlock : MonoBehaviour
     public float _blockYOffset = 200f;
 
     private List<RectTransform> _bodyBlocks = new List<RectTransform>();
+
+    private int _cellCheckCount = 0;
+    public bool CanPlaceBlock { get; private set; }
 
     private void Awake()
     {
@@ -81,15 +83,6 @@ public class DraggableBlock : MonoBehaviour
         _rectTransform.anchoredPosition = new Vector2(localPoint.x, localPoint.y + _blockYOffset);
     }
 
-    public bool CanPlaceBlock()
-    {
-        Vector3 blockScreenPos = RectTransformUtility.WorldToScreenPoint(null, transform.position);
-
-        if (BoardManager.CanPlaceBlock(blockScreenPos, _shape))
-            return true;
-        return false;
-    }
-
     public void SetBlockScale(float targetSize)
     {
         Vector2 center = Vector2.zero;
@@ -108,5 +101,18 @@ public class DraggableBlock : MonoBehaviour
 
             rectTransform.GetComponent<BoxCollider2D>().size = new Vector2(targetSize, targetSize);
         }
+    }
+
+    public void OnTileEnterCell()
+    {
+        _cellCheckCount++;
+        if (_shape._cellOffsets.Length == _cellCheckCount)
+            CanPlaceBlock = true;
+    }
+
+    public void OnTileExitCell()
+    {
+        _cellCheckCount--;
+        CanPlaceBlock = false;
     }
 }

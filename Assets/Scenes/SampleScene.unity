@@ -796,6 +796,10 @@ MonoBehaviour:
   _height: 9
   _boardRoot: {fileID: 27546566}
   _cellPrefab: {fileID: 7066565143273184599, guid: 264adafa540dba74aa345563c1dcc8ca, type: 3}
+  _previewSprite: {fileID: 21300000, guid: 8c8bd78a2eca66d468a4cc45cefa84f9, type: 3}
+  _previewAlpha: 0.6
+  cellColSizeMargin: 0.2
+  BoardCellSize: 0
 --- !u!4 &1323175532
 Transform:
   m_ObjectHideFlags: 0
