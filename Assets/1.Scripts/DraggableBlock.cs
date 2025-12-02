@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering.UI;
 using UnityEngine.UI;
 
-public class DraggableBlock : MonoBehaviour, IBlockTileHandler
+public class DraggableBlock : MonoBehaviour
 {
     public BlockShape _shape;
 
@@ -106,19 +105,15 @@ public class DraggableBlock : MonoBehaviour, IBlockTileHandler
     public void OnTileEnterCell()
     {
         _cellCheckCount++;
-        if (_shape._cellOffsets.Length == _cellCheckCount)
-            BoardManager.Instance.CanPlaceBlock = true;
-    }
-
-    public void OnTileStayCell()
-    {
-        if (_shape._cellOffsets.Length == _cellCheckCount)
-            BoardManager.Instance.CanPlaceBlock = true;
     }
 
     public void OnTileExitCell()
     {
         _cellCheckCount--;
-        BoardManager.Instance.CanPlaceBlock = false;
+    }
+
+    public bool IsAllBodyBlockPlaceable()
+    {
+        return _cellCheckCount == _bodyBlocks.Count;
     }
 }

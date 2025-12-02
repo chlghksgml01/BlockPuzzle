@@ -54,9 +54,15 @@ public class BoardCell : MonoBehaviour
             BoardManager.Instance.CanPlaceBlock = false;
             return;
         }
-        if (collision.CompareTag("BodyTile") && BoardManager.Instance.CanPlaceBlock)
+        if (collision.CompareTag("BodyTile"))
         {
-            UpdateCellCollision(true);
+            DraggableBlock draggableBlock = collision.GetComponentInParent<DraggableBlock>();
+
+            draggableBlock.OnTileEnterCell();
+            if (draggableBlock.IsAllBodyBlockPlaceable())
+            {
+                UpdateCellCollision(true);
+            }
         }
     }
 
@@ -69,7 +75,10 @@ public class BoardCell : MonoBehaviour
         }
         if (collision.CompareTag("BodyTile") && BoardManager.Instance.CanPlaceBlock)
         {
-            UpdateCellCollision(true);
+            if (collision.GetComponentInParent<DraggableBlock>().IsAllBodyBlockPlaceable())
+            {
+                UpdateCellCollision(true);
+            }
         }
     }
 
@@ -80,12 +89,14 @@ public class BoardCell : MonoBehaviour
 
         if (collision.CompareTag("BodyTile"))
         {
+            collision.GetComponentInParent<DraggableBlock>().OnTileExitCell();
             UpdateCellCollision(false);
         }
     }
 
     private void UpdateCellCollision(bool isCollision)
     {
+        BoardManager.Instance.CanPlaceBlock = isCollision;
         IsCollision = isCollision;
 
         if (isCollision)
