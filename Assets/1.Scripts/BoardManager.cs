@@ -12,9 +12,9 @@ public class BoardManager : Singleton<BoardManager>
     public BoardCell[,] _cells;
     public Sprite _previewSprite;
     public float _previewAlpha = 0.6f;
-    public float cellColSizeMargin = 0.2f;
+    public float cellColSizePercent = 0.6f;
 
-    public float BoardCellSize;
+    public float BoardCellSize { get; set; }
 
     override protected void OnAwake()
     {
@@ -25,14 +25,12 @@ public class BoardManager : Singleton<BoardManager>
     {
         _cells = new BoardCell[_width, _height];
         BoardCellSize = _boardRoot.GetComponent<GridLayoutGroup>().cellSize.x;
-        Vector2 cellColSize = new Vector2(BoardCellSize / 2 - cellColSizeMargin, BoardCellSize / 2 - cellColSizeMargin);
 
         for (int x = 0; x < _width; x++)
         {
             for (int y = 0; y < _height; y++)
             {
                 GameObject cell = Instantiate(_cellPrefab, _boardRoot);
-                cell.GetComponent<BoxCollider2D>().size = cellColSize;
                 _cells[x, y] = cell.GetComponent<BoardCell>();
             }
         }
