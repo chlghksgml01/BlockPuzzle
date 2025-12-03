@@ -4,7 +4,9 @@ using UnityEngine.UI;
 
 public class DraggableBlock : MonoBehaviour
 {
-    public BlockShape _shape;
+    [SerializeField]
+    private BlockShape[] _blockShapes;
+    private BlockShape _shape;
 
     public Sprite _blockSprite;
     private RectTransform _rectTransform;
@@ -21,6 +23,14 @@ public class DraggableBlock : MonoBehaviour
     private void Awake()
     {
         _rectTransform = GetComponent<RectTransform>();
+
+        _shape = GetRandomBlockShape();
+    }
+
+    private BlockShape GetRandomBlockShape()
+    {
+        int index = Random.Range(0, _blockShapes.Length);
+        return _blockShapes[index];
     }
 
     private void Start()

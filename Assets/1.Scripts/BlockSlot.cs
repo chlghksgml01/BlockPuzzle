@@ -1,10 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
-using static Unity.Collections.AllocatorManager;
 
-// BlockSlot에 PreviewBlock이 있음 - PreviewBlock : DraggableBlock의 미리보기 버전
-// BlockSlot를 선택하면 PreviewBlock 이랑 똑같은 모양의 DraggableBlock이 포인터의 살짝 위쪽에 생성(x좌표는 같음)
-// 이 DraggableBlock을 끌어서 Board 위에 올려놓으면 BoardManager에서 해당 위치에 블록을 놓을 수 있는지 검사
 public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler
 {
     public Canvas _canvas;
@@ -14,13 +10,12 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
     private void Awake()
     {
-        // 임시 코드
-        SetBlock(_blockPrefab);
+        SetNewBlock();
     }
 
-    public void SetBlock(DraggableBlock block)
+    public void SetNewBlock()
     {
-        _block = Instantiate(block, transform.position, transform.rotation, this.transform);
+        _block = Instantiate(_blockPrefab, transform.position, transform.rotation, this.transform);
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -41,9 +36,11 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
             if (BoardManager.Instance.CanPlaceBlock)
             {
                 _block.PlaceBlock();
+
                 Destroy(_block.gameObject);
                 _block = null;
-                // 새로운 블럭 넣는 로직 추가 필요
+
+                SetNewBlock();
             }
 
             else
