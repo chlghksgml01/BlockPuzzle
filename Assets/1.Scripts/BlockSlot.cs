@@ -31,11 +31,10 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     {
         if (_block != null)
         {
-            _block.SetBlockScale(_block._slotBlockSize);
-
             if (BoardManager.Instance.CanPlaceBlock)
             {
                 _block.PlaceBlock();
+                BoardManager.Instance.ProcessFullLines();
 
                 Destroy(_block.gameObject);
                 _block = null;
@@ -43,8 +42,10 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
                 SetNewBlock();
             }
 
+            // 제자리로
             else
             {
+                _block.SetBlockScale(_block._slotBlockSize);
                 (_block.transform as RectTransform).anchoredPosition = Vector2.zero;
             }
         }

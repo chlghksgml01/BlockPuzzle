@@ -108,7 +108,9 @@ public class DraggableBlock : MonoBehaviour
     {
         Vector2 center = Vector2.zero;
         foreach (RectTransform rectTransform in _bodyBlocks)
+        {
             center += rectTransform.anchoredPosition;
+        }
         center /= _bodyBlocks.Count;
 
         foreach (RectTransform rectTransform in _bodyBlocks)
@@ -150,7 +152,7 @@ public class DraggableBlock : MonoBehaviour
         // 배치 가능한 셀에만 프리뷰 켜기
         foreach (var cell in _previewCells)
         {
-            cell.UpdateCellCollision(true);
+            cell.UpdateCellVisual(true);
         }
 
         BoardManager.Instance.CanPlaceBlock = true;

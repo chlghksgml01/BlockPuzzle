@@ -26,7 +26,7 @@ public class BoardCell : MonoBehaviour
         IsFilled = isfilled;
     }
 
-    public void UpdateCellCollision(bool isPreviewFilled)
+    public void UpdateCellVisual(bool isPreviewFilled)
     {
         if (IsFilled)
             return;

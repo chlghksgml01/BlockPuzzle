@@ -1,5 +1,12 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+
+public enum LineType
+{
+    Row,
+    Column
+}
 
 public class BoardManager : Singleton<BoardManager>
 {
@@ -16,6 +23,9 @@ public class BoardManager : Singleton<BoardManager>
 
     public float BoardCellSize { get; set; }
     public bool CanPlaceBlock { get; set; }
+
+    private List<int> _fullRow = new List<int>();
+    private List<int> _fullCol = new List<int>();
 
     override protected void OnAwake()
     {
@@ -50,6 +60,75 @@ public class BoardManager : Singleton<BoardManager>
     public void ClearAllPreview()
     {
         foreach (BoardCell cell in _cells)
-            cell.UpdateCellCollision(false);
+            cell.UpdateCellVisual(false);
+    }
+
+    public void ProcessFullLines()
+    {
+        CheckFullLines();
+        RemoveFullLines();
+    }
+
+    private void CheckFullLines()
+    {
+        _fullRow.Clear();
+        _fullCol.Clear();
+
+        // 가로 체크
+        for (int y = 0; y < _height; y++)
+        {
+            bool isFull = true;
+
+            for (int x = 0; x < _width; x++)
+            {
+                if (!_cells[x, y].IsFilled)
+                {
+                    isFull = false;
+                    break;
+                }
+            }
+
+            if (isFull)
+                _fullRow.Add(y);
+        }
+
+        // 세로 체크
+        for (int x = 0; x < _width; x++)
+        {
+            bool isFull = true;
+
+            for (int y = 0; y < _height; y++)
+            {
+                if (!_cells[x, y].IsFilled)
+                {
+                    isFull = false;
+                    break;
+                }
+            }
+
+            if (isFull)
+                _fullCol.Add(x);
+        }
+    }
+
+    private void RemoveFullLines()
+    {
+        foreach (int row in _fullRow)
+        {
+            for (int x = 0; x < _width; x++)
+            {
+                _cells[x, row].SetFilled(false);
+                _cells[x, row].UpdateCellVisual(false);
+            }
+        }
+
+        foreach (int col in _fullCol)
+        {
+            for (int y = 0; y < _height; y++)
+            {
+                _cells[col, y].SetFilled(false);
+                _cells[col, y].UpdateCellVisual(false);
+            }
+        }
     }
 }
