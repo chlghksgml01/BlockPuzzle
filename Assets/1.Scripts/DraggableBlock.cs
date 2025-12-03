@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEngine.Rendering.ProbeAdjustmentVolume;
 
 public class DraggableBlock : MonoBehaviour
 {
@@ -8,7 +9,10 @@ public class DraggableBlock : MonoBehaviour
     private BlockShape[] _blockShapes;
     private BlockShape _shape;
 
-    public Sprite _blockSprite;
+    [SerializeField]
+    public Sprite[] _blockSprites;
+    private Sprite _blockSprite;
+
     private RectTransform _rectTransform;
     public GameObject _bodyTilePrefab;
 
@@ -24,13 +28,20 @@ public class DraggableBlock : MonoBehaviour
     {
         _rectTransform = GetComponent<RectTransform>();
 
-        _shape = GetRandomBlockShape();
+        GetRandomBlockShape();
+        GetRandomBlockSprite();
     }
 
-    private BlockShape GetRandomBlockShape()
+    private void GetRandomBlockShape()
     {
         int index = Random.Range(0, _blockShapes.Length);
-        return _blockShapes[index];
+        _shape = _blockShapes[index];
+    }
+
+    private void GetRandomBlockSprite()
+    {
+        int index = Random.Range(0, _blockSprites.Length);
+        _blockSprite = _blockSprites[index];
     }
 
     private void Start()
@@ -67,7 +78,7 @@ public class DraggableBlock : MonoBehaviour
             tileObj.GetComponent<BoxCollider2D>().size = tileSize;
 
             Image tileImage = tileObj.GetComponent<Image>();
-            tileImage.sprite = _blockSprite; // 나중에 랜덤으로 바꾸기
+            tileImage.sprite = _blockSprite;
             tileImage.raycastTarget = false;
             tileImage.color = Color.white;
 
