@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class ScoreUI : MonoBehaviour
 {
+    [SerializeField]
+    private Sprite[] _numberSprites;
     private TextMeshProUGUI _scroreText;
 
     private void OnEnable()
@@ -24,5 +26,16 @@ public class ScoreUI : MonoBehaviour
     private void UpdateScoreUI(int newScore)
     {
         _scroreText.text = newScore.ToString();
+    }
+
+    public void SetScoreToImage(GameObject targetImage, int score)
+    {
+        foreach(Transform child in targetImage.transform)
+        {
+            Destroy(child.gameObject);
+        }
+
+        string scoreString = score.ToString();
+
     }
 }
