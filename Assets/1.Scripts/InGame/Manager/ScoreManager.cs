@@ -19,17 +19,7 @@ public class ScoreManager : Singleton<ScoreManager>
 
     public int CurrentScore { get; private set; }
 
-    private void OnEnable()
-    {
-        BlockSlot.OnBlockPlaced += HandleBlockPlaced;
-    }
-
-    private void OnDisable()
-    {
-        BlockSlot.OnBlockPlaced -= HandleBlockPlaced;
-    }
-
-    private void HandleBlockPlaced(int blockCount)
+    public void HandleBlockPlaced(int blockCount)
     {
         _currentPlaceCount++;
 

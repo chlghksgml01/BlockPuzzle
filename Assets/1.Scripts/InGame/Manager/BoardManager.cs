@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using static Unity.Collections.AllocatorManager;
 
 public class BoardManager : Singleton<BoardManager>
 {
@@ -20,6 +22,7 @@ public class BoardManager : Singleton<BoardManager>
 
     private List<int> _fullRow = new List<int>();
     private List<int> _fullCol = new List<int>();
+
 
     override protected void OnAwake()
     {
@@ -127,5 +130,41 @@ public class BoardManager : Singleton<BoardManager>
                 _cells[col, y].UpdateCellVisual(false);
             }
         }
+    }
+
+    public bool CanPlaceShape(BlockShape shape)
+    {
+        if (shape == null || shape._cellOffsets == null || shape._cellOffsets.Length == 0)
+            return false;
+
+        for (int x = 0; x < _width; x++)
+        {
+            for (int y = 0; y < _height; y++)
+            {
+                if (!_cells[x, y].IsFilled && CanPlaceAt(x, y, shape))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Board의 빈 곳에 shape모양대로 놓을 수 있는지 검사
+    private bool CanPlaceAt(int baseX, int baseY, BlockShape shape)
+    {
+        foreach (var offset in shape._cellOffsets)
+        {
+            int tx = baseX + offset.x;
+            int ty = baseY + offset.y;
+
+            // 보드 범위 밖이거나 cell 채워져있는지 검사
+            if (tx < 0 || tx >= _width || ty < 0 || ty >= _height)
+                return false;
+
+            if (_cells[tx, ty].IsFilled)
+                return false;
+        }
+
+        return true;
     }
 }

@@ -8,7 +8,7 @@ public class DraggableBlock : MonoBehaviour
 {
     [SerializeField]
     private BlockShape[] _blockShapes;
-    private BlockShape _shape;
+    public BlockShape Shape { get; private set; }
 
     [SerializeField]
     public Sprite[] _blockSprites;
@@ -36,7 +36,7 @@ public class DraggableBlock : MonoBehaviour
     private void SetRandomBlockShape()
     {
         int index = Random.Range(0, _blockShapes.Length);
-        _shape = _blockShapes[index];
+        Shape = _blockShapes[index];
     }
 
     private void SetRandomBlockSprite()
@@ -52,15 +52,15 @@ public class DraggableBlock : MonoBehaviour
 
     private void CreateBodyTiles()
     {
-        if (_shape == null || _shape._cellOffsets == null)
+        if (Shape == null || Shape._cellOffsets == null)
             return;
 
         RotateShapeRandomly();
 
-        Vector2 center = CalculateCenter(_shape._cellOffsets);
+        Vector2 center = CalculateCenter(Shape._cellOffsets);
         Vector2 tileSize = new Vector2(_slotBlockSize, _slotBlockSize);
 
-        foreach (var offset in _shape._cellOffsets)
+        foreach (var offset in Shape._cellOffsets)
         {
             CreateTile(offset, center, tileSize);
         }
@@ -70,9 +70,9 @@ public class DraggableBlock : MonoBehaviour
     {
         int randomRot = Random.Range(0, 4);
 
-        for (int i = 0; i < _shape._cellOffsets.Length; i++)
+        for (int i = 0; i < Shape._cellOffsets.Length; i++)
         {
-            Vector2Int offset = _shape._cellOffsets[i];
+            Vector2Int offset = Shape._cellOffsets[i];
 
             switch (randomRot)
             {
@@ -89,7 +89,7 @@ public class DraggableBlock : MonoBehaviour
                     break;
             }
 
-            _shape._cellOffsets[i] = offset;
+            Shape._cellOffsets[i] = offset;
         }
     }
 
@@ -228,6 +228,4 @@ public class DraggableBlock : MonoBehaviour
             previewCell.PlaceBlock(_blockSprite);
         }
     }
-
-    public int GetBlockCount() => _shape._cellOffsets.Length;
 }

@@ -7,9 +7,9 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     public Canvas _canvas;
     public DraggableBlock _blockPrefab;
 
-    private DraggableBlock _block;
+    public DraggableBlock Block { get; private set; }
 
-    public static event Action<int> OnBlockPlaced;
+    public static event Action<DraggableBlock> OnBlockPlaced;
 
     private void Awake()
     {
@@ -18,48 +18,56 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
     public void SetNewBlock()
     {
-        _block = Instantiate(_blockPrefab, transform.position, transform.rotation, this.transform);
+        Block = Instantiate(_blockPrefab, transform.position, transform.rotation, this.transform);
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (_block != null)
+        if (Block == null)
         {
-            _block.MoveToPointer(transform as RectTransform, eventData.position);
-            _block.SetBlockScale(BoardManager.Instance.BoardCellSize);
+            Debug.Log("BlockSlot - Block is null");
+            return;
         }
+
+        Block.MoveToPointer(transform as RectTransform, eventData.position);
+        Block.SetBlockScale(BoardManager.Instance.BoardCellSize);
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        if (_block != null)
+        if (Block == null)
         {
-            if (BoardManager.Instance.CanPlaceBlock)
-            {
-                _block.PlaceBlock();
-                OnBlockPlaced?.Invoke(_block.GetBlockCount());
-                BoardManager.Instance.ProcessFullLines();
+            Debug.Log("BlockSlot - Block is null");
+            return;
+        }
 
-                Destroy(_block.gameObject);
-                _block = null;
+        if (BoardManager.Instance.CanPlaceBlock)
+        {
+            Block.PlaceBlock();
+            OnBlockPlaced?.Invoke(Block);
 
-                SetNewBlock();
-            }
+            Destroy(Block.gameObject);
+            Block = null;
 
-            // 力磊府肺
-            else
-            {
-                _block.SetBlockScale(_block._slotBlockSize);
-                (_block.transform as RectTransform).anchoredPosition = Vector2.zero;
-            }
+            SetNewBlock();
+        }
+
+        // 力磊府肺
+        else
+        {
+            Block.SetBlockScale(Block._slotBlockSize);
+            (Block.transform as RectTransform).anchoredPosition = Vector2.zero;
         }
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (_block != null)
+        if (Block == null)
         {
-            _block.MoveToPointer(transform as RectTransform, eventData.position);
+            Debug.Log("BlockSlot - Block is null");
+            return;
         }
+
+        Block.MoveToPointer(transform as RectTransform, eventData.position);
     }
 }
