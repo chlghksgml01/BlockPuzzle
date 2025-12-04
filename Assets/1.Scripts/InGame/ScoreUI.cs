@@ -3,8 +3,6 @@ using UnityEngine;
 
 public class ScoreUI : MonoBehaviour
 {
-    [SerializeField]
-    private Sprite[] _numberSprites;
     private TextMeshProUGUI _scroreText;
 
     private void OnEnable()

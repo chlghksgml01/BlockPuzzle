@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using static UnityEngine.Rendering.ProbeAdjustmentVolume;
@@ -28,17 +29,17 @@ public class DraggableBlock : MonoBehaviour
     {
         _rectTransform = GetComponent<RectTransform>();
 
-        GetRandomBlockShape();
-        GetRandomBlockSprite();
+        SetRandomBlockShape();
+        SetRandomBlockSprite();
     }
 
-    private void GetRandomBlockShape()
+    private void SetRandomBlockShape()
     {
         int index = Random.Range(0, _blockShapes.Length);
         _shape = _blockShapes[index];
     }
 
-    private void GetRandomBlockSprite()
+    private void SetRandomBlockSprite()
     {
         int index = Random.Range(0, _blockSprites.Length);
         _blockSprite = _blockSprites[index];
@@ -54,46 +55,98 @@ public class DraggableBlock : MonoBehaviour
         if (_shape == null || _shape._cellOffsets == null)
             return;
 
-        int minX = int.MaxValue;
-        int maxX = int.MinValue;
-        int minY = int.MaxValue;
-        int maxY = int.MinValue;
+        RotateShapeRandomly();
+
+        Vector2 center = CalculateCenter(_shape._cellOffsets);
+        Vector2 tileSize = new Vector2(_slotBlockSize, _slotBlockSize);
 
         foreach (var offset in _shape._cellOffsets)
         {
-            if (offset.x < minX) minX = offset.x;
-            if (offset.x > maxX) maxX = offset.x;
-            if (offset.y < minY) minY = offset.y;
-            if (offset.y > maxY) maxY = offset.y;
+            CreateTile(offset, center, tileSize);
+        }
+    }
+
+    private void RotateShapeRandomly()
+    {
+        int randomRot = Random.Range(0, 4);
+
+        for (int i = 0; i < _shape._cellOffsets.Length; i++)
+        {
+            Vector2Int offset = _shape._cellOffsets[i];
+
+            switch (randomRot)
+            {
+                case 1:
+                    offset = new Vector2Int(offset.y, -offset.x);
+                    break;
+                case 2:
+                    offset = new Vector2Int(-offset.x, -offset.y);
+                    break;
+                case 3:
+                    offset = new Vector2Int(-offset.y, offset.x);
+                    break;
+                default:
+                    break;
+            }
+
+            _shape._cellOffsets[i] = offset;
+        }
+    }
+
+    private Vector2 CalculateCenter(Vector2Int[] offsets)
+    {
+        int minX = int.MaxValue, maxX = int.MinValue;
+        int minY = int.MaxValue, maxY = int.MinValue;
+
+        foreach (var offset in offsets)
+        {
+            if (offset.x < minX)
+                minX = offset.x;
+            if (offset.x > maxX)
+                maxX = offset.x;
+            if (offset.y < minY)
+                minY = offset.y;
+            if (offset.y > maxY)
+                maxY = offset.y;
         }
 
         float centerX = (minX + maxX) / 2f;
         float centerY = (minY + maxY) / 2f;
 
-        Vector2 tileSize = new Vector2(_slotBlockSize, _slotBlockSize);
+        return new Vector2(centerX, centerY);
+    }
 
-        foreach (var offset in _shape._cellOffsets)
+    private void CreateTile(Vector2Int offset, Vector2 center, Vector2 tileSize)
+    {
+        GameObject tileObj = Instantiate(_bodyTilePrefab, transform, false);
+
+        // Collider
+        var collider = tileObj.GetComponent<BoxCollider2D>();
+        if (collider != null)
+            collider.size = tileSize;
+
+        // Image
+        Image tileImage = tileObj.GetComponent<Image>();
+        if (tileImage != null)
         {
-            GameObject tileObj = Instantiate(_bodyTilePrefab, transform, false);
-            tileObj.GetComponent<BoxCollider2D>().size = tileSize;
-
-            Image tileImage = tileObj.GetComponent<Image>();
             tileImage.sprite = _blockSprite;
             tileImage.raycastTarget = false;
             tileImage.color = Color.white;
-
-            RectTransform tileRect = tileObj.GetComponent<RectTransform>();
-            tileRect.anchorMin = new Vector2(0.5f, 0.5f);
-            tileRect.anchorMax = new Vector2(0.5f, 0.5f);
-            tileRect.pivot = new Vector2(0.5f, 0.5f);
-            tileRect.sizeDelta = tileSize;
-
-            float localX = (offset.x - centerX) * tileSize.x;
-            float localY = (offset.y - centerY) * tileSize.y;
-            tileRect.anchoredPosition = new Vector2(localX, localY);
-
-            _bodyBlocks.Add(tileRect);
         }
+
+        // RectTransform ¼¼ÆÃ
+        RectTransform tileRect = tileObj.GetComponent<RectTransform>();
+        tileRect.anchorMin = new Vector2(0.5f, 0.5f);
+        tileRect.anchorMax = new Vector2(0.5f, 0.5f);
+        tileRect.pivot = new Vector2(0.5f, 0.5f);
+        tileRect.sizeDelta = tileSize;
+
+        float localX = (offset.x - center.x) * tileSize.x;
+        float localY = (offset.y - center.y) * tileSize.y;
+
+        tileRect.anchoredPosition = new Vector2(localX, localY);
+
+        _bodyBlocks.Add(tileRect);
     }
 
     public void MoveToPointer(RectTransform slotRect, Vector2 screenMousePosition)
