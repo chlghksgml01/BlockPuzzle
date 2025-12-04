@@ -175,4 +175,6 @@ public class DraggableBlock : MonoBehaviour
             previewCell.PlaceBlock(_blockSprite);
         }
     }
+
+    public int GetBlockCount() => _shape._cellOffsets.Length;
 }

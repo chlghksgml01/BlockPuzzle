@@ -2,12 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum LineType
-{
-    Row,
-    Column
-}
-
 public class BoardManager : Singleton<BoardManager>
 {
     public int _width = 9;
@@ -109,6 +103,9 @@ public class BoardManager : Singleton<BoardManager>
             if (isFull)
                 _fullCol.Add(x);
         }
+
+        if (_fullRow.Count + _fullCol.Count > 0)
+            ScoreManager.Instance.CalculateLineScore(_fullRow.Count + _fullCol.Count);
     }
 
     private void RemoveFullLines()

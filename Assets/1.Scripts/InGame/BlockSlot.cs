@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -7,6 +8,8 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     public DraggableBlock _blockPrefab;
 
     private DraggableBlock _block;
+
+    public static event Action<int> OnBlockPlaced;
 
     private void Awake()
     {
@@ -34,6 +37,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
             if (BoardManager.Instance.CanPlaceBlock)
             {
                 _block.PlaceBlock();
+                OnBlockPlaced?.Invoke(_block.GetBlockCount());
                 BoardManager.Instance.ProcessFullLines();
 
                 Destroy(_block.gameObject);
