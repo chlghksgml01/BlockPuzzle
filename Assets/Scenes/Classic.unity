@@ -2429,13 +2429,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1495160515}
+  - component: {fileID: 1495160516}
   m_Layer: 5
   m_Name: GameOver
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1495160515
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2463,6 +2464,20 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1495160516
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1495160514}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48f87201b1832bc44805fa2c8eb54241, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameOverUI
+  _scroreText: {fileID: 582329164}
+  _bestScroreText: {fileID: 0}
 --- !u!1 &1500999684
 GameObject:
   m_ObjectHideFlags: 0
@@ -3409,6 +3424,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1320803725296828745, guid: b15f06c42f52afe4fb850481b49aa0ac, type: 3}
+      propertyPath: _gameOverUI
+      value: 
+      objectReference: {fileID: 1495160514}
     - target: {fileID: 1320803725296828745, guid: b15f06c42f52afe4fb850481b49aa0ac, type: 3}
       propertyPath: '_slots.Array.data[0]'
       value: 
