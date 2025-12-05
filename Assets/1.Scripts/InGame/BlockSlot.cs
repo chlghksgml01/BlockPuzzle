@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using static UnityEngine.Rendering.ProbeAdjustmentVolume;
 
 public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler
 {
@@ -9,7 +10,9 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
     public DraggableBlock Block { get; private set; }
 
-    public static event Action<DraggableBlock> OnBlockPlaced;
+    public static event Action<int> OnBlockPlaced;
+
+    public bool HasBlock { get; private set; }
 
     private void Awake()
     {
@@ -18,12 +21,13 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
     public void SetNewBlock()
     {
+        HasBlock = true;
         Block = Instantiate(_blockPrefab, transform.position, transform.rotation, this.transform);
     }
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (Block == null)
+        if (Block == null || !HasBlock)
         {
             Debug.Log("BlockSlot - Block is null");
             return;
@@ -35,7 +39,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        if (Block == null)
+        if (Block == null || !HasBlock)
         {
             Debug.Log("BlockSlot - Block is null");
             return;
@@ -44,12 +48,11 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         if (BoardManager.Instance.CanPlaceBlock)
         {
             Block.PlaceBlock();
-            OnBlockPlaced?.Invoke(Block);
 
-            Destroy(Block.gameObject);
-            Block = null;
+            int blockShapeCount = Block.Shape._cellOffsets.Length;
+            RemoveBlock();
 
-            SetNewBlock();
+            OnBlockPlaced?.Invoke(blockShapeCount);
         }
 
         // 제자리로
@@ -60,9 +63,16 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         }
     }
 
+    private void RemoveBlock()
+    {
+        HasBlock = false;
+        Destroy(Block.gameObject);
+        Block = null;
+    }
+
     public void OnDrag(PointerEventData eventData)
     {
-        if (Block == null)
+        if (Block == null || !HasBlock)
         {
             Debug.Log("BlockSlot - Block is null");
             return;
