@@ -2,12 +2,21 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class SlotManager : Singleton<SlotManager>
+public class InGameManager : Singleton<InGameManager>
 {
     private BoardManager _boardManager => BoardManager.Instance;
     private ScoreManager _scoreManager => ScoreManager.Instance;
 
-    [SerializeField] private List<BlockSlot> _slots;
+    [SerializeField]
+    private List<BlockSlot> _slots;
+
+    [SerializeField]
+    private GameObject _gameOverUI;
+
+    override protected void OnAwake()
+    {
+        _gameOverUI.SetActive(false);
+    }
 
     private void OnEnable()
     {
@@ -59,13 +68,8 @@ public class SlotManager : Singleton<SlotManager>
         if (allBlocksCannotPlace)
         {
             Debug.Log("게임 오버");
+            _gameOverUI.SetActive(true);
             return;
         }
-    }
-
-    private void CreateBlocksIfEmpty()
-    {
-
-
     }
 }

@@ -25,15 +25,4 @@ public class ScoreUI : MonoBehaviour
     {
         _scroreText.text = newScore.ToString();
     }
-
-    public void SetScoreToImage(GameObject targetImage, int score)
-    {
-        foreach(Transform child in targetImage.transform)
-        {
-            Destroy(child.gameObject);
-        }
-
-        string scoreString = score.ToString();
-
-    }
 }
