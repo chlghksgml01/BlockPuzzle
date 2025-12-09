@@ -167,4 +167,19 @@ public class BoardManager : Singleton<BoardManager>
 
         return true;
     }
+
+    public void Replay()
+    {
+        for (int x = 0; x < _width; x++)
+        {
+            for (int y = 0; y < _height; y++)
+            {
+                _cells[x, y].SetFilled(false);
+                _cells[x, y].UpdateCellVisual(false);
+            }
+        }
+
+        InGameManager.Instance.SpawnNewBlock();
+        ScoreManager.Instance.ResetScore();
+    }
 }

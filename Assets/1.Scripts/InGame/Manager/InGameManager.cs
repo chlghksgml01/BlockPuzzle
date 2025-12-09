@@ -72,4 +72,12 @@ public class InGameManager : Singleton<InGameManager>
             return;
         }
     }
+
+    public void SpawnNewBlock()
+    {
+        foreach (var slot in _slots)
+        {
+            slot.SpawnNewBlock();
+        }
+    }
 }

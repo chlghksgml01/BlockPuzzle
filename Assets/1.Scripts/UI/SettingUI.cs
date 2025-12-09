@@ -7,7 +7,7 @@ public class SettingUI : MonoBehaviour
 
     public void OnClicked()
     {
+        Time.timeScale = 0f;
         _settingPanel.SetActive(true);
-
     }
 }

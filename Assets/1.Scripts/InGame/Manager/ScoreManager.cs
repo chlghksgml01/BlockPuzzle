@@ -68,6 +68,8 @@ public class ScoreManager : Singleton<ScoreManager>
 
     public void ResetScore()
     {
+        _currentPlaceCount = 0;
+        _currentComboCount = 0;
         CurrentScore = 0;
         OnScoreChanged?.Invoke(CurrentScore);
     }

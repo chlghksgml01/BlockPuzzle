@@ -80,4 +80,13 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
         Block.MoveToPointer(transform as RectTransform, eventData.position);
     }
+
+    public void SpawnNewBlock()
+    {
+        if (HasBlock)
+        {
+            RemoveBlock();
+        }
+        SetNewBlock();
+    }
 }
