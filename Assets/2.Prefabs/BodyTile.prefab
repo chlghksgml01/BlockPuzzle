@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 2268322583733880439}
   - component: {fileID: 6480120761146060815}
   - component: {fileID: 5262541809286294303}
-  - component: {fileID: 8205494724243518557}
   m_Layer: 0
   m_Name: BodyTile
   m_TagString: BodyTile
@@ -123,15 +122,3 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5281581779867249833}
   m_CullTransparentMesh: 1
---- !u!114 &8205494724243518557
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5281581779867249833}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a68dfbb92e86a674a81d3e3284b0be7e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BlockBodyTile

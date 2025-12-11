@@ -14,15 +14,16 @@ public class SettingPanel : MonoBehaviour
     [SerializeField]
     private GameObject _bgmToggle;
 
-
     public void Replay()
     {
-        BoardManager.Instance.Replay();
+        BoardManager.Instance.ResetBoard();
         Close();
     }
 
     public void Home()
     {
+        BoardManager.Instance.ResetBoard();
+        Close();
         SceneManager.LoadScene("MainUI");
     }
 

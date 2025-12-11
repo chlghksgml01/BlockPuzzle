@@ -168,7 +168,7 @@ public class BoardManager : Singleton<BoardManager>
         return true;
     }
 
-    public void Replay()
+    public void ResetBoard()
     {
         for (int x = 0; x < _width; x++)
         {
