@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using static UnityEngine.Rendering.ProbeAdjustmentVolume;
 
 public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler
 {
@@ -35,6 +34,8 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
         Block.MoveToPointer(transform as RectTransform, eventData.position);
         Block.SetBlockScale(BoardManager.Instance.BoardCellSize);
+
+        InGameManager.Instance.StartHintTimeCoroutine(Block.CurrentOffsets);
     }
 
     public void OnPointerUp(PointerEventData eventData)
@@ -49,7 +50,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         {
             Block.PlaceBlock();
 
-            int blockShapeCount = Block.Shape._cellOffsets.Length;
+            int blockShapeCount = Block.CurrentOffsets.Length;
             RemoveBlock();
 
             OnBlockPlaced?.Invoke(blockShapeCount);

@@ -1,11 +1,13 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 public class InGameManager : Singleton<InGameManager>
 {
-    private BoardManager _boardManager => BoardManager.Instance;
-    private ScoreManager _scoreManager => ScoreManager.Instance;
+    [SerializeField]
+    private float _hintTimeInterval = 5f;
+    private Coroutine _hintCoroutine;
 
     [SerializeField]
     private List<BlockSlot> _slots;
@@ -30,23 +32,36 @@ public class InGameManager : Singleton<InGameManager>
 
     private void HandleBlockPlaced(int blockShapeCount)
     {
-        _scoreManager.HandleBlockPlaced(blockShapeCount);
-        _boardManager.ProcessFullLines();
+        ScoreManager.Instance.HandleBlockPlaced(blockShapeCount);
+        BoardManager.Instance.ProcessFullLines();
 
         bool hasBlocks = _slots.Any(slot => slot.HasBlock);
 
-        if (hasBlocks)
-        {
-            IsGameOver();
-        }
-
-        else
+        if (!hasBlocks)
         {
             foreach (var slot in _slots)
             {
                 slot.SetNewBlock();
             }
         }
+    }
+
+    public void StartHintTimeCoroutine(Vector2Int[] blockShapeOffset)
+    {
+        if (_hintCoroutine == null)
+            _hintCoroutine = StartCoroutine(TimerCoroutine(blockShapeOffset));
+    }
+
+    IEnumerator TimerCoroutine(Vector2Int[] blockShapeOffset)
+    {
+        yield return new WaitForSeconds(_hintTimeInterval);
+
+        if (BoardManager.Instance.CanPlaceShape(blockShapeOffset))
+            BoardManager.Instance.ShowHint(blockShapeOffset);
+        else
+            IsGameOver();
+
+        _hintCoroutine = null;
     }
 
     private void IsGameOver()
@@ -58,7 +73,7 @@ public class InGameManager : Singleton<InGameManager>
             if (!slot.HasBlock)
                 continue;
 
-            if (_boardManager.CanPlaceShape(slot.Block.Shape))
+            if (BoardManager.Instance.CanPlaceShape(slot.Block.CurrentOffsets))
             {
                 allBlocksCannotPlace = false;
                 break;

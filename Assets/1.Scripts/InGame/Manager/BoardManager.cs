@@ -1,21 +1,25 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using static Unity.Collections.AllocatorManager;
 
 public class BoardManager : Singleton<BoardManager>
 {
     public int _width = 9;
     public int _height = 9;
 
-    public RectTransform _boardRoot;
-    public GameObject _cellPrefab;
+    [SerializeField]
+    private RectTransform _boardRoot;
+    [SerializeField]
+    private RectTransform _hintBoardRoot;
+    [SerializeField]
+    private GameObject _cellPrefab;
+    [SerializeField]
+    private GameObject _hintCellPrefab;
 
-    public BoardCell[,] _cells;
+    private BoardCell[,] _cells;
+    private HintBoardCell[,] _hintCells;
     public Sprite _previewSprite;
     public float _previewAlpha = 0.6f;
-    public float cellColSizePercent = 0.6f;
 
     public float BoardCellSize { get; set; }
     public bool CanPlaceBlock { get; set; }
@@ -23,6 +27,7 @@ public class BoardManager : Singleton<BoardManager>
     private List<int> _fullRow = new List<int>();
     private List<int> _fullCol = new List<int>();
 
+    private Vector2Int _placeableCellPos;
 
     override protected void OnAwake()
     {
@@ -32,14 +37,18 @@ public class BoardManager : Singleton<BoardManager>
     private void GenerateBoard()
     {
         _cells = new BoardCell[_width, _height];
+        _hintCells = new HintBoardCell[_width, _height];
         BoardCellSize = _boardRoot.GetComponent<GridLayoutGroup>().cellSize.x;
 
-        for (int x = 0; x < _width; x++)
+        for (int y = 0; y < _height; y++)
         {
-            for (int y = 0; y < _height; y++)
+            for (int x = 0; x < _width; x++)
             {
                 GameObject cell = Instantiate(_cellPrefab, _boardRoot);
                 _cells[x, y] = cell.GetComponent<BoardCell>();
+
+                GameObject hintCell = Instantiate(_hintCellPrefab, _hintBoardRoot);
+                _hintCells[x, y] = hintCell.GetComponent<HintBoardCell>();
             }
         }
     }
@@ -132,27 +141,26 @@ public class BoardManager : Singleton<BoardManager>
         }
     }
 
-    public bool CanPlaceShape(BlockShape shape)
+    public bool CanPlaceShape(Vector2Int[] shapeOffset)
     {
-        if (shape == null || shape._cellOffsets == null || shape._cellOffsets.Length == 0)
+        if (shapeOffset == null || shapeOffset.Length == 0)
             return false;
 
         for (int x = 0; x < _width; x++)
         {
             for (int y = 0; y < _height; y++)
             {
-                if (!_cells[x, y].IsFilled && CanPlaceAt(x, y, shape))
+                if (!_cells[x, y].IsFilled && CanPlaceAt(x, y, shapeOffset))
                     return true;
             }
         }
-
         return false;
     }
 
     // Board의 빈 곳에 shape모양대로 놓을 수 있는지 검사
-    private bool CanPlaceAt(int baseX, int baseY, BlockShape shape)
+    private bool CanPlaceAt(int baseX, int baseY, Vector2Int[] shapeOffset)
     {
-        foreach (var offset in shape._cellOffsets)
+        foreach (var offset in shapeOffset)
         {
             int tx = baseX + offset.x;
             int ty = baseY + offset.y;
@@ -164,6 +172,9 @@ public class BoardManager : Singleton<BoardManager>
             if (_cells[tx, ty].IsFilled)
                 return false;
         }
+
+        _placeableCellPos.x = baseX;
+        _placeableCellPos.y = baseY;
 
         return true;
     }
@@ -181,5 +192,16 @@ public class BoardManager : Singleton<BoardManager>
 
         InGameManager.Instance.SpawnNewBlock();
         ScoreManager.Instance.ResetScore();
+    }
+
+    public void ShowHint(Vector2Int[] blockShapeOffset)
+    {
+        for (int i = 0; i < blockShapeOffset.Length; i++)
+        {
+            int tx = _placeableCellPos.x + blockShapeOffset[i].x;
+            int ty = _placeableCellPos.y + blockShapeOffset[i].y;
+
+            _hintCells[tx, ty].ShowHint(true);
+        }
     }
 }

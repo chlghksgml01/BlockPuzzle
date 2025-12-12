@@ -1,14 +1,12 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using static UnityEngine.Rendering.ProbeAdjustmentVolume;
 
 public class DraggableBlock : MonoBehaviour
 {
     [SerializeField]
     private BlockShape[] _blockShapes;
-    public BlockShape Shape { get; private set; }
+    public Vector2Int[] CurrentOffsets { get; private set; }
 
     [SerializeField]
     public Sprite[] _blockSprites;
@@ -31,12 +29,13 @@ public class DraggableBlock : MonoBehaviour
 
         SetRandomBlockShape();
         SetRandomBlockSprite();
+        CreateBodyTiles();
     }
 
     private void SetRandomBlockShape()
     {
         int index = Random.Range(0, _blockShapes.Length);
-        Shape = _blockShapes[index];
+        CurrentOffsets = (Vector2Int[])_blockShapes[index]._cellOffsets.Clone();
     }
 
     private void SetRandomBlockSprite()
@@ -45,22 +44,17 @@ public class DraggableBlock : MonoBehaviour
         _blockSprite = _blockSprites[index];
     }
 
-    private void Start()
-    {
-        CreateBodyTiles();
-    }
-
     private void CreateBodyTiles()
     {
-        if (Shape == null || Shape._cellOffsets == null)
+        if (CurrentOffsets == null || CurrentOffsets == null)
             return;
 
         RotateShapeRandomly();
 
-        Vector2 center = CalculateCenter(Shape._cellOffsets);
+        Vector2 center = CalculateCenter(CurrentOffsets);
         Vector2 tileSize = new Vector2(_slotBlockSize, _slotBlockSize);
 
-        foreach (var offset in Shape._cellOffsets)
+        foreach (var offset in CurrentOffsets)
         {
             CreateTile(offset, center, tileSize);
         }
@@ -70,9 +64,9 @@ public class DraggableBlock : MonoBehaviour
     {
         int randomRot = Random.Range(0, 4);
 
-        for (int i = 0; i < Shape._cellOffsets.Length; i++)
+        for (int i = 0; i < CurrentOffsets.Length; i++)
         {
-            Vector2Int offset = Shape._cellOffsets[i];
+            Vector2Int offset = CurrentOffsets[i];
 
             switch (randomRot)
             {
@@ -89,7 +83,7 @@ public class DraggableBlock : MonoBehaviour
                     break;
             }
 
-            Shape._cellOffsets[i] = offset;
+            CurrentOffsets[i] = offset;
         }
     }
 
@@ -151,9 +145,7 @@ public class DraggableBlock : MonoBehaviour
 
     public void MoveToPointer(RectTransform slotRect, Vector2 screenMousePosition)
     {
-        // 블럭 이동
-        Vector2 localPoint;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(slotRect, screenMousePosition, null, out localPoint);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(slotRect, screenMousePosition, null, out Vector2 localPoint);
         _rectTransform.anchoredPosition = new Vector2(localPoint.x, localPoint.y + _blockYOffset);
     }
 
