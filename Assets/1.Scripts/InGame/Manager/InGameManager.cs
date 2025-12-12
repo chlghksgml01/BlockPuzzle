@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static Unity.Collections.AllocatorManager;
 
 public class InGameManager : Singleton<InGameManager>
 {
@@ -46,18 +47,29 @@ public class InGameManager : Singleton<InGameManager>
         }
     }
 
-    public void StartHintTimeCoroutine(Vector2Int[] blockShapeOffset)
+    public void StartHintCoroutine(DraggableBlock block)
     {
         if (_hintCoroutine == null)
-            _hintCoroutine = StartCoroutine(TimerCoroutine(blockShapeOffset));
+            _hintCoroutine = StartCoroutine(TimerCoroutine(block));
     }
 
-    IEnumerator TimerCoroutine(Vector2Int[] blockShapeOffset)
+    public void StopHintCoroutine(DraggableBlock block)
+    {
+        BoardManager.Instance.ShowHint(false, block);
+
+        if (_hintCoroutine != null)
+        {
+            StopCoroutine(_hintCoroutine);
+            _hintCoroutine = null;
+        }
+    }
+
+    IEnumerator TimerCoroutine(DraggableBlock block)
     {
         yield return new WaitForSeconds(_hintTimeInterval);
 
-        if (BoardManager.Instance.CanPlaceShape(blockShapeOffset))
-            BoardManager.Instance.ShowHint(blockShapeOffset);
+        if (BoardManager.Instance.CanPlaceShape(block.CurrentOffsets))
+            BoardManager.Instance.ShowHint(true, block);
         else
             IsGameOver();
 

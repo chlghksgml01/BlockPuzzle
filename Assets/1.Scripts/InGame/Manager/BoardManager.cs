@@ -29,6 +29,9 @@ public class BoardManager : Singleton<BoardManager>
 
     private Vector2Int _placeableCellPos;
 
+    public DraggableBlock _prevBlock;
+
+
     override protected void OnAwake()
     {
         GenerateBoard();
@@ -194,14 +197,39 @@ public class BoardManager : Singleton<BoardManager>
         ScoreManager.Instance.ResetScore();
     }
 
-    public void ShowHint(Vector2Int[] blockShapeOffset)
+    public void ShowHint(bool showHint, DraggableBlock block = null)
     {
-        for (int i = 0; i < blockShapeOffset.Length; i++)
-        {
-            int tx = _placeableCellPos.x + blockShapeOffset[i].x;
-            int ty = _placeableCellPos.y + blockShapeOffset[i].y;
+        if (block == null || block.CurrentOffsets.Length == 0)
+            return;
 
-            _hintCells[tx, ty].ShowHint(true);
+        if (showHint)
+        {
+            for (int i = 0; i < block.CurrentOffsets.Length; i++)
+            {
+                int tx = _placeableCellPos.x + block.CurrentOffsets[i].x;
+                int ty = _placeableCellPos.y + block.CurrentOffsets[i].y;
+
+                if (tx < 0 || tx >= _width || ty < 0 || ty >= _height)
+                    continue;
+
+                _hintCells[tx, ty].ShowHint(true);
+            }
         }
+
+        else if (!showHint && _prevBlock != null && block != _prevBlock)
+        {
+            for (int i = 0; i < _prevBlock.CurrentOffsets.Length; i++)
+            {
+                int tx = _placeableCellPos.x + _prevBlock.CurrentOffsets[i].x;
+                int ty = _placeableCellPos.y + _prevBlock.CurrentOffsets[i].y;
+
+                if (tx < 0 || tx >= _width || ty < 0 || ty >= _height)
+                    continue;
+
+                _hintCells[tx, ty].ShowHint(false);
+            }
+        }
+
+        _prevBlock = block;
     }
 }

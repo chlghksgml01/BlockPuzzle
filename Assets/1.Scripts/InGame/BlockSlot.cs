@@ -26,6 +26,8 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
     public void OnPointerDown(PointerEventData eventData)
     {
+        InGameManager.Instance.StopHintCoroutine(Block);
+
         if (Block == null || !HasBlock)
         {
             Debug.Log("BlockSlot - Block is null");
@@ -35,7 +37,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         Block.MoveToPointer(transform as RectTransform, eventData.position);
         Block.SetBlockScale(BoardManager.Instance.BoardCellSize);
 
-        InGameManager.Instance.StartHintTimeCoroutine(Block.CurrentOffsets);
+        InGameManager.Instance.StartHintCoroutine(Block);
     }
 
     public void OnPointerUp(PointerEventData eventData)
