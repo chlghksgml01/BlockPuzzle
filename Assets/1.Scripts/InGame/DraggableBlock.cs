@@ -46,7 +46,7 @@ public class DraggableBlock : MonoBehaviour
 
     private void CreateBodyTiles()
     {
-        if (CurrentOffsets == null || CurrentOffsets == null)
+        if (CurrentOffsets == null || CurrentOffsets.Length == 0)
             return;
 
         RotateShapeRandomly();
@@ -68,24 +68,49 @@ public class DraggableBlock : MonoBehaviour
         {
             Vector2Int offset = CurrentOffsets[i];
 
-            switch (randomRot)
-            {
-                case 1:
-                    offset = new Vector2Int(offset.y, -offset.x);
-                    break;
-                case 2:
-                    offset = new Vector2Int(-offset.x, -offset.y);
-                    break;
-                case 3:
-                    offset = new Vector2Int(-offset.y, offset.x);
-                    break;
-                default:
-                    break;
-            }
+            offset = Rotate(randomRot, offset);
 
             CurrentOffsets[i] = offset;
         }
+
+        NormalizeOffsets(CurrentOffsets);
     }
+
+    private static Vector2Int Rotate(int randomRot, Vector2Int offset)
+    {
+        switch (randomRot)
+        {
+            case 1:
+                offset = new Vector2Int(offset.y, -offset.x);
+                break;
+            case 2:
+                offset = new Vector2Int(-offset.x, -offset.y);
+                break;
+            case 3:
+                offset = new Vector2Int(-offset.y, offset.x);
+                break;
+            default:
+                break;
+        }
+
+        return offset;
+    }
+
+    private static void NormalizeOffsets(Vector2Int[] offsets)
+    {
+        int minX = int.MaxValue;
+        int minY = int.MaxValue;
+
+        for (int i = 0; i < offsets.Length; i++)
+        {
+            if (offsets[i].x < minX) minX = offsets[i].x;
+            if (offsets[i].y < minY) minY = offsets[i].y;
+        }
+
+        for (int i = 0; i < offsets.Length; i++)
+            offsets[i] = new Vector2Int(offsets[i].x - minX, offsets[i].y - minY);
+    }
+
 
     private Vector2 CalculateCenter(Vector2Int[] offsets)
     {

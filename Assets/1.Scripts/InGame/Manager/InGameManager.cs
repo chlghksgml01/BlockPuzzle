@@ -53,9 +53,9 @@ public class InGameManager : Singleton<InGameManager>
             _hintCoroutine = StartCoroutine(TimerCoroutine(block));
     }
 
-    public void StopHintCoroutine(DraggableBlock block)
+    public void StopHintCoroutine(DraggableBlock block, bool isPlaced)
     {
-        BoardManager.Instance.ShowHint(false, block);
+        BoardManager.Instance.ShowHint(false, block, isPlaced);
 
         if (_hintCoroutine != null)
         {

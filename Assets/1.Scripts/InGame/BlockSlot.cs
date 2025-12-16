@@ -26,7 +26,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        InGameManager.Instance.StopHintCoroutine(Block);
+        InGameManager.Instance.StopHintCoroutine(Block, false);
 
         if (Block == null || !HasBlock)
         {
@@ -50,6 +50,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
         if (BoardManager.Instance.CanPlaceBlock)
         {
+            InGameManager.Instance.StopHintCoroutine(Block, true);
             Block.PlaceBlock();
 
             int blockShapeCount = Block.CurrentOffsets.Length;

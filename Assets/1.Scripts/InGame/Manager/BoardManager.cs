@@ -29,7 +29,7 @@ public class BoardManager : Singleton<BoardManager>
 
     private Vector2Int _placeableCellPos;
 
-    public DraggableBlock _prevBlock;
+    private DraggableBlock _prevBlock;
 
 
     override protected void OnAwake()
@@ -197,39 +197,38 @@ public class BoardManager : Singleton<BoardManager>
         ScoreManager.Instance.ResetScore();
     }
 
-    public void ShowHint(bool showHint, DraggableBlock block = null)
+    public void ShowHint(bool showHint, DraggableBlock block, bool isPlaced = false)
     {
-        if (block == null || block.CurrentOffsets.Length == 0)
+        if (block == null)
             return;
 
         if (showHint)
-        {
-            for (int i = 0; i < block.CurrentOffsets.Length; i++)
-            {
-                int tx = _placeableCellPos.x + block.CurrentOffsets[i].x;
-                int ty = _placeableCellPos.y + block.CurrentOffsets[i].y;
+            ApplyHint(_placeableCellPos, block.CurrentOffsets, true);
 
-                if (tx < 0 || tx >= _width || ty < 0 || ty >= _height)
-                    continue;
+        else if (isPlaced)
+            ApplyHint(_placeableCellPos, block.CurrentOffsets, false);
 
-                _hintCells[tx, ty].ShowHint(true);
-            }
-        }
-
-        else if (!showHint && _prevBlock != null && block != _prevBlock)
-        {
-            for (int i = 0; i < _prevBlock.CurrentOffsets.Length; i++)
-            {
-                int tx = _placeableCellPos.x + _prevBlock.CurrentOffsets[i].x;
-                int ty = _placeableCellPos.y + _prevBlock.CurrentOffsets[i].y;
-
-                if (tx < 0 || tx >= _width || ty < 0 || ty >= _height)
-                    continue;
-
-                _hintCells[tx, ty].ShowHint(false);
-            }
-        }
+        else if (_prevBlock != null && block != _prevBlock)
+            ApplyHint(_placeableCellPos, _prevBlock.CurrentOffsets, false);
 
         _prevBlock = block;
     }
+
+    private void ApplyHint(Vector2Int basePos, Vector2Int[] offsets, bool show)
+    {
+        if (offsets == null || offsets.Length == 0)
+            return;
+
+        for (int i = 0; i < offsets.Length; i++)
+        {
+            int tx = basePos.x + offsets[i].x;
+            int ty = basePos.y + offsets[i].y;
+
+            if (tx < 0 || tx >= _width || ty < 0 || ty >= _height)
+                continue;
+
+            _hintCells[tx, ty].ShowHint(show);
+        }
+    }
+
 }
