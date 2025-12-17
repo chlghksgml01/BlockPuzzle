@@ -4,14 +4,19 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-public class Progress : MonoBehaviour
+public class LoadingUI : MonoBehaviour
 {
     [SerializeField]
-    private Slider progressSlider;
+    private Image LoadingBar;
     [SerializeField]
-    private TextMeshProUGUI progressText;
+    private TextMeshProUGUI LoadingValuleText;
     [SerializeField]
     private float progressTime = 3f;
+
+    private void Awake()
+    {
+        Play();
+    }
 
     public void Play(UnityAction action = null)
     {
@@ -28,8 +33,8 @@ public class Progress : MonoBehaviour
             current += Time.deltaTime;
             percent = current / progressTime;
 
-            progressText.text = $"·ÎµùÁß... {progressSlider.value * 100f:0}%";
-            progressSlider.value = Mathf.Lerp(0f, 1f, percent);
+            LoadingBar.fillAmount = Mathf.Lerp(0f, 1f, percent);
+            LoadingValuleText.text = $" {LoadingBar.fillAmount * 100f:0}%";
             yield return null;
         }
 
