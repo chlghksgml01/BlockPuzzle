@@ -149,14 +149,15 @@ public class BoardManager : Singleton<BoardManager>
         if (shapeOffset == null || shapeOffset.Length == 0)
             return false;
 
-        for (int x = 0; x < _width; x++)
+        for (int y = _height - 1; y >= 0; y--)
         {
-            for (int y = 0; y < _height; y++)
+            for (int x = 0; x < _width; x++)
             {
                 if (!_cells[x, y].IsFilled && CanPlaceAt(x, y, shapeOffset))
                     return true;
             }
         }
+
         return false;
     }
 

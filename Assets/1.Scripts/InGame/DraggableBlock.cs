@@ -41,6 +41,7 @@ public class DraggableBlock : MonoBehaviour
             Destroy(child.gameObject);
         }
         _bodyBlocks.Clear();
+
         CreateBodyTiles();
     }
 
@@ -80,7 +81,7 @@ public class DraggableBlock : MonoBehaviour
         {
             Vector2Int offset = CurrentOffsets[i];
 
-            offset = Rotate(randomRot, offset);
+            offset = Rotate(1, offset);
 
             CurrentOffsets[i] = offset;
         }
