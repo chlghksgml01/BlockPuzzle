@@ -3860,6 +3860,10 @@ PrefabInstance:
       propertyPath: _canvas
       value: 
       objectReference: {fileID: 1031378056}
+    - target: {fileID: 1151359815240372624, guid: 29c2bdba7893d3c41aff21c1e3a46874, type: 3}
+      propertyPath: _blockShapes
+      value: 
+      objectReference: {fileID: 11400000, guid: ea8e163391f57444b9bd80d59fa9fae4, type: 2}
     - target: {fileID: 7221395030069477644, guid: 29c2bdba7893d3c41aff21c1e3a46874, type: 3}
       propertyPath: m_Name
       value: DraggableBlock_TouchArea1

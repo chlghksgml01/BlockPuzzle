@@ -32,6 +32,18 @@ public class DraggableBlock : MonoBehaviour
         CreateBodyTiles();
     }
 
+    public void SetBlockShape(BlockShape blockShapes)
+    {
+        CurrentOffsets = (Vector2Int[])blockShapes._cellOffsets.Clone();
+
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject);
+        }
+        _bodyBlocks.Clear();
+        CreateBodyTiles();
+    }
+
     private void SetRandomBlockShape()
     {
         int index = Random.Range(0, _blockShapes.Length);

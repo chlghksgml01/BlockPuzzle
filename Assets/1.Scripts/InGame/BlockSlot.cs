@@ -7,6 +7,8 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     public Canvas _canvas;
     public DraggableBlock _blockPrefab;
 
+    [SerializeField, Tooltip("테스트용")]
+    private BlockShape _blockShapes;
     public DraggableBlock Block { get; private set; }
 
     public static event Action<int> OnBlockPlaced;
@@ -22,6 +24,11 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     {
         HasBlock = true;
         Block = Instantiate(_blockPrefab, transform.position, transform.rotation, this.transform);
+
+        if (_blockShapes != null)
+        {
+            Block.SetBlockShape(_blockShapes);
+        }
     }
 
     public void OnPointerDown(PointerEventData eventData)
