@@ -10,6 +10,7 @@ public class Login : LoginBase
     private Image _imageID;
     [SerializeField]
     private TMP_InputField _inputFieldID;
+
     [SerializeField]
     private Image _imagePW;
     [SerializeField]

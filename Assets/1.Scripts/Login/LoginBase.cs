@@ -1,5 +1,4 @@
-﻿using BackEnd.Tcp;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,6 +10,7 @@ public class LoginBase : MonoBehaviour
     protected void ResetUI(params Image[] images)
     {
         _textMessage.text = string.Empty;
+
         for (int i = 0; i < images.Length; i++)
         {
             images[i].color = Color.white;

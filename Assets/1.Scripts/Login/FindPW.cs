@@ -3,20 +3,27 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class FindID : LoginBase
+public class FindPW : LoginBase
 {
+    [SerializeField]
+    private Image _imageID;
+    [SerializeField]
+    private TMP_InputField _inputFieldID;
+
     [SerializeField]
     private Image _imageEmail;
     [SerializeField]
     private TMP_InputField _inputFieldEmail;
 
     [SerializeField]
-    private Button _findIDBtn;
+    private Button _findPWBtn;
 
-    public void OnClickFindID()
+    public void OnClickFindPW()
     {
-        ResetUI(_imageEmail);
+        ResetUI(_imageID, _imageEmail);
 
+        if (IsFieldDataEmpty(_imageID, _inputFieldID.text, "ID"))
+            return;
         if (IsFieldDataEmpty(_imageEmail, _inputFieldEmail.text, "Email"))
             return;
 
@@ -26,17 +33,17 @@ public class FindID : LoginBase
             return;
         }
 
-        _findIDBtn.interactable = false;
+        _findPWBtn.interactable = false;
         SetMessage("Sending Email...");
 
-        FindCustomID();
+        FindCustomPW();
     }
 
-    private void FindCustomID()
+    private void FindCustomPW()
     {
-        Backend.BMember.FindCustomID(_inputFieldEmail.text, callback =>
+        Backend.BMember.ResetPassword(_inputFieldID.text, _inputFieldEmail.text, callback =>
         {
-            _findIDBtn.interactable = true;
+            _findPWBtn.interactable = true;
 
             if (callback.IsSuccess())
                 SetMessage($"We¡¯ve sent an email to {_inputFieldEmail.text}");

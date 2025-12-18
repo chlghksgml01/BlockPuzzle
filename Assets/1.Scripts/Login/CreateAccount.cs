@@ -11,14 +11,17 @@ public class CreateAccount : LoginBase
     private Image _imageID;
     [SerializeField]
     private TMP_InputField _inputFieldID;
+
     [SerializeField]
     private Image _imagePW;
     [SerializeField]
     private TMP_InputField _inputFieldPW;
+
     [SerializeField]
     private Image _imageConfirmPW;
     [SerializeField]
     private TMP_InputField _inputFieldConfirmPW;
+
     [SerializeField]
     private Image _imageEmail;
     [SerializeField]
