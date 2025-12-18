@@ -4,6 +4,8 @@ public class Loading : MonoBehaviour
 {
     [SerializeField]
     private LoadingUI _loadingUI;
+    [SerializeField]
+    private SceneName _nextScene;
 
     private void Awake()
     {
@@ -21,6 +23,6 @@ public class Loading : MonoBehaviour
 
     private void OnAfterLoading()
     {
-
+        SceneLoadManager.LoadScene(_nextScene);
     }
 }
