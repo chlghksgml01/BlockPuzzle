@@ -30,6 +30,11 @@ public class CreateAccount : LoginBase
     [SerializeField]
     private Button _accountCreateBtn;
 
+    public void ResetUI()
+    {
+        ResetUI(_imageID, _imagePW, _imageConfirmPW, _imageEmail);
+    }
+
     public void OnClickCreateAccount()
     {
         // 매개변수로 입력한 InputField UI의 색상과 Message 내용 초기화 

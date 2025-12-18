@@ -13,6 +13,11 @@ public class FindID : LoginBase
     [SerializeField]
     private Button _findIDBtn;
 
+    public void ResetUI()
+    {
+        ResetUI(_imageEmail);
+    }
+
     public void OnClickFindID()
     {
         ResetUI(_imageEmail);

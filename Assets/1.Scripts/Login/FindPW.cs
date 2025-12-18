@@ -18,6 +18,11 @@ public class FindPW : LoginBase
     [SerializeField]
     private Button _findPWBtn;
 
+    public void ResetUI()
+    {
+        ResetUI(_imageID, _imageEmail);
+    }
+
     public void OnClickFindPW()
     {
         ResetUI(_imageID, _imageEmail);

@@ -19,6 +19,10 @@ public class Login : LoginBase
     [SerializeField]
     private Button _loginBtn;
 
+    public void ResetUI()
+    {
+        ResetUI(_imageID, _imagePW);
+    }
 
     public void OnClickLogin()
     {
