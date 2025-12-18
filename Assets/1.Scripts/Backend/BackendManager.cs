@@ -1,17 +1,16 @@
 using UnityEngine;
 using BackEnd;
 
-public class BackendManager : MonoBehaviour
+public class BackendManager : Singleton<BackendManager>
 {
-    private void Awake()
+    protected override void OnAwake()
     {
-        DontDestroyOnLoad(gameObject);
         BackendSetup();
     }
 
     private void Update()
     {
-        
+
     }
 
     private void BackendSetup()
