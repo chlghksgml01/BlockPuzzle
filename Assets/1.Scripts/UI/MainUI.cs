@@ -5,6 +5,6 @@ public class MainUI : MonoBehaviour
 {
     public void StartClassicMode()
     {
-        SceneManager.LoadScene("Classic");
+        SceneLoadManager.LoadScene(SceneName.Classic);
     }
 }

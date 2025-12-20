@@ -24,7 +24,7 @@ public class SettingPanel : MonoBehaviour
     {
         BoardManager.Instance.ResetBoard();
         Close();
-        SceneManager.LoadScene("MainUI");
+        SceneLoadManager.LoadScene(SceneName.Lobby);
     }
 
     public void Close()
