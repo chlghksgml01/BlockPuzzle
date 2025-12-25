@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public enum SceneName { Loading = 0, MainUI = 1, Classic = 2 }
+public enum SceneName { Loading = 0, Lobby = 1, Classic = 2 }
 
 public static class SceneLoadManager
 {

@@ -48,7 +48,10 @@ public class Login : LoginBase
             StopCoroutine(nameof(LoginProcess));
 
             if (callback.IsSuccess())
+            {
                 SetMessage($"Welcome, {_inputFieldID.text}!");
+                transform.parent.gameObject.SetActive(false);
+            }
 
             else
             {
