@@ -7,7 +7,7 @@ public class GoogleLoginManager : MonoBehaviour
     public void OnClickGoogleLogin()
     {
         Debug.Log("Google 로그인 시작");
-        Android.GoogleLogin(false, OnGoogleLoginResult);
+        Android.GoogleLogin(OnGoogleLoginResult);
     }
 
     private void OnGoogleLoginResult(bool isSuccess, string errorMsg, string token)
