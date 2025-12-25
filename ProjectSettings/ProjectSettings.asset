@@ -270,7 +270,7 @@ PlayerSettings:
   AndroidSplashScreenScale: 0
   androidSplashScreen: {fileID: 0}
   AndroidKeystoreName: '{inproject}: Keystore/BlockPuzzle.keystore'
-  AndroidKeyaliasName: blockpuzzlekey
+  AndroidKeyaliasName: blockpuzzle
   AndroidEnableArmv9SecurityFeatures: 0
   AndroidEnableArm64MTE: 0
   AndroidBuildApkPerCpuArchitecture: 0

@@ -4,7 +4,7 @@ using TheBackend.ToolKit.GoogleLogin;
 
 public class GoogleLoginManager : MonoBehaviour
 {
-    public void OnClick_GoogleLogin()
+    public void OnClickGoogleLogin()
     {
         Debug.Log("Google 로그인 시작");
         Android.GoogleLogin(false, OnGoogleLoginResult);
@@ -18,17 +18,13 @@ public class GoogleLoginManager : MonoBehaviour
             return;
         }
 
-        Debug.Log($"구글 로그인 성공! Token: {token}");
+        Debug.Log($"구글 로그인 성공 Token: {token}");
 
         var bro = Backend.BMember.AuthorizeFederation(token, FederationType.Google);
 
         if (bro.IsSuccess())
-        {
             Debug.Log("뒤끝 로그인 완료!");
-        }
         else
-        {
             Debug.LogError($"뒤끝 로그인 실패: {bro}");
-        }
     }
 }
