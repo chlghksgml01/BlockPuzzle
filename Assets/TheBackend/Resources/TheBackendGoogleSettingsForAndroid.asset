@@ -11,6 +11,6 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: -1198741809, guid: 121945df52b96c740902ea051a2895ed, type: 3}
   m_Name: TheBackendGoogleSettingsForAndroid
-  m_EditorClassIdentifier: TheBackend.ToolKit.GoogleLogin.Settings.Android.dll::TheBackend.ToolKit.GoogleLogin.Settings.Android.TheBackendGoogleSettingsForAndroid
-  webClientID: 217650076236-0g6igintj4d8kko8bb75l9e44rmhcn8h.apps.googleusercontent.com
+  m_EditorClassIdentifier: 
+  webClientID: 217650076236-8h56vboikj108kvblj77r7up38i48apq.apps.googleusercontent.com
   androidSDKVersion: 2.2.0

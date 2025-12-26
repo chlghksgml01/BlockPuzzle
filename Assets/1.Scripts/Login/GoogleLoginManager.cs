@@ -1,30 +1,23 @@
 ﻿using UnityEngine;
 using BackEnd;
-using TheBackend.ToolKit.GoogleLogin;
 
 public class GoogleLoginManager : MonoBehaviour
 {
-    public void OnClickGoogleLogin()
+    public void StartGoogleLogin()
     {
-        Debug.Log("Google 로그인 시작");
-        Android.GoogleLogin(OnGoogleLoginResult);
+        TheBackend.ToolKit.GoogleLogin.Android.GoogleLogin(true, GoogleLoginCallback);
     }
 
-    private void OnGoogleLoginResult(bool isSuccess, string errorMsg, string token)
+    private void GoogleLoginCallback(bool isSuccess, string errorMessage, string token)
     {
-        if (!isSuccess)
+        if (isSuccess == false)
         {
-            Debug.LogError($"구글 로그인 실패: {errorMsg}");
+            Debug.LogError(errorMessage);
             return;
         }
 
-        Debug.Log($"구글 로그인 성공 Token: {token}");
-
+        Debug.Log("구글 토큰 : " + token);
         var bro = Backend.BMember.AuthorizeFederation(token, FederationType.Google);
-
-        if (bro.IsSuccess())
-            Debug.Log("뒤끝 로그인 완료!");
-        else
-            Debug.LogError($"뒤끝 로그인 실패: {bro}");
+        Debug.Log("페데레이션 로그인 결과 : " + bro);
     }
 }
