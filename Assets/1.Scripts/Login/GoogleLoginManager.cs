@@ -17,25 +17,28 @@ public class GoogleLoginManager : MonoBehaviour
         if (isSuccess == false)
         {
             UpdateStatus("<color=red>Google Login Failed:</color>\n" + errorMessage);
-            Debug.LogError(errorMessage);
             return;
         }
 
         UpdateStatus("Google Auth Success. Signing in to BackEnd...");
-        Debug.Log("Google Token : " + token);
 
+        // 뒤끝 페더레이션 로그인 시도
         var bro = Backend.BMember.AuthorizeFederation(token, FederationType.Google);
 
         if (bro.IsSuccess())
         {
             UpdateStatus("<color=green>BackEnd Login Success</color>");
+
+            if (SaveManager.Instance != null)
+            {
+                UpdateStatus("Syncing data with server...");
+                SaveManager.Instance.SyncWithServer();
+            }
         }
         else
         {
             UpdateStatus("<color=red>BackEnd Login Failed</color>\n" + bro.GetMessage());
         }
-
-        Debug.Log("Federation Login Result : " + bro);
     }
 
     private void UpdateStatus(string message)

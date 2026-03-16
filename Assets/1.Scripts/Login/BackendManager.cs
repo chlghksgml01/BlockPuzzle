@@ -8,11 +8,6 @@ public class BackendManager : Singleton<BackendManager>
         BackendSetup();
     }
 
-    private void Update()
-    {
-
-    }
-
     private void BackendSetup()
     {
         // 뒤끝 초기화
