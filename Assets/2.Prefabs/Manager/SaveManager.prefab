@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &8579263752755904128
+--- !u!1 &951173881431206108
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,46 +8,40 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 6521591746965993170}
-  - component: {fileID: 1320803725296828745}
+  - component: {fileID: 8364692693545535014}
+  - component: {fileID: 6506988535128958149}
   m_Layer: 0
-  m_Name: InGameManager
+  m_Name: SaveManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &6521591746965993170
+--- !u!4 &8364692693545535014
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8579263752755904128}
+  m_GameObject: {fileID: 951173881431206108}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 152.819, y: 1041.1863, z: 0}
+  m_LocalPosition: {x: 863.9914, y: 1845.5265, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1320803725296828745
+--- !u!114 &6506988535128958149
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8579263752755904128}
+  m_GameObject: {fileID: 951173881431206108}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 479dc777be8d35c4f90eb6648f1250f4, type: 3}
+  m_Script: {fileID: 11500000, guid: 1f48e15b6973cdc4f9f099286015555f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InGameManager
-  _dontDestroyOnLoad: 0
-  _hintTimeInterval: 2
-  _slots:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  _gameOverUI: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::SaveManager
+  _dontDestroyOnLoad: 1

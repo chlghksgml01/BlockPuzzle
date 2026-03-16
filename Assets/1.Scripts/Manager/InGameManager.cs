@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-[DefaultExecutionOrder(-100)]
+[DefaultExecutionOrder(-99)]
 public class InGameManager : Singleton<InGameManager>
 {
     private IPlacementHandler _placementHandler;
@@ -21,6 +21,7 @@ public class InGameManager : Singleton<InGameManager>
 
     public static event Action<int> OnBlockSettled;
     public static event Action OnResetGame;
+    public static event Action OnGameOver;
 
     override protected void OnAwake()
     {
@@ -101,6 +102,7 @@ public class InGameManager : Singleton<InGameManager>
         if (allBlocksCannotPlace)
         {
             Debug.Log("게임 오버");
+            OnGameOver?.Invoke();
             _gameOverUI.SetActive(true);
             return;
         }

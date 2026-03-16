@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using System;
 using UnityEngine;
 
@@ -17,6 +18,7 @@ public class ScoreManager : Singleton<ScoreManager>
     private int _boardWidth;
 
     public event Action<int> OnScoreChanged;
+    public static event Action<int> OnHighScoreUpdated;
 
     public int CurrentScore { get; private set; }
 
@@ -24,6 +26,7 @@ public class ScoreManager : Singleton<ScoreManager>
     {
         InGameManager.OnBlockSettled += HandleBlockPlaced;
         InGameManager.OnResetGame += ResetScore;
+        InGameManager.OnGameOver += CheckHighScore;
         BoardManager.OnLinesCleared += CalculateLineScore;
     }
 
@@ -41,6 +44,7 @@ public class ScoreManager : Singleton<ScoreManager>
     {
         InGameManager.OnBlockSettled -= HandleBlockPlaced;
         InGameManager.OnResetGame -= ResetScore;
+        InGameManager.OnGameOver -= CheckHighScore;
         BoardManager.OnLinesCleared -= CalculateLineScore;
     }
 
@@ -97,5 +101,13 @@ public class ScoreManager : Singleton<ScoreManager>
         _currentComboCount = 0;
         CurrentScore = 0;
         OnScoreChanged?.Invoke(CurrentScore);
+    }
+
+    private void CheckHighScore()
+    {
+        if (CurrentScore > SaveManager.Instance.BestScore)
+        {
+            OnHighScoreUpdated?.Invoke(CurrentScore);
+        }
     }
 }

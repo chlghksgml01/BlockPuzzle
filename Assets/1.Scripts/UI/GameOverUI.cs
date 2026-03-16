@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,8 +12,6 @@ public class GameOverUI : MonoBehaviour
     public Transform _scoreContainer;
     [SerializeField]
     public Transform _bestScoreContainer;
-
-    private List<GameObject> _activeDigits = new List<GameObject>();
 
     private void OnEnable()
     {

@@ -3,21 +3,21 @@ using UnityEngine;
 
 public class ScoreUI : MonoBehaviour
 {
-    private TextMeshProUGUI _scroreText;
+    [SerializeField]
+    private TextMeshProUGUI _bestScroreText;
+    [SerializeField]
+    private TextMeshProUGUI _currentScroreText;
 
     private void OnEnable()
     {
         if (ScoreManager.Instance != null)
             ScoreManager.Instance.OnScoreChanged += UpdateScoreUI;
-    }
-
-    private void Awake()
-    {
-        _scroreText = GetComponent<TextMeshProUGUI>();
+        if (SaveManager.Instance != null)
+            _bestScroreText.text = SaveManager.Instance.BestScore.ToString();
     }
 
     private void UpdateScoreUI(int newScore)
     {
-        _scroreText.text = newScore.ToString();
+        _currentScroreText.text = newScore.ToString();
     }
 }
