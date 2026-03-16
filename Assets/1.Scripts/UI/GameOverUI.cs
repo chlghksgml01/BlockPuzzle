@@ -2,22 +2,36 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GameOverUI : MonoBehaviour
+public class GameOverUI : BaseOptionUI
 {
-    [SerializeField]
-    private GameObject _digitPrefab;
-    [SerializeField]
-    public Sprite[] _digitSprites;
-    [SerializeField]
-    public Transform _scoreContainer;
-    [SerializeField]
-    public Transform _bestScoreContainer;
+    [Header("Digit")]
+
+    [SerializeField] private GameObject _digitPrefab;
+    [SerializeField] private Sprite[] _digitSprites;
+    [SerializeField] private Transform _scoreContainer;
+    [SerializeField] private Transform _bestScoreContainer;
+
+    [Header("Banner")]
+    [SerializeField] private Image _titleBanner;
+    [SerializeField] private Sprite _defaultBanner;
+    [SerializeField] private Sprite _newBestBanner;
 
     private void OnEnable()
     {
         UpdateDisplay(_scoreContainer, ScoreManager.Instance.CurrentScore, 0);
-
         UpdateDisplay(_bestScoreContainer, SaveManager.Instance.BestScore, 2);
+    }
+
+    public void UpdateBanner(bool isNewBest)
+    {
+        if (isNewBest)
+        {
+            _titleBanner.sprite = _newBestBanner;
+        }
+        else
+        {
+            _titleBanner.sprite = _defaultBanner;
+        }
     }
 
     private void UpdateDisplay(Transform container, int score, int skipCount)
@@ -37,4 +51,5 @@ public class GameOverUI : MonoBehaviour
             newDigit.GetComponent<Image>().sprite = _digitSprites[digitIndex];
         }
     }
+
 }

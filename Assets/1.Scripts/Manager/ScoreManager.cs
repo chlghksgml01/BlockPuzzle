@@ -4,23 +4,20 @@ using UnityEngine;
 
 public class ScoreManager : Singleton<ScoreManager>
 {
-    [SerializeField]
-    private float _lineScoreMultiplier = 2f;
-    [SerializeField]
-    private float _lineBonusMultiplier = 0.5f;
-    [SerializeField]
-    private float _comboScoreMultiplier = 0.1f;
-    [SerializeField]
-    private int _comboRemainCount = 5;
+    [Header("Score Multipliers & Settings")]
+    [SerializeField] private float _lineScoreMultiplier = 2f;
+    [SerializeField] private float _lineBonusMultiplier = 0.5f;
+    [SerializeField] private float _comboScoreMultiplier = 0.1f;
+    [SerializeField] private int _comboRemainCount = 5;
 
+    public int CurrentScore { get; private set; }
     private int _currentPlaceCount = 0;
     private int _currentComboCount = 0;
     private int _boardWidth;
 
     public event Action<int> OnScoreChanged;
+    public event Action OnResetScore;
     public static event Action<int> OnHighScoreUpdated;
-
-    public int CurrentScore { get; private set; }
 
     private void OnEnable()
     {
@@ -100,7 +97,7 @@ public class ScoreManager : Singleton<ScoreManager>
         _currentPlaceCount = 0;
         _currentComboCount = 0;
         CurrentScore = 0;
-        OnScoreChanged?.Invoke(CurrentScore);
+        OnResetScore?.Invoke();
     }
 
     private void CheckHighScore()
@@ -108,6 +105,10 @@ public class ScoreManager : Singleton<ScoreManager>
         if (CurrentScore > SaveManager.Instance.BestScore)
         {
             OnHighScoreUpdated?.Invoke(CurrentScore);
+        }
+        else
+        {
+            OnHighScoreUpdated?.Invoke(-1);
         }
     }
 }

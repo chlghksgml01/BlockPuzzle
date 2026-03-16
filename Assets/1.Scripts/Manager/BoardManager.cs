@@ -12,32 +12,31 @@ public interface IPlacementHandler
 
 public class BoardManager : Singleton<BoardManager>, IPlacementHandler
 {
-    private int _width = 9;
-    private int _height = 9;
+    [Header("Board Configurations")]
+    [SerializeField] private int _width = 9;
+    [SerializeField] private int _height = 9;
     public int Width => _width;
 
-    [SerializeField]
-    private RectTransform _boardRoot;
-    [SerializeField]
-    private RectTransform _hintBoardRoot;
-    [SerializeField]
-    private GameObject _cellPrefab;
-    [SerializeField]
-    private GameObject _hintCellPrefab;
+    [Header("References (UI & Prefabs)")]
+    [SerializeField] private RectTransform _boardRoot;
+    [SerializeField] private RectTransform _hintBoardRoot;
+    [SerializeField] private GameObject _cellPrefab;
+    [SerializeField] private GameObject _hintCellPrefab;
+    [SerializeField] private Sprite _previewSprite;
+    public Sprite PreviewSprite => _previewSprite;
 
-    private BoardCell[,] _cells;
-    private HintBoardCell[,] _hintCells;
-    public Sprite _previewSprite;
-    public float _previewAlpha = 0.6f;
+    [Header("Visual Settings")]
+    [SerializeField, Range(0f, 1f)] private float _previewAlpha = 0.6f;
+    public float PreviewAlpha => _previewAlpha;
 
     public float BoardCellSize { get; set; }
     public bool CanPlaceBlock { get; set; }
+    private BoardCell[,] _cells;
+    private HintBoardCell[,] _hintCells;
 
     private List<int> _fullRow = new List<int>();
     private List<int> _fullCol = new List<int>();
-
     private Vector2Int _placeableCellPos;
-
     private DraggableBlock _prevBlock;
 
     public static event Action<int> OnLinesCleared;

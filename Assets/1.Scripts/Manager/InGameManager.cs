@@ -7,36 +7,36 @@ using UnityEngine;
 [DefaultExecutionOrder(-99)]
 public class InGameManager : Singleton<InGameManager>
 {
+    [Header("References")]
+    [SerializeField] private List<BlockSlot> _slots;
+    [SerializeField] private GameOverUI _gameOverUI;
     private IPlacementHandler _placementHandler;
 
-    [SerializeField]
-    private float _hintTimeInterval = 5f;
-    private Coroutine _hintCoroutine;
-
-    [SerializeField]
-    private List<BlockSlot> _slots;
-
-    [SerializeField]
-    private GameObject _gameOverUI;
+    [Header("Settings")]
+    [SerializeField] private float _hintTimeInterval = 5f;
 
     public static event Action<int> OnBlockSettled;
     public static event Action OnResetGame;
     public static event Action OnGameOver;
 
+    private Coroutine _hintCoroutine;
+
     override protected void OnAwake()
     {
-        _gameOverUI.SetActive(false);
+        _gameOverUI.gameObject.SetActive(false);
         _placementHandler = FindFirstObjectByType<BoardManager>();
     }
 
     private void OnEnable()
     {
         BlockSlot.OnBlockPlaced += HandleBlockPlaced;
+        ScoreManager.OnHighScoreUpdated += SetNewBest;
     }
 
     private void OnDisable()
     {
         BlockSlot.OnBlockPlaced -= HandleBlockPlaced;
+        ScoreManager.OnHighScoreUpdated -= SetNewBest;
     }
 
     private void HandleBlockPlaced(int blockShapeCount)
@@ -103,7 +103,7 @@ public class InGameManager : Singleton<InGameManager>
         {
             Debug.Log("게임 오버");
             OnGameOver?.Invoke();
-            _gameOverUI.SetActive(true);
+            _gameOverUI.gameObject.SetActive(true);
             return;
         }
     }
@@ -116,5 +116,10 @@ public class InGameManager : Singleton<InGameManager>
         }
 
         OnResetGame?.Invoke();
+    }
+
+    private void SetNewBest(int newBestScore)
+    {
+        _gameOverUI.UpdateBanner(newBestScore != -1);
     }
 }

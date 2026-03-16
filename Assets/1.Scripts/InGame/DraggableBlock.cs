@@ -5,32 +5,28 @@ using DG.Tweening;
 
 public class DraggableBlock : MonoBehaviour
 {
-    [SerializeField]
-    private BlockShape[] _blockShapes;
+    [Header("Block Data & Shapes")]
+    [SerializeField] private BlockShape[] _blockShapes;
+    [SerializeField] private Sprite[] _blockSprites;
+
     public Vector2Int[] CurrentOffsets { get; private set; }
-
-    [SerializeField]
-    private Sprite[] _blockSprites;
     private Sprite _blockSprite;
-    [SerializeField]
-    private float _scaleDuration = 0.2f;
 
-    private RectTransform _rectTransform;
-    [SerializeField]
-    private GameObject _bodyTilePrefab;
+    [Header("Prefab & Settings")]
+    [SerializeField] private float _scaleDuration = 0.2f;
+    [SerializeField] private GameObject _bodyTilePrefab;
 
-    [SerializeField]
-    private float _slotBlockSize = 80f;
-    [SerializeField]
-    private float _blockYOffset = 200f;
+    [Header("UI Layout & Positioning")]
+    [SerializeField] private float _slotBlockSize = 80f;
+    [SerializeField] private float _blockYOffset = 200f;
 
-    public float SlotBlockSize => _slotBlockSize;   
+    public float SlotBlockSize => _slotBlockSize;
     public float BlockYOffset => _blockYOffset;
 
+    private RectTransform _rectTransform;
     private List<RectTransform> _bodyBlocks = new List<RectTransform>();
-
     private HashSet<BoardCell> _overlappedCells = new HashSet<BoardCell>();
-    public List<BoardCell> _previewCells = new List<BoardCell>();
+    private List<BoardCell> _previewCells = new List<BoardCell>();
 
     private void Awake()
     {

@@ -1,4 +1,3 @@
-using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public enum SceneName { Loading = 0, Lobby = 1, InGame = 2 }

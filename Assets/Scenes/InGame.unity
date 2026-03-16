@@ -1967,9 +1967,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: MainUI, Assembly-CSharp
-        m_MethodName: StartClassicMode
+      - m_Target: {fileID: 1495160516}
+        m_TargetAssemblyTypeName: GameOverUI, Assembly-CSharp
+        m_MethodName: Home
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2403,6 +2403,9 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 4500a4df5a25b6843a9748272eb756a1, type: 3}
   _scoreContainer: {fileID: 2133794285}
   _bestScoreContainer: {fileID: 232448531}
+  _titleBanner: {fileID: 1675578603}
+  _defaultBanner: {fileID: 21300000, guid: 4a51558c487fc12458192894b21ff5e9, type: 3}
+  _newBestBanner: {fileID: 21300000, guid: e37452b12c2f04b4e882446c48817045, type: 3}
 --- !u!1 &1510317871
 GameObject:
   m_ObjectHideFlags: 0
@@ -2586,7 +2589,7 @@ GameObject:
   - component: {fileID: 1675578604}
   - component: {fileID: 1675578603}
   m_Layer: 5
-  m_Name: ResultPanel
+  m_Name: TitleBanner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3312,7 +3315,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2112800063}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1495160516}
+        m_TargetAssemblyTypeName: GameOverUI, Assembly-CSharp
+        m_MethodName: Replay
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2112800063
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3587,6 +3602,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 9114546612944303201, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
+      propertyPath: m_Name
+      value: Replay
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3853,7 +3872,7 @@ PrefabInstance:
     - target: {fileID: 1320803725296828745, guid: b15f06c42f52afe4fb850481b49aa0ac, type: 3}
       propertyPath: _gameOverUI
       value: 
-      objectReference: {fileID: 1495160514}
+      objectReference: {fileID: 1495160516}
     - target: {fileID: 1320803725296828745, guid: b15f06c42f52afe4fb850481b49aa0ac, type: 3}
       propertyPath: '_slots.Array.data[0]'
       value: 

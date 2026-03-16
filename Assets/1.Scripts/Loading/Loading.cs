@@ -1,11 +1,12 @@
- using UnityEngine;
+using UnityEngine;
 
 public class Loading : MonoBehaviour
 {
-    [SerializeField]
-    private LoadingUI _loadingUI;
-    [SerializeField]
-    private SceneName _nextScene;
+    [Header("UI References")]
+    [SerializeField] private LoadingUI _loadingUI;
+
+    [Header("Scene Settings")]
+    [SerializeField] private SceneName _nextScene;
 
     private void Awake()
     {

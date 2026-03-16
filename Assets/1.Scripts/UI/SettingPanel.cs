@@ -1,34 +1,18 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SettingPanel : MonoBehaviour
+public class SettingPanel : BaseOptionUI
 {
-    [SerializeField]
-    private Image _soundBG;
-    [SerializeField]
-    private GameObject _soundToggle;
+    [Header("Sound Settings")]
+    [SerializeField] private Image _soundBG;
+    [SerializeField] private GameObject _soundToggle;
 
-    [SerializeField]
-    private Image _bgmBG;
-    [SerializeField]
-    private GameObject _bgmToggle;
+    [Header("BGM Settings")]
+    [SerializeField] private Image _bgmBG;
+    [SerializeField] private GameObject _bgmToggle;
 
-    public void Replay()
+    private void OnEnable()
     {
-        InGameManager.Instance.ResetGame();
-        Close();
-    }
-
-    public void Home()
-    {
-        InGameManager.Instance.ResetGame();
-        Close();
-        SceneLoadManager.LoadScene(SceneName.Lobby);
-    }
-
-    public void Close()
-    {
-        Time.timeScale = 1f;
-        gameObject.SetActive(false);
+        Time.timeScale = 0f;
     }
 }

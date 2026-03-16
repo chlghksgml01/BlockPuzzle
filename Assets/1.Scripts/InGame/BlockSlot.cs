@@ -4,15 +4,15 @@ using UnityEngine.EventSystems;
 
 public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler
 {
-    public Canvas _canvas;
-    public DraggableBlock _blockPrefab;
+    [Header("Prefab")]
+    [SerializeField] private DraggableBlock _blockPrefab;
 
-    [SerializeField, Tooltip("테스트용")]
-    private BlockShape _blockShapes;
     public DraggableBlock Block { get; private set; }
 
-    public static event Action<int> OnBlockPlaced;
+    [Header("Test")]
+    [SerializeField] private BlockShape _blockShapes;
 
+    public static event Action<int> OnBlockPlaced;
     public bool HasBlock { get; private set; }
 
     private void Awake()

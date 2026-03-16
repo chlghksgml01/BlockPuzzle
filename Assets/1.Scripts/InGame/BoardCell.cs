@@ -33,8 +33,8 @@ public class BoardCell : MonoBehaviour
 
         if (isPreviewFilled)
         {
-            _image.sprite = BoardManager.Instance._previewSprite;
-            _image.color = new Color(1f, 1f, 1f, BoardManager.Instance._previewAlpha);
+            _image.sprite = BoardManager.Instance.PreviewSprite;
+            _image.color = new Color(1f, 1f, 1f, BoardManager.Instance.PreviewAlpha);
         }
         else if (!isPreviewFilled)
         {

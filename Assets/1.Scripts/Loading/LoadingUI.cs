@@ -6,12 +6,12 @@ using UnityEngine.UI;
 
 public class LoadingUI : MonoBehaviour
 {
-    [SerializeField]
-    private Image LoadingBar;
-    [SerializeField]
-    private TextMeshProUGUI LoadingValuleText;
-    [SerializeField]
-    private float progressTime = 3f;
+    [Header("UI References")]
+    [SerializeField] private Image LoadingBar;
+    [SerializeField] private TextMeshProUGUI LoadingValuleText;
+
+    [Header("Settings")]
+    [SerializeField] private float progressTime = 3f;
 
     private void Awake()
     {
