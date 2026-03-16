@@ -31,7 +31,6 @@ public class BoardManager : Singleton<BoardManager>
 
     private DraggableBlock _prevBlock;
 
-
     override protected void OnAwake()
     {
         GenerateBoard();
@@ -231,5 +230,4 @@ public class BoardManager : Singleton<BoardManager>
             _hintCells[tx, ty].ShowHint(show);
         }
     }
-
 }

@@ -1,16 +1,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class DraggableBlock : MonoBehaviour
 {
-    [SerializeField]
-    private BlockShape[] _blockShapes;
+    [SerializeField] private BlockShape[] _blockShapes;
     public Vector2Int[] CurrentOffsets { get; private set; }
 
-    [SerializeField]
     public Sprite[] _blockSprites;
     private Sprite _blockSprite;
+    [SerializeField] private float _scaleDuration = 0.2f;
 
     private RectTransform _rectTransform;
     public GameObject _bodyTilePrefab;
@@ -189,6 +189,9 @@ public class DraggableBlock : MonoBehaviour
 
     public void SetBlockScale(float targetSize)
     {
+        if (_bodyBlocks == null || _bodyBlocks.Count == 0)
+            return;
+
         Vector2 center = Vector2.zero;
         foreach (RectTransform rectTransform in _bodyBlocks)
         {
@@ -202,10 +205,20 @@ public class DraggableBlock : MonoBehaviour
             float scale = targetSize / currentSize;
 
             Vector2 offset = rectTransform.anchoredPosition - center;
-            rectTransform.anchoredPosition = center + offset * scale;
-            rectTransform.sizeDelta = new Vector2(targetSize, targetSize);
+            Vector2 targetPosition = center + offset * scale;
+            Vector2 targetSizeDelta = new Vector2(targetSize, targetSize);
 
-            rectTransform.GetComponent<BoxCollider2D>().size = new Vector2(targetSize, targetSize);
+            rectTransform.DOAnchorPos(targetPosition, _scaleDuration);
+
+            rectTransform.DOSizeDelta(targetSizeDelta, _scaleDuration)
+                .OnUpdate(() =>
+                {
+                    var collider = rectTransform.GetComponent<BoxCollider2D>();
+                    if (collider != null)
+                    {
+                        collider.size = rectTransform.sizeDelta;
+                    }
+                });
         }
     }
 
