@@ -1,11 +1,20 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class BoardManager : Singleton<BoardManager>
+public interface IPlacementHandler
 {
-    public int _width = 9;
-    public int _height = 9;
+    public int Width { get; }
+    public bool CanPlaceShape(Vector2Int[] shapeOffset);
+    public void ShowHint(bool showHint, DraggableBlock block, bool isPlaced = false);
+}
+
+public class BoardManager : Singleton<BoardManager>, IPlacementHandler
+{
+    private int _width = 9;
+    private int _height = 9;
+    public int Width => _width;
 
     [SerializeField]
     private RectTransform _boardRoot;
@@ -31,9 +40,23 @@ public class BoardManager : Singleton<BoardManager>
 
     private DraggableBlock _prevBlock;
 
+    public static event Action<int> OnLinesCleared;
+
     override protected void OnAwake()
     {
         GenerateBoard();
+    }
+
+    private void OnEnable()
+    {
+        InGameManager.OnBlockSettled += ProcessFullLines;
+        InGameManager.OnResetGame += ResetBoard;
+    }
+
+    private void OnDisable()
+    {
+        InGameManager.OnBlockSettled -= ProcessFullLines;
+        InGameManager.OnResetGame -= ResetBoard;
     }
 
     private void GenerateBoard()
@@ -71,7 +94,7 @@ public class BoardManager : Singleton<BoardManager>
             cell.UpdateCellVisual(false);
     }
 
-    public void ProcessFullLines()
+    private void ProcessFullLines(int blockShapeCount)
     {
         CheckFullLines();
         RemoveFullLines();
@@ -119,7 +142,7 @@ public class BoardManager : Singleton<BoardManager>
         }
 
         if (_fullRow.Count + _fullCol.Count > 0)
-            ScoreManager.Instance.CalculateLineScore(_fullRow.Count + _fullCol.Count);
+            OnLinesCleared?.Invoke(_fullRow.Count + _fullCol.Count);
     }
 
     private void RemoveFullLines()
@@ -182,7 +205,7 @@ public class BoardManager : Singleton<BoardManager>
         return true;
     }
 
-    public void ResetBoard()
+    private void ResetBoard()
     {
         for (int x = 0; x < _width; x++)
         {
@@ -192,9 +215,6 @@ public class BoardManager : Singleton<BoardManager>
                 _cells[x, y].UpdateCellVisual(false);
             }
         }
-
-        InGameManager.Instance.SpawnNewBlock();
-        ScoreManager.Instance.ResetScore();
     }
 
     public void ShowHint(bool showHint, DraggableBlock block, bool isPlaced = false)

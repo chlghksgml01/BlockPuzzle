@@ -69,7 +69,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         // 제자리로
         else
         {
-            Block.SetBlockScale(Block._slotBlockSize);
+            Block.SetBlockScale(Block.SlotBlockSize);
             (Block.transform as RectTransform).anchoredPosition = Vector2.zero;
         }
     }

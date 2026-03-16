@@ -1,11 +1,14 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static Unity.Collections.AllocatorManager;
 
+[DefaultExecutionOrder(-100)]
 public class InGameManager : Singleton<InGameManager>
 {
+    private IPlacementHandler _placementHandler;
+
     [SerializeField]
     private float _hintTimeInterval = 5f;
     private Coroutine _hintCoroutine;
@@ -16,9 +19,13 @@ public class InGameManager : Singleton<InGameManager>
     [SerializeField]
     private GameObject _gameOverUI;
 
+    public static event Action<int> OnBlockSettled;
+    public static event Action OnResetGame;
+
     override protected void OnAwake()
     {
         _gameOverUI.SetActive(false);
+        _placementHandler = FindFirstObjectByType<BoardManager>();
     }
 
     private void OnEnable()
@@ -26,15 +33,14 @@ public class InGameManager : Singleton<InGameManager>
         BlockSlot.OnBlockPlaced += HandleBlockPlaced;
     }
 
-    private void OnDestroy()
+    private void OnDisable()
     {
         BlockSlot.OnBlockPlaced -= HandleBlockPlaced;
     }
 
     private void HandleBlockPlaced(int blockShapeCount)
     {
-        ScoreManager.Instance.HandleBlockPlaced(blockShapeCount);
-        BoardManager.Instance.ProcessFullLines();
+        OnBlockSettled?.Invoke(blockShapeCount);
 
         bool hasBlocks = _slots.Any(slot => slot.HasBlock);
 
@@ -55,7 +61,7 @@ public class InGameManager : Singleton<InGameManager>
 
     public void StopHintCoroutine(DraggableBlock block, bool isPlaced)
     {
-        BoardManager.Instance.ShowHint(false, block, isPlaced);
+        _placementHandler.ShowHint(false, block, isPlaced);
 
         if (_hintCoroutine != null)
         {
@@ -68,8 +74,8 @@ public class InGameManager : Singleton<InGameManager>
     {
         yield return new WaitForSeconds(_hintTimeInterval);
 
-        if (BoardManager.Instance.CanPlaceShape(block.CurrentOffsets))
-            BoardManager.Instance.ShowHint(true, block);
+        if (_placementHandler.CanPlaceShape(block.CurrentOffsets))
+            _placementHandler.ShowHint(true, block);
         else
             IsGameOver();
 
@@ -85,7 +91,7 @@ public class InGameManager : Singleton<InGameManager>
             if (!slot.HasBlock)
                 continue;
 
-            if (BoardManager.Instance.CanPlaceShape(slot.Block.CurrentOffsets))
+            if (_placementHandler.CanPlaceShape(slot.Block.CurrentOffsets))
             {
                 allBlocksCannotPlace = false;
                 break;
@@ -100,11 +106,13 @@ public class InGameManager : Singleton<InGameManager>
         }
     }
 
-    public void SpawnNewBlock()
+    public void ResetGame()
     {
         foreach (var slot in _slots)
         {
             slot.SpawnNewBlock();
         }
+
+        OnResetGame?.Invoke();
     }
 }

@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class SettingPanel : MonoBehaviour
@@ -16,13 +15,13 @@ public class SettingPanel : MonoBehaviour
 
     public void Replay()
     {
-        BoardManager.Instance.ResetBoard();
+        InGameManager.Instance.ResetGame();
         Close();
     }
 
     public void Home()
     {
-        BoardManager.Instance.ResetBoard();
+        InGameManager.Instance.ResetGame();
         Close();
         SceneLoadManager.LoadScene(SceneName.Lobby);
     }

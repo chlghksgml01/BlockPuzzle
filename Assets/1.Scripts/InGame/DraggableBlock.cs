@@ -5,18 +5,27 @@ using DG.Tweening;
 
 public class DraggableBlock : MonoBehaviour
 {
-    [SerializeField] private BlockShape[] _blockShapes;
+    [SerializeField]
+    private BlockShape[] _blockShapes;
     public Vector2Int[] CurrentOffsets { get; private set; }
 
-    public Sprite[] _blockSprites;
+    [SerializeField]
+    private Sprite[] _blockSprites;
     private Sprite _blockSprite;
-    [SerializeField] private float _scaleDuration = 0.2f;
+    [SerializeField]
+    private float _scaleDuration = 0.2f;
 
     private RectTransform _rectTransform;
-    public GameObject _bodyTilePrefab;
+    [SerializeField]
+    private GameObject _bodyTilePrefab;
 
-    public float _slotBlockSize = 80f;
-    public float _blockYOffset = 200f;
+    [SerializeField]
+    private float _slotBlockSize = 80f;
+    [SerializeField]
+    private float _blockYOffset = 200f;
+
+    public float SlotBlockSize => _slotBlockSize;   
+    public float BlockYOffset => _blockYOffset;
 
     private List<RectTransform> _bodyBlocks = new List<RectTransform>();
 

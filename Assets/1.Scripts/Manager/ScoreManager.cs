@@ -14,12 +14,37 @@ public class ScoreManager : Singleton<ScoreManager>
 
     private int _currentPlaceCount = 0;
     private int _currentComboCount = 0;
+    private int _boardWidth;
 
     public event Action<int> OnScoreChanged;
 
     public int CurrentScore { get; private set; }
 
-    public void HandleBlockPlaced(int blockCount)
+    private void OnEnable()
+    {
+        InGameManager.OnBlockSettled += HandleBlockPlaced;
+        InGameManager.OnResetGame += ResetScore;
+        BoardManager.OnLinesCleared += CalculateLineScore;
+    }
+
+    private void Start()
+    {
+        if (BoardManager.Instance != null)
+            _boardWidth = BoardManager.Instance.Width;
+        else
+        {
+            Debug.LogError("ScoreManager - BoardManager 없음, _boardWidth 초기화 안됨");
+        }
+    }
+
+    private void OnDisable()
+    {
+        InGameManager.OnBlockSettled -= HandleBlockPlaced;
+        InGameManager.OnResetGame -= ResetScore;
+        BoardManager.OnLinesCleared -= CalculateLineScore;
+    }
+
+    private void HandleBlockPlaced(int blockCount)
     {
         _currentPlaceCount++;
 
@@ -31,10 +56,10 @@ public class ScoreManager : Singleton<ScoreManager>
         AddScore(blockCount);
     }
 
-    public void CalculateLineScore(int lines)
+    private void CalculateLineScore(int lines)
     {
         // 지워진 라인 기본 점수
-        float baseScore = BoardManager.Instance._width * lines * _lineScoreMultiplier;
+        float baseScore = _boardWidth * lines * _lineScoreMultiplier;
 
         // 여러 줄 동시 제거
         float multiLineBonusMultiplier = 1 + (lines - 1) * _lineBonusMultiplier;
@@ -66,7 +91,7 @@ public class ScoreManager : Singleton<ScoreManager>
         OnScoreChanged?.Invoke(CurrentScore);
     }
 
-    public void ResetScore()
+    private void ResetScore()
     {
         _currentPlaceCount = 0;
         _currentComboCount = 0;
