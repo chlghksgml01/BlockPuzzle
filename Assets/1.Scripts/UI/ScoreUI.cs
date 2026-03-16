@@ -14,8 +14,17 @@ public class ScoreUI : MonoBehaviour
             ScoreManager.Instance.OnScoreChanged += UpdateScoreUI;
             ScoreManager.Instance.OnResetScore += ResetScore;
         }
+        UpdateBestScore();
+    }
+
+    private void UpdateBestScore()
+    {
         if (SaveManager.Instance != null)
-            _bestScroreText.text = SaveManager.Instance.BestScore.ToString();
+        {
+            int bestScore = SaveManager.Instance.BestScore;
+            if (bestScore != 0)
+                _bestScroreText.text = SaveManager.Instance.BestScore.ToString();
+        }
     }
 
     private void UpdateScoreUI(int newScore)
@@ -26,6 +35,6 @@ public class ScoreUI : MonoBehaviour
     private void ResetScore()
     {
         UpdateScoreUI(0);
-        _bestScroreText.text = SaveManager.Instance.BestScore.ToString();
+        UpdateBestScore();
     }
 }
