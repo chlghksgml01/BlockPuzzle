@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [DefaultExecutionOrder(-99)]
@@ -14,6 +15,9 @@ public class InGameManager : Singleton<InGameManager>
 
     [Header("Settings")]
     [SerializeField] private float _hintTimeInterval = 5f;
+
+    [Header("Block")]
+    [SerializeField] private Sprite[] _blockSprites;
 
     public static event Action<int> OnBlockSettled;
     public static event Action OnResetGame;
@@ -39,6 +43,11 @@ public class InGameManager : Singleton<InGameManager>
         ScoreManager.OnHighScoreUpdated -= SetNewBest;
     }
 
+    private void Start()
+    {
+        SpawnBlocksInSlots();
+    }
+
     private void HandleBlockPlaced(int blockShapeCount)
     {
         OnBlockSettled?.Invoke(blockShapeCount);
@@ -47,10 +56,7 @@ public class InGameManager : Singleton<InGameManager>
 
         if (!hasBlocks)
         {
-            foreach (var slot in _slots)
-            {
-                slot.SetNewBlock();
-            }
+            SpawnBlocksInSlots();
         }
     }
 
@@ -110,10 +116,7 @@ public class InGameManager : Singleton<InGameManager>
 
     public void ResetGame()
     {
-        foreach (var slot in _slots)
-        {
-            slot.SpawnNewBlock();
-        }
+        SpawnBlocksInSlots();
 
         OnResetGame?.Invoke();
     }
@@ -121,5 +124,26 @@ public class InGameManager : Singleton<InGameManager>
     private void SetNewBest(int newBestScore)
     {
         _gameOverUI.UpdateBanner(newBestScore != -1);
+    }
+
+    public void SpawnBlocksInSlots()
+    {
+        List<Sprite> spriteList = new List<Sprite>(_blockSprites);
+
+        for (int i = 0; i < spriteList.Count; i++)
+        {
+            int randomIndex = UnityEngine.Random.Range(i, spriteList.Count);
+            Sprite temp = spriteList[i];
+            spriteList[i] = spriteList[randomIndex];
+            spriteList[randomIndex] = temp;
+        }
+
+        for (int i = 0; i < _slots.Count; i++)
+        {
+            if (i < spriteList.Count)
+            {
+                _slots[i].SpawnNewBlock(spriteList[i]);
+            }
+        }
     }
 }

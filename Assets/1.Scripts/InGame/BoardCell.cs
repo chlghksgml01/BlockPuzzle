@@ -9,6 +9,8 @@ public class BoardCell : MonoBehaviour
 
     public bool IsFilled { get; private set; }
 
+    private DraggableBlock _currentOverlappingBlock;
+
     private void Awake()
     {
         _image = GetComponent<Image>();
@@ -48,25 +50,28 @@ public class BoardCell : MonoBehaviour
         if (!collision.CompareTag("BodyTile"))
             return;
 
-        DraggableBlock draggable = collision.GetComponentInParent<DraggableBlock>();
-        if (draggable == null)
-            return;
+        if (_currentOverlappingBlock == null)
+        {
+            _currentOverlappingBlock = collision.GetComponentInParent<DraggableBlock>();
+        }
 
-        if (!IsFilled)
-            draggable.OnTileEnterCell(this);
+        if (_currentOverlappingBlock != null && !IsFilled)
+        {
+            _currentOverlappingBlock.OnTileEnterCell(this);
+        }
     }
 
     private void OnTriggerStay2D(Collider2D collision)
     {
-        if (!collision.CompareTag("BodyTile"))
-            return;
+        if (_currentOverlappingBlock == null && collision.CompareTag("BodyTile"))
+        {
+            _currentOverlappingBlock = collision.GetComponentInParent<DraggableBlock>();
+        }
 
-        DraggableBlock draggable = collision.GetComponentInParent<DraggableBlock>();
-        if (draggable == null)
-            return;
-
-        if (!IsFilled)
-            draggable.OnTileEnterCell(this);
+        if (_currentOverlappingBlock != null && !IsFilled)
+        {
+            _currentOverlappingBlock.OnTileEnterCell(this);
+        }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
@@ -74,12 +79,12 @@ public class BoardCell : MonoBehaviour
         if (!collision.CompareTag("BodyTile"))
             return;
 
-        DraggableBlock draggable = collision.GetComponentInParent<DraggableBlock>();
-        if (draggable == null)
-            return;
+        if (_currentOverlappingBlock != null && !IsFilled)
+        {
+            _currentOverlappingBlock.OnTileExitCell(this);
+        }
 
-        if (!IsFilled)
-            draggable.OnTileExitCell(this);
+        _currentOverlappingBlock = null;
     }
 
     public void PlaceBlock(Sprite blockSprite)

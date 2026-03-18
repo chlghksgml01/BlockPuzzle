@@ -9,26 +9,15 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
     public DraggableBlock Block { get; private set; }
 
-    [Header("Test")]
-    [SerializeField] private BlockShape _blockShapes;
-
     public static event Action<int> OnBlockPlaced;
     public bool HasBlock { get; private set; }
 
-    private void Awake()
-    {
-        SetNewBlock();
-    }
-
-    public void SetNewBlock()
+    public void SpawnNewBlock(Sprite blockSprite)
     {
         HasBlock = true;
         Block = Instantiate(_blockPrefab, transform.position, transform.rotation, this.transform);
 
-        if (_blockShapes != null)
-        {
-            Block.SetBlockShape(_blockShapes);
-        }
+        Block.InitializeBlock(blockSprite);
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -42,7 +31,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         }
 
         Block.MoveToPointer(transform as RectTransform, eventData.position);
-        Block.SetBlockScale(BoardManager.Instance.BoardCellSize);
+        Block.BlockAnimate(BoardManager.Instance.BoardCellSize);
 
         InGameManager.Instance.StartHintCoroutine(Block);
     }
@@ -69,7 +58,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         // 제자리로
         else
         {
-            Block.SetBlockScale(Block.SlotBlockSize);
+            Block.BlockAnimate(Block.SlotBlockSize);
             (Block.transform as RectTransform).anchoredPosition = Vector2.zero;
         }
     }
@@ -90,14 +79,5 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         }
 
         Block.MoveToPointer(transform as RectTransform, eventData.position);
-    }
-
-    public void SpawnNewBlock()
-    {
-        if (HasBlock)
-        {
-            RemoveBlock();
-        }
-        SetNewBlock();
     }
 }

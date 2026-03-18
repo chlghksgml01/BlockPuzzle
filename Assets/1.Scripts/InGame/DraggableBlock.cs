@@ -7,7 +7,6 @@ public class DraggableBlock : MonoBehaviour
 {
     [Header("Block Data & Shapes")]
     [SerializeField] private BlockShape[] _blockShapes;
-    [SerializeField] private Sprite[] _blockSprites;
 
     public Vector2Int[] CurrentOffsets { get; private set; }
     private Sprite _blockSprite;
@@ -31,35 +30,40 @@ public class DraggableBlock : MonoBehaviour
     private void Awake()
     {
         _rectTransform = GetComponent<RectTransform>();
-
-        SetRandomBlockShape();
-        SetRandomBlockSprite();
-        CreateBodyTiles();
     }
 
-    public void SetBlockShape(BlockShape blockShapes)
+    public void InitializeBlock(Sprite blockSprite)
     {
-        CurrentOffsets = (Vector2Int[])blockShapes._cellOffsets.Clone();
+        _blockSprite = blockSprite;
 
-        foreach (Transform child in transform)
+        if (_blockShapes != null && _blockShapes.Length > 0)
         {
-            Destroy(child.gameObject);
+            int index = Random.Range(0, _blockShapes.Length);
+            CurrentOffsets = (Vector2Int[])_blockShapes[index]._cellOffsets.Clone();
         }
-        _bodyBlocks.Clear();
+        else
+        {
+            Debug.LogError("Block Shapes is empty");
+            return;
+        }
+
+        ApplyRandomRotation();
 
         CreateBodyTiles();
     }
 
-    private void SetRandomBlockShape()
+    private void ApplyRandomRotation()
     {
-        int index = Random.Range(0, _blockShapes.Length);
-        CurrentOffsets = (Vector2Int[])_blockShapes[index]._cellOffsets.Clone();
-    }
+        int randomRot = Random.Range(0, 4);
+        if (randomRot == 0)
+            return;
 
-    private void SetRandomBlockSprite()
-    {
-        int index = Random.Range(0, _blockSprites.Length);
-        _blockSprite = _blockSprites[index];
+        for (int i = 0; i < CurrentOffsets.Length; i++)
+        {
+            CurrentOffsets[i] = Rotate(randomRot, CurrentOffsets[i]);
+        }
+
+        NormalizeOffsets(CurrentOffsets);
     }
 
     private void CreateBodyTiles()
@@ -67,10 +71,11 @@ public class DraggableBlock : MonoBehaviour
         if (CurrentOffsets == null || CurrentOffsets.Length == 0)
             return;
 
-        RotateShapeRandomly();
-
         Vector2 center = CalculateCenter(CurrentOffsets);
         Vector2 tileSize = new Vector2(_slotBlockSize, _slotBlockSize);
+
+        foreach (Transform child in transform) { Destroy(child.gameObject); }
+        _bodyBlocks.Clear();
 
         foreach (var offset in CurrentOffsets)
         {
@@ -78,20 +83,19 @@ public class DraggableBlock : MonoBehaviour
         }
     }
 
-    private void RotateShapeRandomly()
+    private static void NormalizeOffsets(Vector2Int[] offsets)
     {
-        int randomRot = Random.Range(0, 4);
+        int minX = int.MaxValue;
+        int minY = int.MaxValue;
 
-        for (int i = 0; i < CurrentOffsets.Length; i++)
+        for (int i = 0; i < offsets.Length; i++)
         {
-            Vector2Int offset = CurrentOffsets[i];
-
-            offset = Rotate(1, offset);
-
-            CurrentOffsets[i] = offset;
+            if (offsets[i].x < minX) minX = offsets[i].x;
+            if (offsets[i].y < minY) minY = offsets[i].y;
         }
 
-        NormalizeOffsets(CurrentOffsets);
+        for (int i = 0; i < offsets.Length; i++)
+            offsets[i] = new Vector2Int(offsets[i].x - minX, offsets[i].y - minY);
     }
 
     private static Vector2Int Rotate(int randomRot, Vector2Int offset)
@@ -113,22 +117,6 @@ public class DraggableBlock : MonoBehaviour
 
         return offset;
     }
-
-    private static void NormalizeOffsets(Vector2Int[] offsets)
-    {
-        int minX = int.MaxValue;
-        int minY = int.MaxValue;
-
-        for (int i = 0; i < offsets.Length; i++)
-        {
-            if (offsets[i].x < minX) minX = offsets[i].x;
-            if (offsets[i].y < minY) minY = offsets[i].y;
-        }
-
-        for (int i = 0; i < offsets.Length; i++)
-            offsets[i] = new Vector2Int(offsets[i].x - minX, offsets[i].y - minY);
-    }
-
 
     private Vector2 CalculateCenter(Vector2Int[] offsets)
     {
@@ -192,7 +180,7 @@ public class DraggableBlock : MonoBehaviour
         _rectTransform.anchoredPosition = new Vector2(localPoint.x, localPoint.y + _blockYOffset);
     }
 
-    public void SetBlockScale(float targetSize)
+    public void BlockAnimate(float targetSize)
     {
         if (_bodyBlocks == null || _bodyBlocks.Count == 0)
             return;
@@ -227,6 +215,7 @@ public class DraggableBlock : MonoBehaviour
         }
     }
 
+    #region Place
     public void OnTileEnterCell(BoardCell cell)
     {
         _overlappedCells.Add(cell);
@@ -276,4 +265,5 @@ public class DraggableBlock : MonoBehaviour
             previewCell.PlaceBlock(_blockSprite);
         }
     }
+    #endregion
 }
