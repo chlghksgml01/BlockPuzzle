@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class LeaderboardUI : MonoBehaviour
+public class LeaderboardUI : BasePopupUI
 {
     [Header("UI Reference")]
     [SerializeField] private GameObject _leaderboardItemPrefab;
@@ -25,9 +25,9 @@ public class LeaderboardUI : MonoBehaviour
     }
 
     // 버튼 클릭 시 호출
-    public void Open()
+    public override void Open()
     {
-        gameObject.SetActive(true);
+        base.Open();
         _loadingText.text = "Loading...";
         ClearOldItems();
 

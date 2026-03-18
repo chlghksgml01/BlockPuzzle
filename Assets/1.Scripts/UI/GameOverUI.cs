@@ -1,11 +1,9 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class GameOverUI : BaseOptionUI
 {
     [Header("Digit")]
-
     [SerializeField] private GameObject _digitPrefab;
     [SerializeField] private Sprite[] _digitSprites;
     [SerializeField] private Transform _scoreContainer;
@@ -51,5 +49,4 @@ public class GameOverUI : BaseOptionUI
             newDigit.GetComponent<Image>().sprite = _digitSprites[digitIndex];
         }
     }
-
 }

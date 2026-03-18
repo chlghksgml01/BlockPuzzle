@@ -103,7 +103,7 @@ public class InGameManager : Singleton<InGameManager>
         {
             Debug.Log("게임 오버");
             OnGameOver?.Invoke();
-            _gameOverUI.gameObject.SetActive(true);
+            _gameOverUI.Open();
             return;
         }
     }

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class BaseOptionUI : MonoBehaviour
+public class BaseOptionUI : BasePopupUI
 {
     public void Replay()
     {
@@ -15,9 +15,9 @@ public class BaseOptionUI : MonoBehaviour
         SceneLoadManager.LoadScene(SceneName.Lobby);
     }
 
-    public void Close()
+    public override void Close()
     {
+        base.Close();
         Time.timeScale = 1f;
-        gameObject.SetActive(false);
     }
 }
