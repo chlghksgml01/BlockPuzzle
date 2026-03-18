@@ -2,13 +2,13 @@
 
 public class BaseOptionUI : BasePopupUI
 {
-    public void Replay()
+    public virtual void Replay()
     {
         InGameManager.Instance.ResetGame();
         Close();
     }
 
-    public void Home()
+    public virtual void Home()
     {
         InGameManager.Instance.ResetGame();
         Close();

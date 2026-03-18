@@ -15,4 +15,16 @@ public class SettingPanel : BaseOptionUI
     {
         Time.timeScale = 0f;
     }
+
+    public override void Replay()
+    {
+        base.Open();
+        LeaderboardManager.Instance.UpdateBestScore(ScoreManager.Instance.CurrentScore);
+    }
+
+    public override void Home()
+    {
+        base.Home();
+        LeaderboardManager.Instance.UpdateBestScore(ScoreManager.Instance.CurrentScore);
+    }
 }

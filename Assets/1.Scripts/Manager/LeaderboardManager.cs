@@ -105,9 +105,13 @@ public class LeaderboardManager : Singleton<LeaderboardManager>
         }
     }
 
-    private void UpdateBestScore(int newScore)
+    public void UpdateBestScore(int newScore)
     {
+        if (_bestScore > newScore)
+            return;
+
         _bestScore = newScore;
+
         PlayerPrefs.SetInt(BestScoreKey, _bestScore);
 
         if (Backend.IsLogin)
