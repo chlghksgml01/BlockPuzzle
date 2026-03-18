@@ -72,6 +72,7 @@ public class LeaderboardManager : Singleton<LeaderboardManager>
         {
             if (bro.IsSuccess())
             {
+                // 기존 유저
                 if (bro.FlattenRows().Count > 0)
                 {
                     _userIndate = bro.FlattenRows()[0]["inDate"].ToString();
@@ -82,12 +83,12 @@ public class LeaderboardManager : Singleton<LeaderboardManager>
 
                     UpdateBestScore(_bestScore);
                 }
+                // 신규 유저
                 else
                 {
                     CreateInitialServerData();
                 }
             }
-            GetRank();
         });
     }
 
@@ -100,6 +101,7 @@ public class LeaderboardManager : Singleton<LeaderboardManager>
         if (bro.IsSuccess())
         {
             _userIndate = bro.GetInDate();
+            UpdateBestScore(_bestScore);
         }
     }
 
@@ -152,6 +154,7 @@ public class LeaderboardManager : Singleton<LeaderboardManager>
             {
                 Debug.LogError($"[리더보드] 갱신 실패: {bro.GetErrorCode()} - {bro.GetMessage()}");
             }
+            GetRank();
         });
     }
 
