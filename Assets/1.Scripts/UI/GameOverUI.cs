@@ -19,7 +19,7 @@ public class GameOverUI : BaseOptionUI
     private void OnEnable()
     {
         UpdateDisplay(_scoreContainer, ScoreManager.Instance.CurrentScore, 0);
-        UpdateDisplay(_bestScoreContainer, SaveManager.Instance.BestScore, 2);
+        UpdateDisplay(_bestScoreContainer, LeaderboardManager.Instance.BestScore, 2);
     }
 
     public void UpdateBanner(bool isNewBest)

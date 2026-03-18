@@ -19,11 +19,11 @@ public class ScoreUI : MonoBehaviour
 
     private void UpdateBestScore()
     {
-        if (SaveManager.Instance != null)
+        if (LeaderboardManager.Instance != null)
         {
-            int bestScore = SaveManager.Instance.BestScore;
+            int bestScore = LeaderboardManager.Instance.BestScore;
             if (bestScore != 0)
-                _bestScroreText.text = SaveManager.Instance.BestScore.ToString();
+                _bestScroreText.text = LeaderboardManager.Instance.BestScore.ToString();
         }
     }
 

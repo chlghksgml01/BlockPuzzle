@@ -45,8 +45,9 @@ public class LeaderboardUI : MonoBehaviour
             _loadingText.text = "";
             for (int i = 0; i < data.Count; i++)
             {
-                string rank = data[i]["rank"].ToString();
-                string nickname = data[i].ContainsKey("nickname") ? data[i]["nickname"].ToString() : "No Name";
+                Debug.Log(data[i].ToJson());
+                string rank = data[i]["rank"].ToString() + ".";
+                string nickname = data[i].ContainsKey("nickname") ? data[i]["nickname"].ToString() : "Player";
                 string score = data[i]["score"].ToString();
 
                 GameObject item = Instantiate(_leaderboardItemPrefab, _content);

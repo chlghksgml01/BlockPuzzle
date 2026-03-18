@@ -102,7 +102,7 @@ public class ScoreManager : Singleton<ScoreManager>
 
     private void CheckHighScore()
     {
-        if (CurrentScore > SaveManager.Instance.BestScore)
+        if (CurrentScore > LeaderboardManager.Instance.BestScore)
         {
             OnHighScoreUpdated?.Invoke(CurrentScore);
         }
