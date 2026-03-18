@@ -1,13 +1,10 @@
 fileFormatVersion: 2
-guid: 97e7f8e33544215438fbd71dae4f8034
+guid: d68821f317e9d6545af46047b69a6f76
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1901002290469440064
-    second: LEADERBOARD_0
-  - first:
-      213: -5538893498118759843
-    second: LEADERBOARD_1
+      213: 8097514329657729822
+    second: LeaderboardItem_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -49,7 +46,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -116,12 +113,12 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: LEADERBOARD_0
+      name: LeaderboardItem_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 71
+        width: 878
         height: 81
       alignment: 0
       pivot: {x: 0, y: 0}
@@ -131,30 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 0c57d5f1d784e95e0800000000000000
-      internalID: -1901002290469440064
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: LEADERBOARD_1
-      rect:
-        serializedVersion: 2
-        x: 100
-        y: 10
-        width: 483
-        height: 64
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: d5a19e3b5b5e123b0800000000000000
-      internalID: -5538893498118759843
+      spriteID: e1362ee5166206070800000000000000
+      internalID: 8097514329657729822
       vertices: []
       indices: 
       edges: []
@@ -163,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -173,8 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      LEADERBOARD_0: -1901002290469440064
-      LEADERBOARD_1: -5538893498118759843
+      LeaderboardItem_0: 8097514329657729822
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

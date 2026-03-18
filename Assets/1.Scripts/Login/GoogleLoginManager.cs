@@ -1,10 +1,13 @@
 ﻿using BackEnd;
+using System;
 using TMPro;
 using UnityEngine;
 
-public class GoogleLoginManager : MonoBehaviour
+public class GoogleLoginManager : Singleton<GoogleLoginManager>
 {
     public TMP_Text statusText;
+
+    public static event Action<bool> OnLoginSucceed;
 
     public void StartGoogleLogin()
     {
@@ -17,6 +20,7 @@ public class GoogleLoginManager : MonoBehaviour
         if (isSuccess == false)
         {
             UpdateStatus("<color=red>Google Login Failed:</color>\n" + errorMessage);
+            OnLoginSucceed?.Invoke(false);
             return;
         }
 
@@ -31,13 +35,14 @@ public class GoogleLoginManager : MonoBehaviour
 
             if (SaveManager.Instance != null)
             {
-                UpdateStatus("Syncing data with server...");
-                SaveManager.Instance.SyncWithServer();
+                UpdateStatus("Login Succeed");
+                OnLoginSucceed?.Invoke(true);
             }
         }
         else
         {
             UpdateStatus("<color=red>BackEnd Login Failed</color>\n" + bro.GetMessage());
+            OnLoginSucceed?.Invoke(false);
         }
     }
 

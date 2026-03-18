@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
-using BackEnd; // 뒤끝 SDK 필요
+using BackEnd;
+using System;
+using LitJson;
 
 [DefaultExecutionOrder(-100)]
 public class SaveManager : Singleton<SaveManager>
@@ -14,20 +16,58 @@ public class SaveManager : Singleton<SaveManager>
     public int BestScore => _bestScore;
 
     private string _userIndate = string.Empty;
+    public static event Action OnSyncSucceed;
 
     protected override void OnAwake()
     {
         _bestScore = PlayerPrefs.GetInt(BestScoreKey, 0);
     }
 
-    private void OnEnable() => ScoreManager.OnHighScoreUpdated += UpdateBestScore;
-    private void OnDisable() => ScoreManager.OnHighScoreUpdated -= UpdateBestScore;
-
-    public void SyncWithServer()
+    private void OnEnable()
     {
-        if (!Backend.IsLogin)
+        ScoreManager.OnHighScoreUpdated += UpdateBestScore;
+        GoogleLoginManager.OnLoginSucceed += SyncWithServer;
+    }
+
+    private void OnDisable()
+    {
+        ScoreManager.OnHighScoreUpdated -= UpdateBestScore;
+        GoogleLoginManager.OnLoginSucceed -= SyncWithServer;
+    }
+
+    private void SyncWithServer(bool isSucceed)
+    {
+        if (!isSucceed)
             return;
 
+        Backend.BMember.GetUserInfo(userBro =>
+        {
+            if (userBro.IsSuccess())
+            {
+                JsonData userData = userBro.GetReturnValuetoJSON()["row"];
+
+                if (userData["nickname"] == null || string.IsNullOrEmpty(userData["nickname"].ToString()))
+                {
+                    string rawId = userData["gamerId"].ToString();
+                    string shortId = rawId.Substring(0, 4);
+                    string defaultNick = "Player_" + shortId;
+
+                    Backend.BMember.CreateNickname(defaultNick, (createBro) =>
+                    {
+                        if (createBro.IsSuccess()) Debug.Log("Setting Nickname: " + defaultNick);
+                        FetchGameData();
+                    });
+                }
+                else
+                {
+                    FetchGameData();
+                }
+            }
+        });
+    }
+
+    private void FetchGameData()
+    {
         Backend.GameData.GetMyData(TableName, new Where(), (bro) =>
         {
             if (bro.IsSuccess())
@@ -47,6 +87,8 @@ public class SaveManager : Singleton<SaveManager>
                 {
                     CreateInitialServerData();
                 }
+
+                OnSyncSucceed?.Invoke();
             }
         });
     }
@@ -62,6 +104,8 @@ public class SaveManager : Singleton<SaveManager>
             _userIndate = bro.GetInDate();
         }
     }
+
+
 
     private void UpdateBestScore(int newScore)
     {
