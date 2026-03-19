@@ -29,6 +29,9 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
     [SerializeField, Range(0f, 1f)] private float _previewAlpha = 0.6f;
     public float PreviewAlpha => _previewAlpha;
 
+    [Header("Drag Preview Settings")]
+    [SerializeField, Min(0f)] private float _keepPreviewMaxDistancePx = 180f;
+
     public float BoardCellSize { get; set; }
     public bool CanPlaceBlock { get; set; }
     private BoardCell[,] _cells;
@@ -36,6 +39,7 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
 
     private GridLayoutGroup _boardGrid;
     private Vector2Int _lastPreviewBasePos = new Vector2Int(-1, -1);
+    private Vector2Int _lastPreviewAnchorOffset = Vector2Int.zero;
     private DraggableBlock _lastPreviewBlock;
     private readonly List<BoardCell> _lastPreviewCells = new List<BoardCell>();
 
@@ -100,6 +104,43 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
             cell.UpdateCellVisual(false);
     }
 
+    private bool TryGetCellCenterScreen(int x, int y, Camera uiCam, out Vector2 screenPos)
+    {
+        screenPos = default;
+
+        if (x < 0 || x >= _width || y < 0 || y >= _height)
+            return false;
+
+        var cell = _cells[x, y];
+        if (cell == null)
+            return false;
+
+        var rect = cell.transform as RectTransform;
+        if (rect == null)
+            return false;
+
+        screenPos = RectTransformUtility.WorldToScreenPoint(uiCam, rect.position);
+        return true;
+    }
+
+    private bool IsTooFarFromLastPreview(Vector2 currentAnchorScreenPos, Camera uiCam)
+    {
+        if (_keepPreviewMaxDistancePx <= 0f)
+            return false;
+
+        if (_lastPreviewBlock == null || _lastPreviewCells.Count == 0)
+            return true;
+
+        int lastAnchorX = _lastPreviewBasePos.x + _lastPreviewAnchorOffset.x;
+        int lastAnchorY = _lastPreviewBasePos.y + _lastPreviewAnchorOffset.y;
+
+        if (!TryGetCellCenterScreen(lastAnchorX, lastAnchorY, uiCam, out var lastAnchorScreenPos))
+            return true;
+
+        float dist = Vector2.Distance(currentAnchorScreenPos, lastAnchorScreenPos);
+        return dist > _keepPreviewMaxDistancePx;
+    }
+
     private bool TryGetCellIndexFromScreen(Vector2 screenPos, Camera uiCam, out int x, out int y)
     {
         x = y = -1;
@@ -158,39 +199,72 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
 
     public bool UpdatePreviewFromScreen(DraggableBlock block, Vector2 screenPos, Vector2Int anchorOffset, Camera uiCam = null)
     {
+        // ?????? ????? offsets?? ?????? ?????? ?????? ???? ??????? ????
         if (block == null || block.CurrentOffsets == null || block.CurrentOffsets.Length == 0)
         {
-            CanPlaceBlock = false;
-            ClearAllPreview();
-            ClearLastPreviewInternal();
+            ClearDragPreview();
             return false;
         }
 
-        ClearAllPreview();
-        _lastPreviewCells.Clear();
+        // ??? ???????? ??? ???? ???? ?????? ???????? ??? ???? ???
+        bool isSameBlock = _lastPreviewBlock == block;
+        if (!isSameBlock)
+        {
+            ClearAllPreview();
+            ClearLastPreviewInternal();
+        }
 
+        // ????? ????? ???? ???? ???????? ??????, "?????? ??? ?????? ????" ???
         if (!TryGetCellIndexFromScreen(screenPos, uiCam, out int anchorX, out int anchorY))
         {
-            CanPlaceBlock = false;
-            ClearLastPreviewInternal();
+            if (isSameBlock && _lastPreviewCells.Count > 0)
+            {
+                if (IsTooFarFromLastPreview(screenPos, uiCam))
+                {
+                    ClearDragPreview();
+                    return false;
+                }
+
+                CanPlaceBlock = true;
+                return false;
+            }
+
+            ClearDragPreview();
             return false;
         }
 
         int baseX = anchorX - anchorOffset.x;
         int baseY = anchorY - anchorOffset.y;
 
+        // ??? ????????, "?????? ??? ?????? ????" ???
         if (!CanPlaceAt(baseX, baseY, block.CurrentOffsets, out var previewCells))
         {
-            CanPlaceBlock = false;
-            ClearLastPreviewInternal();
+            if (isSameBlock && _lastPreviewCells.Count > 0)
+            {
+                if (IsTooFarFromLastPreview(screenPos, uiCam))
+                {
+                    ClearDragPreview();
+                    return false;
+                }
+
+                CanPlaceBlock = true;
+                return false;
+            }
+
+            ClearDragPreview();
             return false;
         }
+
+        // ???????? ??? ????: ?????? ???? ????
+        ClearAllPreview();
+        _lastPreviewCells.Clear();
 
         _lastPreviewCells.AddRange(previewCells);
         foreach (var cell in _lastPreviewCells)
             cell.UpdateCellVisual(true);
 
         _lastPreviewBasePos = new Vector2Int(baseX, baseY);
+        _lastPreviewAnchorOffset = anchorOffset;
         _lastPreviewBlock = block;
         CanPlaceBlock = true;
         return true;
@@ -231,6 +305,7 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
     private void ClearLastPreviewInternal()
     {
         _lastPreviewBasePos = new Vector2Int(-1, -1);
+        _lastPreviewAnchorOffset = Vector2Int.zero;
         _lastPreviewBlock = null;
         _lastPreviewCells.Clear();
     }
