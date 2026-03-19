@@ -44,12 +44,18 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         if (BoardManager.Instance.CanPlaceBlock)
         {
             InGameManager.Instance.StopHintCoroutine(Block, true);
-            BoardManager.Instance.PlaceLastPreview(Block, Block.BlockSprite);
-
-            int blockShapeCount = Block.CurrentOffsets.Length;
-            RemoveBlock();
-
-            OnBlockPlaced?.Invoke(blockShapeCount);
+            if (BoardManager.Instance.PlaceLastPreview(Block, Block.BlockSprite, out int placedCount))
+            {
+                RemoveBlock();
+                OnBlockPlaced?.Invoke(placedCount);
+            }
+            else
+            {
+                // 배치 직전 상태가 바뀌었을 수 있으니 롤백
+                BoardManager.Instance.ClearDragPreview();
+                Block.BlockAnimate(Block.SlotBlockSize);
+                (Block.transform as RectTransform).anchoredPosition = Vector2.zero;
+            }
         }
 
         else

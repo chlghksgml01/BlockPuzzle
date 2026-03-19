@@ -107,12 +107,14 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
         return changed;
     }
 
-    public bool PlaceLastPreview(DraggableBlock block, Sprite blockSprite)
+    public bool PlaceLastPreview(DraggableBlock block, Sprite blockSprite, out int placedCount)
     {
+        placedCount = 0;
+
         if (!CanPlaceBlock)
             return false;
 
-        bool ok = _preview.PlaceLastPreview(block, blockSprite, out _);
+        bool ok = _preview.PlaceLastPreview(block, blockSprite, out placedCount);
         if (ok)
             CanPlaceBlock = false;
 
