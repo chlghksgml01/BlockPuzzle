@@ -1,4 +1,5 @@
-﻿using TMPro;
+﻿using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,9 +10,17 @@ public class NicknameUI : BasePopupUI
     [SerializeField] private TMP_InputField _nicknameInput;
     [SerializeField] private Button _confirmButton;
 
+    public event Action OnNicknameChanged;
+
     private void Awake()
     {
-        _nicknameInput.characterLimit = 12;
+        _nicknameInput.characterLimit = 15;
+        _nicknameInput.onValueChanged.AddListener(OnNicknameInputChanged);
+    }
+
+    private void OnNicknameInputChanged(string value)
+    {
+        OnNicknameChanged?.Invoke();
     }
 
     public void SetDefaultNickname(string defaultNick)
@@ -21,7 +30,7 @@ public class NicknameUI : BasePopupUI
 
     public string GetNickname()
     {
-        if (!string.IsNullOrWhiteSpace(_nicknameInput.text))
+        if (!string.IsNullOrEmpty(_nicknameInput.text))
         {
             return _nicknameInput.text;
         }
