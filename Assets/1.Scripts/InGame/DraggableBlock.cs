@@ -39,8 +39,8 @@ public class DraggableBlock : MonoBehaviour
 
         if (_blockShapes != null && _blockShapes.Length > 0)
         {
-            int index = Random.Range(0, _blockShapes.Length);
-            CurrentOffsets = (Vector2Int[])_blockShapes[index]._cellOffsets.Clone();
+            int index = PickShapeIndexWeighted(_blockShapes);
+            CurrentOffsets = (Vector2Int[])_blockShapes[index].CellOffsets.Clone();
         }
         else
         {
@@ -51,6 +51,52 @@ public class DraggableBlock : MonoBehaviour
         ApplyRandomRotation();
 
         CreateBodyTiles();
+    }
+
+    private int PickShapeIndexWeighted(BlockShape[] shapes)
+    {
+        if (shapes == null || shapes.Length == 0)
+            return 0;
+
+        float total = 0f;
+        for (int i = 0; i < shapes.Length; i++)
+        {
+            if (shapes[i] == null)
+                continue;
+
+            float weight = shapes[i].Weights;
+            if (weight > 0f)
+                total += weight;
+        }
+
+        if (total <= 0f)
+            return Random.Range(0, shapes.Length);
+
+        float roll = Random.value * total;
+        float acc = 0f;
+
+        for (int i = 0; i < shapes.Length; i++)
+        {
+            if (shapes[i] == null)
+                continue;
+
+            float weight = shapes[i].Weights;
+            if (weight <= 0f)
+                continue;
+
+            acc += weight;
+            if (roll <= acc)
+                return i;
+        }
+
+        // 부동소수 오차 대비
+        for (int i = shapes.Length - 1; i >= 0; i--)
+        {
+            if (shapes[i] != null && shapes[i].Weights > 0f)
+                return i;
+        }
+
+        return Random.Range(0, shapes.Length);
     }
 
     private void ApplyRandomRotation()
@@ -191,7 +237,6 @@ public class DraggableBlock : MonoBehaviour
         if (CurrentOffsets == null || CurrentOffsets.Length == 0)
             return false;
 
-        // 가장 좌하단(=x가 가장 작고, 같으면 y가 가장 작은) 타일을 앵커로 사용
         anchorOffset = CurrentOffsets[0];
         for (int i = 1; i < CurrentOffsets.Length; i++)
         {

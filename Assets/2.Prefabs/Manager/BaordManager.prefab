@@ -53,4 +53,4 @@ MonoBehaviour:
   _hintCellPrefab: {fileID: 7066565143273184599, guid: 32318d4053e1784429ad964970ac84f7, type: 3}
   _previewSprite: {fileID: 21300000, guid: 8c8bd78a2eca66d468a4cc45cefa84f9, type: 3}
   _previewAlpha: 0.6
-  _keepPreviewMaxDistancePx: 200
+  _keepPreviewMaxDistancePx: 230

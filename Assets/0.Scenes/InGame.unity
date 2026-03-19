@@ -2136,10 +2136,6 @@ PrefabInstance:
       propertyPath: _hintBoardRoot
       value: 
       objectReference: {fileID: 1510317872}
-    - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
-      propertyPath: _keepPreviewMaxDistancePx
-      value: 200
-      objectReference: {fileID: 0}
     - target: {fileID: 7912788501387897607, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
       propertyPath: m_Name
       value: BaordManager
