@@ -4,8 +4,10 @@ using UnityEngine;
 public class ScoreUI : MonoBehaviour
 {
     [Header("Score Display")]
-    [SerializeField] private TextMeshProUGUI _bestScroreText;
-    [SerializeField] private TextMeshProUGUI _currentScroreText;
+    [SerializeField] private NumberDisplay _scoreDisplay;
+    [SerializeField] private NumberDisplay _bestScoreDisplay;
+
+    private int _bestScore;
 
     private void OnEnable()
     {
@@ -21,15 +23,22 @@ public class ScoreUI : MonoBehaviour
     {
         if (LeaderboardManager.Instance != null)
         {
-            int bestScore = LeaderboardManager.Instance.BestScore;
-            if (bestScore != 0)
-                _bestScroreText.text = LeaderboardManager.Instance.BestScore.ToString();
+            _bestScore = LeaderboardManager.Instance.BestScore;
+            if (_bestScore != 0)
+            {
+                _bestScoreDisplay.UpdateDisplay(LeaderboardManager.Instance.BestScore);
+            }
         }
     }
 
     private void UpdateScoreUI(int newScore)
     {
-        _currentScroreText.text = newScore.ToString();
+        _scoreDisplay.UpdateDisplay(newScore);
+        if (newScore > _bestScore)
+        {
+            _bestScore = newScore;
+            _bestScoreDisplay.UpdateDisplay(_bestScore);
+        }
     }
 
     private void ResetScore()
