@@ -1,0 +1,29 @@
+fileFormatVersion: 2
+guid: 69149b1b3180d4f4a8f214510325eb0d
+AudioImporter:
+  externalObjects: {}
+  serializedVersion: 6
+  defaultSettings:
+    loadType: 0
+    sampleRateSetting: 0
+    sampleRateOverride: 44100
+    compressionFormat: 1
+    quality: 1
+    conversionMode: 0
+  platformSettingOverrides: {}
+  forceToMono: 0
+  normalize: 1
+  preloadAudioData: 1
+  loadInBackground: 0
+  ambisonic: 0
+  3D: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 254164
+  packageName: Puzzle Game SE Pack
+  packageVersion: 1.0
+  assetPath: Assets/Puzzle_Game_SE_Pack/system/cursor/cursor_01.wav
+  uploadId: 597403
