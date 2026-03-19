@@ -24,8 +24,9 @@ public class DraggableBlock : MonoBehaviour
 
     private RectTransform _rectTransform;
     private List<RectTransform> _bodyBlocks = new List<RectTransform>();
-    private HashSet<BoardCell> _overlappedCells = new HashSet<BoardCell>();
-    private List<BoardCell> _previewCells = new List<BoardCell>();
+    public Sprite BlockSprite => _blockSprite;
+    public RectTransform RectTransform => _rectTransform;
+    private readonly Dictionary<Vector2Int, RectTransform> _tileByOffset = new Dictionary<Vector2Int, RectTransform>();
 
     private void Awake()
     {
@@ -76,6 +77,7 @@ public class DraggableBlock : MonoBehaviour
 
         foreach (Transform child in transform) { Destroy(child.gameObject); }
         _bodyBlocks.Clear();
+        _tileByOffset.Clear();
 
         foreach (var offset in CurrentOffsets)
         {
@@ -145,11 +147,6 @@ public class DraggableBlock : MonoBehaviour
     {
         GameObject tileObj = Instantiate(_bodyTilePrefab, transform, false);
 
-        // Collider
-        var collider = tileObj.GetComponent<BoxCollider2D>();
-        if (collider != null)
-            collider.size = tileSize;
-
         // Image
         Image tileImage = tileObj.GetComponent<Image>();
         if (tileImage != null)
@@ -159,7 +156,7 @@ public class DraggableBlock : MonoBehaviour
             tileImage.color = Color.white;
         }
 
-        // RectTransform 세팅
+        // RectTransform
         RectTransform tileRect = tileObj.GetComponent<RectTransform>();
         tileRect.anchorMin = new Vector2(0.5f, 0.5f);
         tileRect.anchorMax = new Vector2(0.5f, 0.5f);
@@ -172,12 +169,42 @@ public class DraggableBlock : MonoBehaviour
         tileRect.anchoredPosition = new Vector2(localX, localY);
 
         _bodyBlocks.Add(tileRect);
+        _tileByOffset[offset] = tileRect;
     }
 
-    public void MoveToPointer(RectTransform slotRect, Vector2 screenMousePosition)
+    public void MoveToPointer(RectTransform slotRect, Vector2 screenMousePosition, Camera uiCam = null)
     {
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(slotRect, screenMousePosition, null, out Vector2 localPoint);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(slotRect, screenMousePosition, uiCam, out Vector2 localPoint);
         _rectTransform.anchoredPosition = new Vector2(localPoint.x, localPoint.y + _blockYOffset);
+    }
+
+    public Vector2 GetScreenPosition(Camera uiCam = null)
+    {
+        return RectTransformUtility.WorldToScreenPoint(uiCam, _rectTransform.position);
+    }
+
+    public bool TryGetAnchorScreenPoint(Camera uiCam, out Vector2 screenPos, out Vector2Int anchorOffset)
+    {
+        screenPos = default;
+        anchorOffset = default;
+
+        if (CurrentOffsets == null || CurrentOffsets.Length == 0)
+            return false;
+
+        // 가장 좌하단(=x가 가장 작고, 같으면 y가 가장 작은) 타일을 앵커로 사용
+        anchorOffset = CurrentOffsets[0];
+        for (int i = 1; i < CurrentOffsets.Length; i++)
+        {
+            var o = CurrentOffsets[i];
+            if (o.x < anchorOffset.x || (o.x == anchorOffset.x && o.y < anchorOffset.y))
+                anchorOffset = o;
+        }
+
+        if (!_tileByOffset.TryGetValue(anchorOffset, out var anchorRect) || anchorRect == null)
+            return false;
+
+        screenPos = RectTransformUtility.WorldToScreenPoint(uiCam, anchorRect.position);
+        return true;
     }
 
     public void BlockAnimate(float targetSize)
@@ -203,67 +230,13 @@ public class DraggableBlock : MonoBehaviour
 
             rectTransform.DOAnchorPos(targetPosition, _scaleDuration);
 
-            rectTransform.DOSizeDelta(targetSizeDelta, _scaleDuration)
-                .OnUpdate(() =>
-                {
-                    var collider = rectTransform.GetComponent<BoxCollider2D>();
-                    if (collider != null)
-                    {
-                        collider.size = rectTransform.sizeDelta;
-                    }
-                });
+            rectTransform.DOSizeDelta(targetSizeDelta, _scaleDuration);
         }
     }
 
-    #region Place
-    public void OnTileEnterCell(BoardCell cell)
+    public void ClearBoardPreview()
     {
-        _overlappedCells.Add(cell);
-        UpdatePreview();
+        if (BoardManager.Instance != null)
+            BoardManager.Instance.ClearDragPreview();
     }
-
-    public void OnTileExitCell(BoardCell cell)
-    {
-        _overlappedCells.Remove(cell);
-        UpdatePreview();
-    }
-
-    public void UpdatePreview()
-    {
-        BoardManager.Instance.ClearAllPreview();
-
-        // 배치 가능 검사
-        if (!IsAllBodyBlockPlaceable())
-        {
-            BoardManager.Instance.CanPlaceBlock = false;
-            return;
-        }
-
-        // 배치 가능한 셀에만 프리뷰 켜기
-        foreach (var cell in _previewCells)
-        {
-            cell.UpdateCellVisual(true);
-        }
-
-        BoardManager.Instance.CanPlaceBlock = true;
-    }
-
-    public bool IsAllBodyBlockPlaceable()
-    {
-        _previewCells.Clear();
-        _previewCells.AddRange(_overlappedCells);
-
-        if (_overlappedCells.Count != _bodyBlocks.Count)
-            return false;
-        return true;
-    }
-
-    public void PlaceBlock()
-    {
-        foreach (BoardCell previewCell in _previewCells)
-        {
-            previewCell.PlaceBlock(_blockSprite);
-        }
-    }
-    #endregion
 }

@@ -30,9 +30,14 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
             return;
         }
 
-        Block.MoveToPointer(transform as RectTransform, eventData.position);
+        Block.MoveToPointer(transform as RectTransform, eventData.position, eventData.pressEventCamera);
         Block.BlockAnimate(BoardManager.Instance.BoardCellSize);
 
+        var cam = eventData.pressEventCamera;
+        if (Block.TryGetAnchorScreenPoint(cam, out var anchorScreen, out var anchorOffset))
+            BoardManager.Instance.UpdatePreviewFromScreen(Block, anchorScreen, anchorOffset, cam);
+        else
+            BoardManager.Instance.UpdatePreviewFromScreen(Block, Block.GetScreenPosition(cam), cam);
         InGameManager.Instance.StartHintCoroutine(Block);
     }
 
@@ -47,7 +52,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         if (BoardManager.Instance.CanPlaceBlock)
         {
             InGameManager.Instance.StopHintCoroutine(Block, true);
-            Block.PlaceBlock();
+            BoardManager.Instance.PlaceLastPreview(Block, Block.BlockSprite);
 
             int blockShapeCount = Block.CurrentOffsets.Length;
             RemoveBlock();
@@ -55,9 +60,10 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
             OnBlockPlaced?.Invoke(blockShapeCount);
         }
 
-        // 제자리로
+        // ???????
         else
         {
+            BoardManager.Instance.ClearDragPreview();
             Block.BlockAnimate(Block.SlotBlockSize);
             (Block.transform as RectTransform).anchoredPosition = Vector2.zero;
         }
@@ -78,6 +84,11 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
             return;
         }
 
-        Block.MoveToPointer(transform as RectTransform, eventData.position);
+        var cam = eventData.pressEventCamera;
+        Block.MoveToPointer(transform as RectTransform, eventData.position, cam);
+        if (Block.TryGetAnchorScreenPoint(cam, out var anchorScreen, out var anchorOffset))
+            BoardManager.Instance.UpdatePreviewFromScreen(Block, anchorScreen, anchorOffset, cam);
+        else
+            BoardManager.Instance.UpdatePreviewFromScreen(Block, Block.GetScreenPosition(cam), cam);
     }
 }

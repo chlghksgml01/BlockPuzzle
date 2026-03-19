@@ -9,8 +9,6 @@ public class BoardCell : MonoBehaviour
 
     public bool IsFilled { get; private set; }
 
-    private DraggableBlock _currentOverlappingBlock;
-
     private void Awake()
     {
         _image = GetComponent<Image>();
@@ -43,48 +41,6 @@ public class BoardCell : MonoBehaviour
             _image.sprite = null;
             _image.color = new Color(1f, 1f, 1f, 0f);
         }
-    }
-
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (!collision.CompareTag("BodyTile"))
-            return;
-
-        if (_currentOverlappingBlock == null)
-        {
-            _currentOverlappingBlock = collision.GetComponentInParent<DraggableBlock>();
-        }
-
-        if (_currentOverlappingBlock != null && !IsFilled)
-        {
-            _currentOverlappingBlock.OnTileEnterCell(this);
-        }
-    }
-
-    private void OnTriggerStay2D(Collider2D collision)
-    {
-        if (_currentOverlappingBlock == null && collision.CompareTag("BodyTile"))
-        {
-            _currentOverlappingBlock = collision.GetComponentInParent<DraggableBlock>();
-        }
-
-        if (_currentOverlappingBlock != null && !IsFilled)
-        {
-            _currentOverlappingBlock.OnTileEnterCell(this);
-        }
-    }
-
-    private void OnTriggerExit2D(Collider2D collision)
-    {
-        if (!collision.CompareTag("BodyTile"))
-            return;
-
-        if (_currentOverlappingBlock != null && !IsFilled)
-        {
-            _currentOverlappingBlock.OnTileExitCell(this);
-        }
-
-        _currentOverlappingBlock = null;
     }
 
     public void PlaceBlock(Sprite blockSprite)
