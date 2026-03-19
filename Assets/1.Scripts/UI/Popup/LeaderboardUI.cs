@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class LeaderboardUI : BasePopupUI
 {
-    [Header("UI Reference")]
+    [Header("Leaderboard UI Reference")]
     [SerializeField] private GameObject _leaderboardItemPrefab;
     [SerializeField] private Transform _content;
     [SerializeField] private TMP_Text _loadingText;

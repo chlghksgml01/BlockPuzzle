@@ -16,6 +16,7 @@ public class LeaderboardManager : Singleton<LeaderboardManager>
 
     private string _userIndate = string.Empty;
     public static event Action<JsonData> OnRankDataReceived;
+    public static event Action<JsonData> OnSetNickname;
 
     protected override void OnAwake()
     {
@@ -48,15 +49,7 @@ public class LeaderboardManager : Singleton<LeaderboardManager>
                 // 닉네임 설정
                 if (userData["nickname"] == null || string.IsNullOrEmpty(userData["nickname"].ToString()))
                 {
-                    string rawId = userData["gamerId"].ToString();
-                    string shortId = rawId.Substring(0, 4);
-                    string defaultNick = "Player_" + shortId;
-
-                    Backend.BMember.CreateNickname(defaultNick, (createBro) =>
-                    {
-                        if (createBro.IsSuccess()) Debug.Log("Setting Nickname: " + defaultNick);
-                        FetchGameData();
-                    });
+                    OnSetNickname?.Invoke(userData);
                 }
                 else
                 {
@@ -66,7 +59,7 @@ public class LeaderboardManager : Singleton<LeaderboardManager>
         });
     }
 
-    private void FetchGameData()
+    public void FetchGameData()
     {
         Backend.GameData.GetMyData(TableName, new Where(), (bro) =>
         {
@@ -179,6 +172,23 @@ public class LeaderboardManager : Singleton<LeaderboardManager>
             }
 
             OnRankDataReceived?.Invoke(rankData);
+        });
+    }
+
+    public void UpdateNickname(string newNickname, Action<bool, string> onComplete)
+    {
+        Backend.BMember.CreateNickname(newNickname, (bro) =>
+        {
+            if (bro.IsSuccess())
+            {
+                Debug.Log("닉네임 설정 성공: " + newNickname);
+                FetchGameData(); // 닉네임 설정 후 데이터 로드
+                onComplete?.Invoke(true, "");
+            }
+            else
+            {
+                onComplete?.Invoke(false, bro.GetErrorCode());
+            }
         });
     }
 }
