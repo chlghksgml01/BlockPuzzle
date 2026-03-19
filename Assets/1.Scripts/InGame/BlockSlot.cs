@@ -25,19 +25,11 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         InGameManager.Instance.StopHintCoroutine(Block, false);
 
         if (Block == null || !HasBlock)
-        {
-            Debug.Log("BlockSlot - Block is null");
             return;
-        }
 
-        Block.MoveToPointer(transform as RectTransform, eventData.position, eventData.pressEventCamera);
+        UpdateBlockPositionAndPreview(eventData);
+
         Block.BlockAnimate(BoardManager.Instance.BoardCellSize);
-
-        var cam = eventData.pressEventCamera;
-        if (Block.TryGetAnchorScreenPoint(cam, out var anchorScreen, out var anchorOffset))
-            BoardManager.Instance.UpdatePreviewFromScreen(Block, anchorScreen, anchorOffset, cam);
-        else
-            BoardManager.Instance.UpdatePreviewFromScreen(Block, Block.GetScreenPosition(cam), cam);
         InGameManager.Instance.StartHintCoroutine(Block);
     }
 
@@ -60,7 +52,6 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
             OnBlockPlaced?.Invoke(blockShapeCount);
         }
 
-        // ???????
         else
         {
             BoardManager.Instance.ClearDragPreview();
@@ -79,14 +70,19 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     public void OnDrag(PointerEventData eventData)
     {
         if (Block == null || !HasBlock)
-        {
-            Debug.Log("BlockSlot - Block is null");
             return;
-        }
 
-        var cam = eventData.pressEventCamera;
-        Block.MoveToPointer(transform as RectTransform, eventData.position, cam);
-        if (Block.TryGetAnchorScreenPoint(cam, out var anchorScreen, out var anchorOffset))
+        UpdateBlockPositionAndPreview(eventData);
+    }
+
+    private void UpdateBlockPositionAndPreview(PointerEventData eventData)
+    {
+        Camera cam = eventData.pressEventCamera;
+        RectTransform slotRect = transform as RectTransform;
+
+        Block.MoveToPointer(slotRect, eventData.position, cam);
+
+        if (Block.TryGetAnchorScreenPoint(cam, out Vector2 anchorScreen, out Vector2Int anchorOffset))
             BoardManager.Instance.UpdatePreviewFromScreen(Block, anchorScreen, anchorOffset, cam);
         else
             BoardManager.Instance.UpdatePreviewFromScreen(Block, Block.GetScreenPosition(cam), cam);

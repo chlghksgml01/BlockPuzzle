@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 [DefaultExecutionOrder(-99)]
@@ -93,7 +92,7 @@ public class InGameManager : Singleton<InGameManager>
     {
         bool allBlocksCannotPlace = true;
 
-        foreach (var slot in _slots)
+        foreach (BlockSlot slot in _slots)
         {
             if (!slot.HasBlock)
                 continue;
