@@ -1853,6 +1853,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Leaderboard
       objectReference: {fileID: 0}
+    - target: {fileID: 5361870709096167138, guid: 42c5e3d20d3218b40a9d6613fa180f50, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5939364787218988610, guid: 42c5e3d20d3218b40a9d6613fa180f50, type: 3}
+      propertyPath: m_text
+      value: "\u200B"
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
