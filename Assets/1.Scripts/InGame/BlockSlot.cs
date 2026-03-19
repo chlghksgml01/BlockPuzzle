@@ -33,6 +33,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         Block.MoveToPointer(transform as RectTransform, eventData.position);
         Block.BlockAnimate(BoardManager.Instance.BoardCellSize);
 
+        BoardManager.Instance.UpdatePreviewFromScreen(Block, Block.GetScreenPosition(null), null);
         InGameManager.Instance.StartHintCoroutine(Block);
     }
 
@@ -47,7 +48,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         if (BoardManager.Instance.CanPlaceBlock)
         {
             InGameManager.Instance.StopHintCoroutine(Block, true);
-            Block.PlaceBlock();
+            BoardManager.Instance.PlaceLastPreview(Block, Block.BlockSprite);
 
             int blockShapeCount = Block.CurrentOffsets.Length;
             RemoveBlock();
@@ -55,9 +56,10 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
             OnBlockPlaced?.Invoke(blockShapeCount);
         }
 
-        // 제자리로
+        // ???????
         else
         {
+            BoardManager.Instance.ClearDragPreview();
             Block.BlockAnimate(Block.SlotBlockSize);
             (Block.transform as RectTransform).anchoredPosition = Vector2.zero;
         }
@@ -79,5 +81,6 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         }
 
         Block.MoveToPointer(transform as RectTransform, eventData.position);
+        BoardManager.Instance.UpdatePreviewFromScreen(Block, Block.GetScreenPosition(null), null);
     }
 }

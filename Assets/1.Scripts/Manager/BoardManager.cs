@@ -34,6 +34,11 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
     private BoardCell[,] _cells;
     private HintBoardCell[,] _hintCells;
 
+    private GridLayoutGroup _boardGrid;
+    private Vector2Int _lastPreviewBasePos = new Vector2Int(-1, -1);
+    private DraggableBlock _lastPreviewBlock;
+    private readonly List<BoardCell> _lastPreviewCells = new List<BoardCell>();
+
     private List<int> _fullRow = new List<int>();
     private List<int> _fullCol = new List<int>();
     private Vector2Int _placeableCellPos;
@@ -62,7 +67,8 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
     {
         _cells = new BoardCell[_width, _height];
         _hintCells = new HintBoardCell[_width, _height];
-        BoardCellSize = _boardRoot.GetComponent<GridLayoutGroup>().cellSize.x;
+        _boardGrid = _boardRoot.GetComponent<GridLayoutGroup>();
+        BoardCellSize = _boardGrid.cellSize.x;
 
         for (int y = 0; y < _height; y++)
         {
@@ -70,6 +76,7 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
             {
                 GameObject cell = Instantiate(_cellPrefab, _boardRoot);
                 _cells[x, y] = cell.GetComponent<BoardCell>();
+                _cells[x, y].Init(x, y);
 
                 GameObject hintCell = Instantiate(_hintCellPrefab, _hintBoardRoot);
                 _hintCells[x, y] = hintCell.GetComponent<HintBoardCell>();
@@ -93,6 +100,133 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
             cell.UpdateCellVisual(false);
     }
 
+    private bool TryGetCellIndexFromScreen(Vector2 screenPos, Camera uiCam, out int x, out int y)
+    {
+        x = y = -1;
+
+        if (_boardRoot == null || _boardGrid == null)
+            return false;
+
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(_boardRoot, screenPos, uiCam, out var local))
+            return false;
+
+        Rect rect = _boardRoot.rect;
+        float localFromLeft = local.x - rect.xMin;
+        float localFromBottom = local.y - rect.yMin;
+
+        var padding = _boardGrid.padding;
+        var cell = _boardGrid.cellSize;
+        var spacing = _boardGrid.spacing;
+
+        float px = localFromLeft - padding.left;
+        float pyFromBottom = localFromBottom - padding.bottom;
+
+        float stepX = cell.x + spacing.x;
+        float stepY = cell.y + spacing.y;
+
+        if (px < 0f || pyFromBottom < 0f)
+            return false;
+
+        int colFromLeft = Mathf.FloorToInt(px / stepX);
+        int rowFromBottom = Mathf.FloorToInt(pyFromBottom / stepY);
+
+        float inCellX = px - colFromLeft * stepX;
+        float inCellY = pyFromBottom - rowFromBottom * stepY;
+        if (inCellX < 0f || inCellX > cell.x || inCellY < 0f || inCellY > cell.y)
+            return false;
+
+        bool startTop = _boardGrid.startCorner == GridLayoutGroup.Corner.UpperLeft
+                        || _boardGrid.startCorner == GridLayoutGroup.Corner.UpperRight;
+        bool startRight = _boardGrid.startCorner == GridLayoutGroup.Corner.UpperRight
+                          || _boardGrid.startCorner == GridLayoutGroup.Corner.LowerRight;
+
+        int col = startRight ? (_width - 1) - colFromLeft : colFromLeft;
+        int row = startTop ? (_height - 1) - rowFromBottom : rowFromBottom;
+
+        if (col < 0 || col >= _width || row < 0 || row >= _height)
+            return false;
+
+        x = col;
+        y = row;
+        return true;
+    }
+
+    public bool UpdatePreviewFromScreen(DraggableBlock block, Vector2 screenPos, Camera uiCam = null)
+    {
+        if (block == null || block.CurrentOffsets == null || block.CurrentOffsets.Length == 0)
+        {
+            CanPlaceBlock = false;
+            ClearAllPreview();
+            ClearLastPreviewInternal();
+            return false;
+        }
+
+        ClearAllPreview();
+        _lastPreviewCells.Clear();
+
+        if (!TryGetCellIndexFromScreen(screenPos, uiCam, out int baseX, out int baseY))
+        {
+            CanPlaceBlock = false;
+            ClearLastPreviewInternal();
+            return false;
+        }
+
+        if (!CanPlaceAt(baseX, baseY, block.CurrentOffsets, out var previewCells))
+        {
+            CanPlaceBlock = false;
+            ClearLastPreviewInternal();
+            return false;
+        }
+
+        _lastPreviewCells.AddRange(previewCells);
+        foreach (var cell in _lastPreviewCells)
+            cell.UpdateCellVisual(true);
+
+        _lastPreviewBasePos = new Vector2Int(baseX, baseY);
+        _lastPreviewBlock = block;
+        CanPlaceBlock = true;
+        return true;
+    }
+
+    public bool PlaceLastPreview(DraggableBlock block, Sprite blockSprite)
+    {
+        if (!CanPlaceBlock)
+            return false;
+
+        if (block == null || block != _lastPreviewBlock)
+            return false;
+
+        if (_lastPreviewBasePos.x < 0 || _lastPreviewBasePos.y < 0)
+            return false;
+
+        if (block.CurrentOffsets == null || block.CurrentOffsets.Length == 0)
+            return false;
+
+        if (!CanPlaceAt(_lastPreviewBasePos.x, _lastPreviewBasePos.y, block.CurrentOffsets, out var cellsToPlace))
+            return false;
+
+        foreach (var cell in cellsToPlace)
+            cell.PlaceBlock(blockSprite);
+
+        ClearAllPreview();
+        ClearLastPreviewInternal();
+        return true;
+    }
+
+    public void ClearDragPreview()
+    {
+        ClearAllPreview();
+        ClearLastPreviewInternal();
+        CanPlaceBlock = false;
+    }
+
+    private void ClearLastPreviewInternal()
+    {
+        _lastPreviewBasePos = new Vector2Int(-1, -1);
+        _lastPreviewBlock = null;
+        _lastPreviewCells.Clear();
+    }
+
     private void ProcessFullLines(int blockShapeCount)
     {
         CheckFullLines();
@@ -104,7 +238,7 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
         _fullRow.Clear();
         _fullCol.Clear();
 
-        // 가로 체크
+        // ???? ??
         for (int y = 0; y < _height; y++)
         {
             bool isFull = true;
@@ -122,7 +256,7 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
                 _fullRow.Add(y);
         }
 
-        // 세로 체크
+        // ???? ??
         for (int x = 0; x < _width; x++)
         {
             bool isFull = true;
@@ -182,7 +316,7 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
         return false;
     }
 
-    // Board의 빈 곳에 shape모양대로 놓을 수 있는지 검사
+    // Board?? ?? ???? shape????? ???? ?? ????? ???
     private bool CanPlaceAt(int baseX, int baseY, Vector2Int[] shapeOffset)
     {
         foreach (var offset in shapeOffset)
@@ -190,7 +324,7 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
             int tx = baseX + offset.x;
             int ty = baseY + offset.y;
 
-            // 보드 범위 밖이거나 cell 채워져있는지 검사
+            // ???? ???? ?????? cell ?????????? ???
             if (tx < 0 || tx >= _width || ty < 0 || ty >= _height)
                 return false;
 
@@ -200,6 +334,30 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
 
         _placeableCellPos.x = baseX;
         _placeableCellPos.y = baseY;
+
+        return true;
+    }
+
+    private bool CanPlaceAt(int baseX, int baseY, Vector2Int[] shapeOffset, out List<BoardCell> cells)
+    {
+        cells = new List<BoardCell>(shapeOffset?.Length ?? 0);
+
+        if (shapeOffset == null || shapeOffset.Length == 0)
+            return false;
+
+        foreach (var offset in shapeOffset)
+        {
+            int tx = baseX + offset.x;
+            int ty = baseY + offset.y;
+
+            if (tx < 0 || tx >= _width || ty < 0 || ty >= _height)
+                return false;
+
+            if (_cells[tx, ty].IsFilled)
+                return false;
+
+            cells.Add(_cells[tx, ty]);
+        }
 
         return true;
     }
