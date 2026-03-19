@@ -153,6 +153,11 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
 
     public bool UpdatePreviewFromScreen(DraggableBlock block, Vector2 screenPos, Camera uiCam = null)
     {
+        return UpdatePreviewFromScreen(block, screenPos, Vector2Int.zero, uiCam);
+    }
+
+    public bool UpdatePreviewFromScreen(DraggableBlock block, Vector2 screenPos, Vector2Int anchorOffset, Camera uiCam = null)
+    {
         if (block == null || block.CurrentOffsets == null || block.CurrentOffsets.Length == 0)
         {
             CanPlaceBlock = false;
@@ -164,12 +169,15 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
         ClearAllPreview();
         _lastPreviewCells.Clear();
 
-        if (!TryGetCellIndexFromScreen(screenPos, uiCam, out int baseX, out int baseY))
+        if (!TryGetCellIndexFromScreen(screenPos, uiCam, out int anchorX, out int anchorY))
         {
             CanPlaceBlock = false;
             ClearLastPreviewInternal();
             return false;
         }
+
+        int baseX = anchorX - anchorOffset.x;
+        int baseY = anchorY - anchorOffset.y;
 
         if (!CanPlaceAt(baseX, baseY, block.CurrentOffsets, out var previewCells))
         {

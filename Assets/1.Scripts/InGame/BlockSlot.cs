@@ -30,10 +30,14 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
             return;
         }
 
-        Block.MoveToPointer(transform as RectTransform, eventData.position);
+        Block.MoveToPointer(transform as RectTransform, eventData.position, eventData.pressEventCamera);
         Block.BlockAnimate(BoardManager.Instance.BoardCellSize);
 
-        BoardManager.Instance.UpdatePreviewFromScreen(Block, Block.GetScreenPosition(null), null);
+        var cam = eventData.pressEventCamera;
+        if (Block.TryGetAnchorScreenPoint(cam, out var anchorScreen, out var anchorOffset))
+            BoardManager.Instance.UpdatePreviewFromScreen(Block, anchorScreen, anchorOffset, cam);
+        else
+            BoardManager.Instance.UpdatePreviewFromScreen(Block, Block.GetScreenPosition(cam), cam);
         InGameManager.Instance.StartHintCoroutine(Block);
     }
 
@@ -80,7 +84,11 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
             return;
         }
 
-        Block.MoveToPointer(transform as RectTransform, eventData.position);
-        BoardManager.Instance.UpdatePreviewFromScreen(Block, Block.GetScreenPosition(null), null);
+        var cam = eventData.pressEventCamera;
+        Block.MoveToPointer(transform as RectTransform, eventData.position, cam);
+        if (Block.TryGetAnchorScreenPoint(cam, out var anchorScreen, out var anchorOffset))
+            BoardManager.Instance.UpdatePreviewFromScreen(Block, anchorScreen, anchorOffset, cam);
+        else
+            BoardManager.Instance.UpdatePreviewFromScreen(Block, Block.GetScreenPosition(cam), cam);
     }
 }

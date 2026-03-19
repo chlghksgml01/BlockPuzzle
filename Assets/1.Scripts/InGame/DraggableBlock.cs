@@ -26,6 +26,7 @@ public class DraggableBlock : MonoBehaviour
     private List<RectTransform> _bodyBlocks = new List<RectTransform>();
     public Sprite BlockSprite => _blockSprite;
     public RectTransform RectTransform => _rectTransform;
+    private readonly Dictionary<Vector2Int, RectTransform> _tileByOffset = new Dictionary<Vector2Int, RectTransform>();
 
     private void Awake()
     {
@@ -76,6 +77,7 @@ public class DraggableBlock : MonoBehaviour
 
         foreach (Transform child in transform) { Destroy(child.gameObject); }
         _bodyBlocks.Clear();
+        _tileByOffset.Clear();
 
         foreach (var offset in CurrentOffsets)
         {
@@ -167,17 +169,42 @@ public class DraggableBlock : MonoBehaviour
         tileRect.anchoredPosition = new Vector2(localX, localY);
 
         _bodyBlocks.Add(tileRect);
+        _tileByOffset[offset] = tileRect;
     }
 
-    public void MoveToPointer(RectTransform slotRect, Vector2 screenMousePosition)
+    public void MoveToPointer(RectTransform slotRect, Vector2 screenMousePosition, Camera uiCam = null)
     {
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(slotRect, screenMousePosition, null, out Vector2 localPoint);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(slotRect, screenMousePosition, uiCam, out Vector2 localPoint);
         _rectTransform.anchoredPosition = new Vector2(localPoint.x, localPoint.y + _blockYOffset);
     }
 
     public Vector2 GetScreenPosition(Camera uiCam = null)
     {
         return RectTransformUtility.WorldToScreenPoint(uiCam, _rectTransform.position);
+    }
+
+    public bool TryGetAnchorScreenPoint(Camera uiCam, out Vector2 screenPos, out Vector2Int anchorOffset)
+    {
+        screenPos = default;
+        anchorOffset = default;
+
+        if (CurrentOffsets == null || CurrentOffsets.Length == 0)
+            return false;
+
+        // 가장 좌하단(=x가 가장 작고, 같으면 y가 가장 작은) 타일을 앵커로 사용
+        anchorOffset = CurrentOffsets[0];
+        for (int i = 1; i < CurrentOffsets.Length; i++)
+        {
+            var o = CurrentOffsets[i];
+            if (o.x < anchorOffset.x || (o.x == anchorOffset.x && o.y < anchorOffset.y))
+                anchorOffset = o;
+        }
+
+        if (!_tileByOffset.TryGetValue(anchorOffset, out var anchorRect) || anchorRect == null)
+            return false;
+
+        screenPos = RectTransformUtility.WorldToScreenPoint(uiCam, anchorRect.position);
+        return true;
     }
 
     public void BlockAnimate(float targetSize)
