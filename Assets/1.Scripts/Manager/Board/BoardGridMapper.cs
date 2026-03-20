@@ -24,42 +24,42 @@ public sealed class BoardGridMapper
         if (_boardRoot == null || _grid == null)
             return false;
 
-        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(_boardRoot, screenPos, uiCam, out Vector2 local))
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(_boardRoot, screenPos, uiCam, out Vector2 posRelToBoard))
             return false;
 
         Rect rect = _boardRoot.rect;
-        float localFromLeft = local.x - rect.xMin;
-        float localFromBottom = local.y - rect.yMin;
+        float boardRelativeX = posRelToBoard.x - rect.xMin;
+        float boardRelativeY = posRelToBoard.y - rect.yMin;
 
         RectOffset padding = _grid.padding;
         Vector2 cell = _grid.cellSize;
         Vector2 spacing = _grid.spacing;
 
-        float px = localFromLeft - padding.left;
-        float pyFromBottom = localFromBottom - padding.bottom;
+        float xInsidePadding = boardRelativeX - padding.left;
+        float yInsidePadding = boardRelativeY - padding.bottom;
 
         float stepX = cell.x + spacing.x;
         float stepY = cell.y + spacing.y;
 
-        if (px < 0f || pyFromBottom < 0f)
+        if (xInsidePadding < 0f || yInsidePadding < 0f)
             return false;
 
-        int colFromLeft = Mathf.FloorToInt(px / stepX);
-        int rowFromBottom = Mathf.FloorToInt(pyFromBottom / stepY);
+        int colFromLeft = Mathf.FloorToInt(xInsidePadding / stepX);
+        int rowFromBottom = Mathf.FloorToInt(yInsidePadding / stepY);
 
         // 셀 영역 내부(간격 영역 제외)인지 체크
-        float inCellX = px - colFromLeft * stepX;
-        float inCellY = pyFromBottom - rowFromBottom * stepY;
+        float inCellX = xInsidePadding - colFromLeft * stepX;
+        float inCellY = yInsidePadding - rowFromBottom * stepY;
         if (inCellX < 0f || inCellX > cell.x || inCellY < 0f || inCellY > cell.y)
             return false;
 
-        bool startTop = _grid.startCorner == GridLayoutGroup.Corner.UpperLeft
+        bool isStartTop = _grid.startCorner == GridLayoutGroup.Corner.UpperLeft
                         || _grid.startCorner == GridLayoutGroup.Corner.UpperRight;
-        bool startRight = _grid.startCorner == GridLayoutGroup.Corner.UpperRight
+        bool isStartRight = _grid.startCorner == GridLayoutGroup.Corner.UpperRight
                           || _grid.startCorner == GridLayoutGroup.Corner.LowerRight;
 
-        int col = startRight ? (_width - 1) - colFromLeft : colFromLeft;
-        int row = startTop ? (_height - 1) - rowFromBottom : rowFromBottom;
+        int col = isStartRight ? (_width - 1) - colFromLeft : colFromLeft;
+        int row = isStartTop ? (_height - 1) - rowFromBottom : rowFromBottom;
 
         if (col < 0 || col >= _width || row < 0 || row >= _height)
             return false;
