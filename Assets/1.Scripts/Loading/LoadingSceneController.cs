@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Loading : MonoBehaviour
+public class LoadingSceneController : MonoBehaviour
 {
     [Header("UI References")]
     [SerializeField] private LoadingUI _loadingUI;
@@ -15,8 +15,7 @@ public class Loading : MonoBehaviour
 
     private void SystemSetup()
     {
-        // 다른 화면으로 가도 계속되게, 꺼지지 않게
-        Application.runInBackground = true;
+        Application.runInBackground = false;
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
         _loadingUI.Play(OnAfterLoading);
@@ -24,6 +23,6 @@ public class Loading : MonoBehaviour
 
     private void OnAfterLoading()
     {
-        SceneLoadManager.LoadScene(_nextScene);
+        SceneLoadManager.Instance.LoadScene(_nextScene);
     }
 }

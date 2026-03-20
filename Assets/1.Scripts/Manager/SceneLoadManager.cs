@@ -2,14 +2,14 @@ using UnityEngine.SceneManagement;
 
 public enum SceneName { Loading = 0, Lobby = 1, InGame = 2 }
 
-public static class SceneLoadManager
+public class SceneLoadManager : Singleton<SceneLoadManager>
 {
-    public static string GetActiveScene()
+    public string GetActiveScene()
     {
         return SceneManager.GetActiveScene().name;
     }
 
-    public static void LoadScene(string sceneName = "")
+    public void LoadScene(string sceneName = "")
     {
         if (sceneName == "")
             SceneManager.LoadScene(GetActiveScene());
@@ -18,7 +18,7 @@ public static class SceneLoadManager
             SceneManager.LoadScene(sceneName);
     }
 
-    public static void LoadScene(SceneName sceneName)
+    public void LoadScene(SceneName sceneName)
     {
         SceneManager.LoadScene(sceneName.ToString());
     }

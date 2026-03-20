@@ -12,7 +12,7 @@ public class BaseOptionUI : BasePopupUI
     {
         InGameManager.Instance.ResetGame();
         Close();
-        SceneLoadManager.LoadScene(SceneName.Lobby);
+        SceneLoadManager.Instance.LoadScene(SceneName.Lobby);
     }
 
     public override void Close()
