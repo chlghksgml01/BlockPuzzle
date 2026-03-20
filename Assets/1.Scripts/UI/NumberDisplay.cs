@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using DG.Tweening;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class NumberDisplay : MonoBehaviour
@@ -6,6 +7,8 @@ public class NumberDisplay : MonoBehaviour
     [SerializeField] private GameObject _digitPrefab;
     [SerializeField] private Sprite[] _digitSprites;
     [SerializeField] private Transform _container;
+
+    private Tween _scoreTween;
 
     public void UpdateDisplay(int score, int skipCount = 0)
     {
@@ -28,5 +31,16 @@ public class NumberDisplay : MonoBehaviour
                 digitImage.sprite = _digitSprites[digitIndex];
             }
         }
+    }
+
+    public void ScoreRollUpdate(int currentScore, int newScore, float animationDuration = 0.5f)
+    {
+        _scoreTween?.Kill();
+
+        _scoreTween = DOVirtual.Int(currentScore, newScore, animationDuration, (value) =>
+        {
+            UpdateDisplay(value);
+        })
+        .SetEase(Ease.OutQuad);
     }
 }

@@ -15,7 +15,7 @@ public class ScoreManager : Singleton<ScoreManager>
     private int _currentComboCount = 0;
     private int _boardWidth;
 
-    public event Action<int> OnScoreChanged;
+    public event Action<int, int> OnScoreChanged;
     public event Action OnResetScore;
     public static event Action<int> OnHighScoreUpdated;
 
@@ -88,8 +88,9 @@ public class ScoreManager : Singleton<ScoreManager>
 
     public void AddScore(int score)
     {
-        CurrentScore += score;
-        OnScoreChanged?.Invoke(CurrentScore);
+        int newScore = CurrentScore + score;
+        OnScoreChanged?.Invoke(CurrentScore, newScore);
+        CurrentScore = newScore;
     }
 
     private void ResetScore()

@@ -6,6 +6,7 @@ public class ScoreUI : MonoBehaviour
     [Header("Score Display")]
     [SerializeField] private NumberDisplay _scoreDisplay;
     [SerializeField] private NumberDisplay _bestScoreDisplay;
+    [SerializeField] private float _animationDuration = 0.5f;
 
     private int _bestScore;
 
@@ -13,7 +14,7 @@ public class ScoreUI : MonoBehaviour
     {
         if (ScoreManager.Instance != null)
         {
-            ScoreManager.Instance.OnScoreChanged += UpdateScoreUI;
+            ScoreManager.Instance.OnScoreChanged += RollUpdateScoreUI;
             ScoreManager.Instance.OnResetScore += ResetScore;
         }
         UpdateBestScore();
@@ -31,9 +32,9 @@ public class ScoreUI : MonoBehaviour
         }
     }
 
-    private void UpdateScoreUI(int newScore)
+    private void RollUpdateScoreUI(int currentScore, int newScore)
     {
-        _scoreDisplay.UpdateDisplay(newScore);
+        _scoreDisplay.ScoreRollUpdate(currentScore, newScore, _animationDuration);
         if (newScore > _bestScore)
         {
             _bestScore = newScore;
@@ -43,7 +44,7 @@ public class ScoreUI : MonoBehaviour
 
     private void ResetScore()
     {
-        UpdateScoreUI(0);
+        _scoreDisplay.UpdateDisplay(0);
         UpdateBestScore();
     }
 }
