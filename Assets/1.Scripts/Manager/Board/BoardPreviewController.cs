@@ -21,14 +21,14 @@ public sealed class BoardPreviewController
 
     public bool HasLastPreview => _lastPreviewBlock != null && _lastPreviewCells.Count > 0;
 
-    public bool UpdatePreview(DraggableBlock block, Vector2 anchorScreenPos, Vector2Int anchorOffset, Camera uiCam, Sprite previewSprite, float previewAlpha, out bool canPlace, out List<BoardCell> lastPreviewCells)
+    public bool UpdatePreview(DraggableBlock block, Vector2 anchorScreenPos, Vector2Int anchorOffset, Camera uiCam, out bool canPlace, out List<BoardCell> lastPreviewCells)
     {
         canPlace = false;
         lastPreviewCells = new List<BoardCell>();
 
         if (block == null || block.CurrentOffsets == null || block.CurrentOffsets.Length == 0)
         {
-            Clear(previewSprite, previewAlpha);
+            Clear();
             return false;
         }
 
@@ -42,7 +42,7 @@ public sealed class BoardPreviewController
             {
                 if (IsTooFarFromLastPreview(anchorScreenPos, uiCam))
                 {
-                    Clear(previewSprite, previewAlpha);
+                    Clear();
                     return false;
                 }
 
@@ -50,11 +50,10 @@ public sealed class BoardPreviewController
                 return false;
             }
 
-            Clear(previewSprite, previewAlpha);
+            Clear();
             return false;
         }
 
-        // 보드 Y는 위→아래로 증가, 블록 offset.y는 UI와 같이 ↑일수록 값 증가 → CanPlaceAt에서 ty = baseY - offset.y 사용
         int baseX = anchorX - anchorOffset.x;
         int baseY = anchorY + anchorOffset.y;
 
@@ -64,7 +63,7 @@ public sealed class BoardPreviewController
             {
                 if (IsTooFarFromLastPreview(anchorScreenPos, uiCam))
                 {
-                    Clear(previewSprite, previewAlpha);
+                    Clear();
                     return false;
                 }
 
@@ -72,7 +71,7 @@ public sealed class BoardPreviewController
                 return false;
             }
 
-            Clear(previewSprite, previewAlpha);
+            Clear();
             return false;
         }
 
@@ -84,7 +83,7 @@ public sealed class BoardPreviewController
 
         foreach (BoardCell cell in _lastPreviewCells)
         {
-            cell.UpdateCellVisual(true);
+            cell.UpdateCellVisual(true, block.BlockSprite);
             cell.SetPreviewFilled(true);
         }
 
@@ -123,7 +122,7 @@ public sealed class BoardPreviewController
         return true;
     }
 
-    public void Clear(Sprite previewSprite, float previewAlpha)
+    public void Clear()
     {
         ClearAllPreviewOnly();
         ClearStateOnly();

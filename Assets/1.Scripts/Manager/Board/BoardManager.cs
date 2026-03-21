@@ -22,12 +22,10 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
     [SerializeField] private RectTransform _hintBoardRoot;
     [SerializeField] private GameObject _cellPrefab;
     [SerializeField] private GameObject _hintCellPrefab;
-    [SerializeField] private Sprite _previewSprite;
-    public Sprite PreviewSprite => _previewSprite;
 
     [Header("Visual Settings")]
-    [SerializeField, Range(0f, 1f)] private float _previewAlpha = 0.6f;
-    public float PreviewAlpha => _previewAlpha;
+    [SerializeField] private Color _previewColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+    public Color PreviewColor => _previewColor;
 
     [Header("Drag Preview Settings")]
     [SerializeField, Min(0f)] private float _keepPreviewMaxDistancePx = 180f;
@@ -104,7 +102,7 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
     public void UpdatePreviewFromScreen(DraggableBlock block, Vector2 anchorScreenPos, Vector2Int anchorOffset, Camera uiCam = null)
     {
         bool canPlace;
-        bool changed = _preview.UpdatePreview(block, anchorScreenPos, anchorOffset, uiCam, _previewSprite, _previewAlpha, out canPlace, out _lastPreviewCells);
+        bool changed = _preview.UpdatePreview(block, anchorScreenPos, anchorOffset, uiCam, out canPlace, out _lastPreviewCells);
         if (changed)
             _model.PreviewLineClears(_lastPreviewCells, block.BlockSprite);
         CanPlaceBlock = canPlace;
@@ -126,7 +124,7 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
 
     public void ClearDragPreview()
     {
-        _preview.Clear(_previewSprite, _previewAlpha);
+        _preview.Clear();
         CanPlaceBlock = false;
     }
 
