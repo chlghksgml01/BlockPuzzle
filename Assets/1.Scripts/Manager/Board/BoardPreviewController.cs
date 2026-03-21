@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public sealed class BoardPreviewController
@@ -21,7 +22,7 @@ public sealed class BoardPreviewController
 
     public bool HasLastPreview => _lastPreviewBlock != null && _lastPreviewCells.Count > 0;
 
-    public bool UpdatePreview(DraggableBlock block, Vector2 screenPos, Vector2Int anchorOffset, Camera uiCam, Sprite previewSprite, float previewAlpha, out bool canPlace)
+    public bool UpdatePreview(DraggableBlock block, Vector2 anchorScreenPos, Vector2Int anchorOffset, Camera uiCam, Sprite previewSprite, float previewAlpha, out bool canPlace, GameObject anchorPos, TMP_Text text, TMP_Text text2, RectTransform debugPointer)
     {
         canPlace = false;
 
@@ -35,11 +36,11 @@ public sealed class BoardPreviewController
         if (!isSameBlock)
             ClearAllPreviewOnly();
 
-        if (!_mapper.TryGetCellIndexFromScreen(screenPos, uiCam, out int anchorX, out int anchorY))
+        if (!_mapper.TryGetCellIndexFromScreen(anchorScreenPos, uiCam, out int anchorX, out int anchorY, text, text2, debugPointer))
         {
             if (isSameBlock && HasLastPreview)
             {
-                if (IsTooFarFromLastPreview(screenPos, uiCam))
+                if (IsTooFarFromLastPreview(anchorScreenPos, uiCam))
                 {
                     Clear(previewSprite, previewAlpha);
                     return false;
@@ -60,7 +61,7 @@ public sealed class BoardPreviewController
         {
             if (isSameBlock && HasLastPreview)
             {
-                if (IsTooFarFromLastPreview(screenPos, uiCam))
+                if (IsTooFarFromLastPreview(anchorScreenPos, uiCam))
                 {
                     Clear(previewSprite, previewAlpha);
                     return false;

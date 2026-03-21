@@ -89,7 +89,6 @@ public class DraggableBlock : MonoBehaviour
                 return i;
         }
 
-        // �ε��Ҽ� ���� ���
         for (int i = shapes.Length - 1; i >= 0; i--)
         {
             if (shapes[i] != null && shapes[i].Weights > 0f)
@@ -230,9 +229,9 @@ public class DraggableBlock : MonoBehaviour
     }
 
     // 기준 블럭 찾고 화면상 좌표 계산
-    public bool TryGetAnchorScreenPoint(Camera uiCam, out Vector2 screenPos, out Vector2Int anchorOffset)
+    public bool TryGetAnchorScreenPoint(Camera uiCam, out Vector2 anchorScreenPosition, out Vector2Int anchorOffset)
     {
-        screenPos = default;
+        anchorScreenPosition = default;
         anchorOffset = default;
 
         if (CurrentOffsets == null || CurrentOffsets.Length == 0)
@@ -250,7 +249,7 @@ public class DraggableBlock : MonoBehaviour
         if (!_tileByOffset.TryGetValue(anchorOffset, out RectTransform anchorRect) || anchorRect == null)
             return false;
 
-        screenPos = RectTransformUtility.WorldToScreenPoint(uiCam, anchorRect.position);
+        anchorScreenPosition = RectTransformUtility.WorldToScreenPoint(uiCam, anchorRect.position);
         return true;
     }
 

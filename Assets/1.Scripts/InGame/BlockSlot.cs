@@ -88,8 +88,8 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
         Block.MoveToPointer(slotRect, eventData.position, cam);
 
-        if (Block.TryGetAnchorScreenPoint(cam, out Vector2 anchorScreen, out Vector2Int anchorOffset))
-            BoardManager.Instance.UpdatePreviewFromScreen(Block, anchorScreen, anchorOffset, cam);
+        if (Block.TryGetAnchorScreenPoint(cam, out Vector2 anchorScreenPos, out Vector2Int anchorOffset))
+            BoardManager.Instance.UpdatePreviewFromScreen(Block, anchorScreenPos, anchorOffset, cam);
         else
             BoardManager.Instance.UpdatePreviewFromScreen(Block, Block.GetScreenPosition(cam), cam);
     }
