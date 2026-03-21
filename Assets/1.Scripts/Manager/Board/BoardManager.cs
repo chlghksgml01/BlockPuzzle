@@ -1,6 +1,4 @@
 using System;
-using TMPro;
-using UnityEditor.Tilemaps;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -46,12 +44,6 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
     private BoardHintController _hint;
 
     public static event Action<int> OnLinesCleared;
-
-
-    public GameObject anchorPos;
-    public TMP_Text text;
-    public TMP_Text text2;
-    public RectTransform debugPointer;
 
     override protected void OnAwake()
     {
@@ -110,7 +102,7 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
     public bool UpdatePreviewFromScreen(DraggableBlock block, Vector2 anchorScreenPos, Vector2Int anchorOffset, Camera uiCam = null)
     {
         bool canPlace;
-        bool changed = _preview.UpdatePreview(block, anchorScreenPos, anchorOffset, uiCam, _previewSprite, _previewAlpha, out canPlace, anchorPos, text, text2, debugPointer);
+        bool changed = _preview.UpdatePreview(block, anchorScreenPos, anchorOffset, uiCam, _previewSprite, _previewAlpha, out canPlace);
         CanPlaceBlock = canPlace;
         return changed;
     }
@@ -153,4 +145,3 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
         _hint.ShowHint(showHint, block, isPlaced);
     }
 }
-

@@ -58,8 +58,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a654a2c55be75b4b8c500a8896ec101, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TouchArea
-  _canvas: {fileID: 0}
   _blockPrefab: {fileID: 5916854525687073785, guid: 51287115d078ad74a9fdbf603881bf3d, type: 3}
+  TestBlock: {fileID: 0}
 --- !u!114 &4139322279151142291
 MonoBehaviour:
   m_ObjectHideFlags: 0

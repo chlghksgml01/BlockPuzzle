@@ -355,6 +355,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1031378056}
     - target: {fileID: 1151359815240372624, guid: 29c2bdba7893d3c41aff21c1e3a46874, type: 3}
+      propertyPath: TestBlock
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1151359815240372624, guid: 29c2bdba7893d3c41aff21c1e3a46874, type: 3}
       propertyPath: _blockShapes
       value: 
       objectReference: {fileID: 11400000, guid: 99d5217d226540142b6c679182df388d, type: 2}
@@ -903,6 +907,10 @@ PrefabInstance:
       propertyPath: _canvas
       value: 
       objectReference: {fileID: 1031378056}
+    - target: {fileID: 1151359815240372624, guid: 29c2bdba7893d3c41aff21c1e3a46874, type: 3}
+      propertyPath: TestBlock
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 7221395030069477644, guid: 29c2bdba7893d3c41aff21c1e3a46874, type: 3}
       propertyPath: m_Name
       value: DraggableBlock_TouchArea3
@@ -1656,9 +1664,25 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
+      propertyPath: text
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
+      propertyPath: text2
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
+      propertyPath: anchorPos
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
       propertyPath: _boardRoot
       value: 
       objectReference: {fileID: 27546566}
+    - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
+      propertyPath: debugPointer
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
       propertyPath: _hintBoardRoot
       value: 
@@ -1680,9 +1704,41 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1031378053}
     m_Modifications:
+    - target: {fileID: 5640937464834895786, guid: 6253d0fc9cb774d458eab50e04fb3dfb, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5640937464834895786, guid: 6253d0fc9cb774d458eab50e04fb3dfb, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5640937464834895786, guid: 6253d0fc9cb774d458eab50e04fb3dfb, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5640937464834895786, guid: 6253d0fc9cb774d458eab50e04fb3dfb, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6935597182803941919, guid: 6253d0fc9cb774d458eab50e04fb3dfb, type: 3}
       propertyPath: m_Name
       value: Score
+      objectReference: {fileID: 0}
+    - target: {fileID: 8160154146923420731, guid: 6253d0fc9cb774d458eab50e04fb3dfb, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8160154146923420731, guid: 6253d0fc9cb774d458eab50e04fb3dfb, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8160154146923420731, guid: 6253d0fc9cb774d458eab50e04fb3dfb, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8160154146923420731, guid: 6253d0fc9cb774d458eab50e04fb3dfb, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8900693361046944823, guid: 6253d0fc9cb774d458eab50e04fb3dfb, type: 3}
       propertyPath: m_Pivot.x
@@ -2201,6 +2257,10 @@ PrefabInstance:
       propertyPath: _canvas
       value: 
       objectReference: {fileID: 1031378056}
+    - target: {fileID: 1151359815240372624, guid: 29c2bdba7893d3c41aff21c1e3a46874, type: 3}
+      propertyPath: TestBlock
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 1151359815240372624, guid: 29c2bdba7893d3c41aff21c1e3a46874, type: 3}
       propertyPath: _blockShapes
       value: 
