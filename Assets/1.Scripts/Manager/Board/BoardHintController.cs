@@ -42,7 +42,7 @@ public sealed class BoardHintController
         for (int i = 0; i < offsets.Length; i++)
         {
             int tx = basePos.x + offsets[i].x;
-            int ty = basePos.y + offsets[i].y;
+            int ty = basePos.y - offsets[i].y;
 
             if (tx < 0 || tx >= _width || ty < 0 || ty >= _height)
                 continue;

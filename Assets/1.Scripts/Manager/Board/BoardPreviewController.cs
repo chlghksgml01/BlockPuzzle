@@ -53,8 +53,9 @@ public sealed class BoardPreviewController
             return false;
         }
 
+        // 보드 Y는 위→아래로 증가, 블록 offset.y는 UI와 같이 ↑일수록 값 증가 → CanPlaceAt에서 ty = baseY - offset.y 사용
         int baseX = anchorX - anchorOffset.x;
-        int baseY = anchorY - anchorOffset.y;
+        int baseY = anchorY + anchorOffset.y;
 
         if (!_model.CanPlaceAt(baseX, baseY, block.CurrentOffsets, out List<BoardCell> previewCells))
         {

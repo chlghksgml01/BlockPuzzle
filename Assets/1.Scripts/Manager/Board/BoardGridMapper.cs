@@ -1,4 +1,3 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -30,19 +29,22 @@ public sealed class BoardGridMapper
     public bool TryGetCellIndexFromScreen(Vector2 screenPos, Camera uiCam, out int x, out int y)
     {
         x = y = -1;
+
         if (_boardRoot == null || _grid == null)
             return false;
 
+        // posRelToBoard : _boardRoot 위에서 _boardRoot의 중심점(Pivot)을 (0,0)으로 잡았을 때 screenPos가 어디 있는지 나타낸 좌표
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(_boardRoot, screenPos, uiCam, out Vector2 posRelToBoard))
             return false;
 
+        // 왼쪽 위 0,0 기준으로 보정
         Rect rect = _boardRoot.rect;
-
         float boardRelativeX = posRelToBoard.x - rect.xMin;
-        float boardRelativeYFromTop = rect.yMax - posRelToBoard.y;
+        float boardRelativeY = rect.yMax - posRelToBoard.y;
 
+        // 패딩은 무시하고 실제 첫 번째 칸이 시작되는 지점부터 screenPos까지가 몇 픽셀인지 알기 위해 패딩만큼 보정
         float xFromFirstCell = boardRelativeX - _padding.left;
-        float yFromFirstCell = boardRelativeYFromTop - _padding.top;
+        float yFromFirstCell = boardRelativeY - _padding.top;
 
         int colIdx = Mathf.FloorToInt(xFromFirstCell / _stepX);
         int rowIdx = Mathf.FloorToInt(yFromFirstCell / _stepY);
@@ -51,7 +53,7 @@ public sealed class BoardGridMapper
             return false;
 
         x = colIdx;
-        y = _height - 1 - rowIdx;
+        y = rowIdx;
 
         return true;
     }

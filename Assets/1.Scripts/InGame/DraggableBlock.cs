@@ -237,12 +237,13 @@ public class DraggableBlock : MonoBehaviour
         if (CurrentOffsets == null || CurrentOffsets.Length == 0)
             return false;
 
-        // 가장 왼쪽 아래에 있는 블럭 찾기
+        // 가장 왼쪽 위에 있는 블럭 찾기
         anchorOffset = CurrentOffsets[0];
         for (int i = 1; i < CurrentOffsets.Length; i++)
         {
             Vector2Int offset = CurrentOffsets[i];
-            if (offset.x < anchorOffset.x || (offset.x == anchorOffset.x && offset.y < anchorOffset.y))
+
+            if (offset.x < anchorOffset.x || (offset.x == anchorOffset.x && offset.y > anchorOffset.y))
                 anchorOffset = offset;
         }
 
