@@ -21,9 +21,10 @@ public sealed class BoardPreviewController
 
     public bool HasLastPreview => _lastPreviewBlock != null && _lastPreviewCells.Count > 0;
 
-    public bool UpdatePreview(DraggableBlock block, Vector2 anchorScreenPos, Vector2Int anchorOffset, Camera uiCam, Sprite previewSprite, float previewAlpha, out bool canPlace)
+    public bool UpdatePreview(DraggableBlock block, Vector2 anchorScreenPos, Vector2Int anchorOffset, Camera uiCam, Sprite previewSprite, float previewAlpha, out bool canPlace, out List<BoardCell> lastPreviewCells)
     {
         canPlace = false;
+        lastPreviewCells = new List<BoardCell>();
 
         if (block == null || block.CurrentOffsets == null || block.CurrentOffsets.Length == 0)
         {
@@ -79,10 +80,12 @@ public sealed class BoardPreviewController
         ClearAllPreviewOnly();
         _lastPreviewCells.Clear();
         _lastPreviewCells.AddRange(previewCells);
+        lastPreviewCells = _lastPreviewCells;
 
         foreach (BoardCell cell in _lastPreviewCells)
         {
             cell.UpdateCellVisual(true);
+            cell.SetPreviewFilled(true);
         }
 
         _lastPreviewBasePos = new Vector2Int(baseX, baseY);
@@ -132,6 +135,7 @@ public sealed class BoardPreviewController
         foreach (BoardCell cell in cells)
         {
             cell.UpdateCellVisual(false);
+            cell.SetPreviewFilled(false);
         }
     }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -37,6 +38,7 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
     private BoardCell[,] _cells;
     private HintBoardCell[,] _hintCells;
     private GridLayoutGroup _boardGrid;
+    private List<BoardCell> _lastPreviewCells;
 
     private BoardGridMapper _mapper;
     private BoardModel _model;
@@ -94,17 +96,18 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
         _hint = new BoardHintController(_width, _height, _hintCells, _model);
     }
 
-    public bool UpdatePreviewFromScreen(DraggableBlock block, Vector2 anchorScreenPos, Camera uiCam = null)
+    public void UpdatePreviewFromScreen(DraggableBlock block, Vector2 anchorScreenPos, Camera uiCam = null)
     {
-        return UpdatePreviewFromScreen(block, anchorScreenPos, Vector2Int.zero, uiCam);
+        UpdatePreviewFromScreen(block, anchorScreenPos, Vector2Int.zero, uiCam);
     }
 
-    public bool UpdatePreviewFromScreen(DraggableBlock block, Vector2 anchorScreenPos, Vector2Int anchorOffset, Camera uiCam = null)
+    public void UpdatePreviewFromScreen(DraggableBlock block, Vector2 anchorScreenPos, Vector2Int anchorOffset, Camera uiCam = null)
     {
         bool canPlace;
-        bool changed = _preview.UpdatePreview(block, anchorScreenPos, anchorOffset, uiCam, _previewSprite, _previewAlpha, out canPlace);
+        bool changed = _preview.UpdatePreview(block, anchorScreenPos, anchorOffset, uiCam, _previewSprite, _previewAlpha, out canPlace, out _lastPreviewCells);
+        if (changed)
+            _model.PreviewLineClears(_lastPreviewCells, block.BlockSprite);
         CanPlaceBlock = canPlace;
-        return changed;
     }
 
     public bool PlaceLastPreview(DraggableBlock block, Sprite blockSprite, out int placedCount)

@@ -8,6 +8,9 @@ public class BoardCell : MonoBehaviour
     public int _y { get; set; }
 
     public bool IsFilled { get; private set; }
+    public bool IsPreviewFilled { get; private set; }
+
+    private Sprite _defaultSprite;
 
     private void Awake()
     {
@@ -24,6 +27,12 @@ public class BoardCell : MonoBehaviour
     public void SetFilled(bool isfilled)
     {
         IsFilled = isfilled;
+        IsPreviewFilled = isfilled;
+    }
+
+    public void SetPreviewFilled(bool isPreviewFilled)
+    {
+        IsPreviewFilled = isPreviewFilled;
     }
 
     public void UpdateCellVisual(bool isPreviewFilled)
@@ -46,7 +55,14 @@ public class BoardCell : MonoBehaviour
     public void PlaceBlock(Sprite blockSprite)
     {
         SetFilled(true);
-        _image.sprite = blockSprite;
+        _defaultSprite = blockSprite;
+        _image.sprite = _defaultSprite;
         _image.color = new Color(1f, 1f, 1f, 1f);
+    }
+
+    public void SetLinePreview(bool active, Sprite lineSprite = null)
+    {
+        if (_image.sprite != BoardManager.Instance.PreviewSprite)
+            _image.sprite = active ? lineSprite : _defaultSprite;
     }
 }

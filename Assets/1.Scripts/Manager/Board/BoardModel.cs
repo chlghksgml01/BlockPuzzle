@@ -28,8 +28,6 @@ public sealed class BoardModel
 
     public bool IsFilled(int x, int y) => _cells[x, y].IsFilled;
 
-    public void SetFilled(int x, int y, bool filled) => _cells[x, y].SetFilled(filled);
-
     public void ResetBoard()
     {
         for (int x = 0; x < _width; x++)
@@ -44,11 +42,77 @@ public sealed class BoardModel
 
     public void ProcessFullLines()
     {
-        CheckFullLines();
+        UpdateFullLinesState();
         RemoveFullLines();
     }
 
-    private void CheckFullLines()
+    public void PreviewLineClears(List<BoardCell> previewCells, Sprite blockSprite)
+    {
+        ClearAllLinePreviews();
+
+        if (previewCells == null || previewCells.Count == 0)
+            return;
+
+        HashSet<int> rowsToCheck = new HashSet<int>();
+        HashSet<int> colsToCheck = new HashSet<int>();
+
+        foreach (var cell in previewCells)
+        {
+            rowsToCheck.Add(cell._y);
+            colsToCheck.Add(cell._x);
+        }
+
+        foreach (int y in rowsToCheck)
+        {
+            bool isFull = true;
+            for (int x = 0; x < _width; x++)
+            {
+                if (!_cells[x, y].IsFilled && !_cells[x, y].IsPreviewFilled)
+                {
+                    isFull = false;
+                    break;
+                }
+            }
+
+            if (isFull)
+            {
+                for (int x = 0; x < _width; x++)
+                    _cells[x, y].SetLinePreview(true, blockSprite);
+            }
+        }
+
+        foreach (int x in colsToCheck)
+        {
+            bool isFull = true;
+            for (int y = 0; y < _height; y++)
+            {
+                if (!_cells[x, y].IsFilled && !_cells[x, y].IsPreviewFilled)
+                {
+                    isFull = false;
+                    break;
+                }
+            }
+
+            if (isFull)
+            {
+                for (int y = 0; y < _height; y++)
+                    _cells[x, y].SetLinePreview(true, blockSprite);
+            }
+        }
+    }
+
+    private void ClearAllLinePreviews()
+    {
+        for (int x = 0; x < _width; x++)
+        {
+            for (int y = 0; y < _height; y++)
+            {
+                _cells[x, y].SetLinePreview(false);
+            }
+        }
+    }
+
+    private void UpdateFullLinesState()
     {
         _fullRow.Clear();
         _fullCol.Clear();
