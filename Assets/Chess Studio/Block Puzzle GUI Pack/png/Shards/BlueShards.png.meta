@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: 294e9a004b80b2b43bc71792fcf3c3bc
+guid: 233332b5fec9adc43b12491a5a6f2904
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4426580784065726527
-    second: GreenShards4_0
+      213: 1764106583278826601
+    second: BlueShards_0
+  - first:
+      213: 2824214501118129179
+    second: BlueShards_1
+  - first:
+      213: -7622552530411916041
+    second: BlueShards_2
+  - first:
+      213: -3803900675424595780
+    second: BlueShards_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,7 +55,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 0
   alignment: 0
@@ -113,13 +122,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: GreenShards4_0
+      name: BlueShards_0
       rect:
         serializedVersion: 2
-        x: 20
-        y: 0
-        width: 308
-        height: 320
+        x: 2
+        y: 496
+        width: 320
+        height: 448
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +137,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 1c7313cda30a192c0800000000000000
-      internalID: -4426580784065726527
+      spriteID: 9643342479d5b7810800000000000000
+      internalID: 1764106583278826601
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BlueShards_1
+      rect:
+        serializedVersion: 2
+        x: 501
+        y: 657
+        width: 449
+        height: 287
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1437ac1020a13720800000000000000
+      internalID: 2824214501118129179
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BlueShards_2
+      rect:
+        serializedVersion: 2
+        x: 8
+        y: 9
+        width: 309
+        height: 321
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f4fa0f0cd0473690800000000000000
+      internalID: -7622552530411916041
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BlueShards_3
+      rect:
+        serializedVersion: 2
+        x: 706
+        y: 9
+        width: 244
+        height: 289
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cb0d2785d74d53bc0800000000000000
+      internalID: -3803900675424595780
       vertices: []
       indices: 
       edges: []
@@ -138,7 +213,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +223,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      GreenShards4_0: -4426580784065726527
+      BlueShards_0: 1764106583278826601
+      BlueShards_1: 2824214501118129179
+      BlueShards_2: -7622552530411916041
+      BlueShards_3: -3803900675424595780
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

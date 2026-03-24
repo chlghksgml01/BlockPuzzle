@@ -13,9 +13,9 @@ public sealed class BoardModel
 
     public Vector2Int LastPlaceableBasePos { get; private set; }
 
-    private readonly Action<int> _onLinesCleared;
+    private readonly Action<int, IReadOnlyList<int>, IReadOnlyList<int>> _onLinesCleared;
 
-    public BoardModel(int width, int height, BoardCell[,] cells, Action<int> onLinesCleared)
+    public BoardModel(int width, int height, BoardCell[,] cells, Action<int, IReadOnlyList<int>, IReadOnlyList<int>> onLinesCleared)
     {
         _width = width;
         _height = height;
@@ -151,7 +151,7 @@ public sealed class BoardModel
 
         int cleared = _fullRow.Count + _fullCol.Count;
         if (cleared > 0)
-            _onLinesCleared?.Invoke(cleared);
+            _onLinesCleared?.Invoke(cleared, new List<int>(_fullRow), new List<int>(_fullCol));
     }
 
     private void RemoveFullLines()

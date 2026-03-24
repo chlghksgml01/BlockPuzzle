@@ -10,6 +10,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     public DraggableBlock Block { get; private set; }
 
     public static event Action<int> OnBlockPlaced;
+    public static event Action<Sprite> OnBlockSpritePlaced;
     public bool HasBlock { get; private set; }
 
     public void SpawnNewBlock(Sprite blockSprite)
@@ -44,9 +45,11 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         if (BoardManager.Instance.CanPlaceBlock)
         {
             InGameManager.Instance.StopHintCoroutine(Block, true);
+            Sprite placedSprite = Block.BlockSprite;
             if (BoardManager.Instance.PlaceLastPreview(Block, Block.BlockSprite, out int placedCount))
             {
                 RemoveBlock();
+                OnBlockSpritePlaced?.Invoke(placedSprite);
                 OnBlockPlaced?.Invoke(placedCount);
             }
             else

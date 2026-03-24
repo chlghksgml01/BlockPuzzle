@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: c324fa56e6ef5ab4fb9449e755a6b908
+guid: 074b2581644c22842be92095043d29f5
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 8820866301455030548
-    second: GreenShards1_0
+      213: -2328605513357214056
+    second: SkyBlueShards_0
+  - first:
+      213: -4973342870759910431
+    second: SkyBlueShards_1
+  - first:
+      213: -8055176619053666895
+    second: SkyBlueShards_2
+  - first:
+      213: 8960012545776888217
+    second: SkyBlueShards_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,7 +55,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 0
   alignment: 0
@@ -113,12 +122,78 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: GreenShards1_0
+      name: SkyBlueShards_0
       rect:
         serializedVersion: 2
-        x: 10
-        y: 11
-        width: 450
+        x: 0
+        y: 486
+        width: 319
+        height: 448
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 89eb3528f912fafd0800000000000000
+      internalID: -2328605513357214056
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkyBlueShards_1
+      rect:
+        serializedVersion: 2
+        x: 499
+        y: 648
+        width: 442
+        height: 286
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1e3522a42032bfab0800000000000000
+      internalID: -4973342870759910431
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkyBlueShards_2
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 2
+        width: 309
+        height: 318
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1bd264a0b83463090800000000000000
+      internalID: -8055176619053666895
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkyBlueShards_3
+      rect:
+        serializedVersion: 2
+        x: 703
+        y: 0
+        width: 244
         height: 287
       alignment: 0
       pivot: {x: 0, y: 0}
@@ -128,8 +203,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 419d07d8a230a6a70800000000000000
-      internalID: 8820866301455030548
+      spriteID: 999231e20fb585c70800000000000000
+      internalID: 8960012545776888217
       vertices: []
       indices: 
       edges: []
@@ -138,7 +213,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +223,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      GreenShards1_0: 8820866301455030548
+      SkyBlueShards_0: -2328605513357214056
+      SkyBlueShards_1: -4973342870759910431
+      SkyBlueShards_2: -8055176619053666895
+      SkyBlueShards_3: 8960012545776888217
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

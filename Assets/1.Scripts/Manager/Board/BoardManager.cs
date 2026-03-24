@@ -16,6 +16,7 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
     [SerializeField] private int _width = 9;
     [SerializeField] private int _height = 9;
     public int Width => _width;
+    public int Height => _height;
 
     [Header("References (UI & Prefabs)")]
     [SerializeField] private RectTransform _boardRoot;
@@ -44,6 +45,7 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
     private BoardHintController _hint;
 
     public static event Action<int> OnLinesCleared;
+    public static event Action<IReadOnlyList<int>, IReadOnlyList<int>> OnLinesClearedDetailed;
 
     override protected void OnAwake()
     {
@@ -89,9 +91,28 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
     private void InitializeBoardCore()
     {
         _mapper = new BoardGridMapper(_boardRoot, _boardGrid, _width, _height);
-        _model = new BoardModel(_width, _height, _cells, cleared => OnLinesCleared?.Invoke(cleared));
+        _model = new BoardModel(_width, _height, _cells, (cleared, rows, cols) =>
+        {
+            OnLinesCleared?.Invoke(cleared);
+            OnLinesClearedDetailed?.Invoke(rows, cols);
+        });
         _preview = new BoardPreviewController(_model, _mapper, _keepPreviewMaxDistancePx);
         _hint = new BoardHintController(_width, _height, _hintCells, _model);
+    }
+
+    public bool TryGetCellWorldPosition(int x, int y, out Vector3 worldPos)
+    {
+        worldPos = default;
+
+        if (_cells == null || x < 0 || x >= _width || y < 0 || y >= _height)
+            return false;
+
+        BoardCell cell = _cells[x, y];
+        if (cell == null)
+            return false;
+
+        worldPos = cell.transform.position;
+        return true;
     }
 
     public void UpdatePreviewFromScreen(DraggableBlock block, Vector2 anchorScreenPos, Camera uiCam = null)

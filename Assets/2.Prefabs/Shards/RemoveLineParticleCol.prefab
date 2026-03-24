@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 638333086665246333}
   - component: {fileID: 4447890219121161998}
   m_Layer: 0
-  m_Name: RemoveLineParticle
+  m_Name: RemoveLineParticleCol
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
