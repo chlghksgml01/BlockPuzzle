@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,6 +7,8 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 {
     [Header("Prefab")]
     [SerializeField] private DraggableBlock _blockPrefab;
+    [Header("Spawn Effect")]
+    [SerializeField] private float _popDuration = 0.3f;
 
     public DraggableBlock Block { get; private set; }
 
@@ -17,8 +20,10 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     {
         HasBlock = true;
         Block = Instantiate(_blockPrefab, transform.position, transform.rotation, this.transform);
-
         Block.InitializeBlock(blockSprite);
+
+        Block.transform.localScale = Vector3.zero;
+        Block.transform.DOScale(Vector3.one, _popDuration).SetEase(Ease.OutBack);
     }
 
     public void OnPointerDown(PointerEventData eventData)
