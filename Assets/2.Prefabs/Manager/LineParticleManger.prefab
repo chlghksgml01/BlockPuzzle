@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4120064747113240718
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7857013648923250218}
+  - component: {fileID: 4701811147981103069}
+  m_Layer: 0
+  m_Name: LineParticleManger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7857013648923250218
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4120064747113240718}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.99264, y: 0.00091, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4701811147981103069
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4120064747113240718}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b88e2fc1efa0ecb4baf6ba3413ad34f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InGameEffectManager
+  _dontDestroyOnLoad: 0
+  _lineClearEffectRow: {fileID: 6578858611290514740, guid: 49a3ce1daff473246b5eaa9f3da0d9c2, type: 3}
+  _lineClearEffectCol: {fileID: 638333086665246333, guid: d6a3d711dc9853e45beb58c8bd39ade4, type: 3}
+  _effectRoot: {fileID: 7857013648923250218}
+  _shardsSprites:
+  - {fileID: -3803900675424595780, guid: 233332b5fec9adc43b12491a5a6f2904, type: 3}
+  - {fileID: 4445442228287933172, guid: 03d4d72a58c055b449b0cd04c2ea4e9e, type: 3}
+  - {fileID: -329706599131953744, guid: 70e22a6f311f60148b130b298afbde8a, type: 3}
+  - {fileID: 6262088640213102883, guid: 1d6314f8a83a5b745a53ffb68a42a298, type: 3}
+  - {fileID: 275718073664459905, guid: c9eaacfb0064b2849bc0abb64876ec71, type: 3}
+  - {fileID: 8960012545776888217, guid: 074b2581644c22842be92095043d29f5, type: 3}
+  - {fileID: 7819489596173785328, guid: f0a9d07468e9c124c91a1f4f5378b145, type: 3}
+  _prewarmCount: 4

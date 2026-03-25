@@ -56,7 +56,7 @@ public sealed class BoardModel
         HashSet<int> rowsToCheck = new HashSet<int>();
         HashSet<int> colsToCheck = new HashSet<int>();
 
-        foreach (var cell in previewCells)
+        foreach (BoardCell cell in previewCells)
         {
             rowsToCheck.Add(cell._y);
             colsToCheck.Add(cell._x);

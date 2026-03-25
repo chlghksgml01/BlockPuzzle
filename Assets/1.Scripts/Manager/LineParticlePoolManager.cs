@@ -41,7 +41,7 @@ public sealed class LineParticlePoolManager
         return ps;
     }
 
-    internal void Release(ParticleSystem instance)
+    public void Release(ParticleSystem instance)
     {
         if (instance == null)
             return;
@@ -76,7 +76,7 @@ public sealed class LineParticlePoolManager
     private ParticleSystem CreateInstance(ParticleSystem prefab)
     {
         ParticleSystem ps = Object.Instantiate(prefab, _parent);
-        var main = ps.main;
+        ParticleSystem.MainModule main = ps.main;
         main.stopAction = ParticleSystemStopAction.Callback;
 
         LineParticlePoolItem item = ps.GetComponent<LineParticlePoolItem>();
@@ -90,7 +90,8 @@ public sealed class LineParticlePoolManager
 
     private static void OnGetInstance(ParticleSystem ps)
     {
-        if (ps == null) return;
+        if (ps == null) 
+            return;
         ps.gameObject.SetActive(true);
         ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         ps.Clear(true);
@@ -98,7 +99,8 @@ public sealed class LineParticlePoolManager
 
     private static void OnReleaseInstance(ParticleSystem ps)
     {
-        if (ps == null) return;
+        if (ps == null) 
+            return;
         ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         ps.Clear(true);
         ps.gameObject.SetActive(false);

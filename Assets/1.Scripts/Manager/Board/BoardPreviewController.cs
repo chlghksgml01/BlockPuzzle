@@ -9,6 +9,7 @@ public sealed class BoardPreviewController
 
     private Vector2Int _lastPreviewBasePos = new Vector2Int(-1, -1);
     private Vector2Int _lastPreviewAnchorOffset = Vector2Int.zero;
+    private Vector2 _lastPreviewAnchorScreenPos = default;
     private DraggableBlock _lastPreviewBlock;
     private readonly List<BoardCell> _lastPreviewCells = new List<BoardCell>();
 
@@ -89,6 +90,7 @@ public sealed class BoardPreviewController
 
         _lastPreviewBasePos = new Vector2Int(baseX, baseY);
         _lastPreviewAnchorOffset = anchorOffset;
+        _lastPreviewAnchorScreenPos = anchorScreenPos;
         _lastPreviewBlock = block;
         canPlace = true;
         return true;
@@ -142,6 +144,7 @@ public sealed class BoardPreviewController
     {
         _lastPreviewBasePos = new Vector2Int(-1, -1);
         _lastPreviewAnchorOffset = Vector2Int.zero;
+        _lastPreviewAnchorScreenPos = default;
         _lastPreviewBlock = null;
         _lastPreviewCells.Clear();
     }
@@ -155,18 +158,7 @@ public sealed class BoardPreviewController
         if (!HasLastPreview)
             return true;
 
-        int lastAnchorX = _lastPreviewBasePos.x + _lastPreviewAnchorOffset.x;
-        int lastAnchorY = _lastPreviewBasePos.y + _lastPreviewAnchorOffset.y;
-
-        BoardCell cell = _model.Cells[lastAnchorX, lastAnchorY];
-        if (cell == null)
-            return true;
-
-        RectTransform rect = cell.transform as RectTransform;
-        if (!BoardGridMapper.TryGetRectScreenPos(rect, uiCam, out Vector2 lastAnchorScreenPos))
-            return true;
-
-        float dist = Vector2.Distance(currentAnchorScreenPos, lastAnchorScreenPos);
+        float dist = Vector2.Distance(currentAnchorScreenPos, _lastPreviewAnchorScreenPos);
         return dist > _keepPreviewMaxDistancePx;
     }
 }

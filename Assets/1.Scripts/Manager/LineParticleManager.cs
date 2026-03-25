@@ -1,5 +1,6 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
+using static UnityEngine.Rendering.DebugUI;
 
 public class LineParticleManager : Singleton<LineParticleManager>
 {
@@ -55,14 +56,14 @@ public class LineParticleManager : Singleton<LineParticleManager>
         if (rows == null)
             return;
 
-        Sprite shardsSprite = ResolveShardsSprite(_lastPlacedSpriteKey);
+        Sprite shardsSprite = FindShardsSprite(_lastPlacedSpriteKey);
         int width = BoardManager.Instance.Width;
         for (int i = 0; i < rows.Count; i++)
         {
             int y = rows[i];
-            if (!BoardManager.Instance.TryGetCellWorldPosition(0, y, out var left))
+            if (!BoardManager.Instance.TryGetCellWorldPosition(0, y, out Vector3 left))
                 continue;
-            if (!BoardManager.Instance.TryGetCellWorldPosition(width - 1, y, out var right))
+            if (!BoardManager.Instance.TryGetCellWorldPosition(width - 1, y, out Vector3 right))
                 continue;
 
             Vector3 center = (left + right) * 0.5f;
@@ -75,15 +76,15 @@ public class LineParticleManager : Singleton<LineParticleManager>
         if (cols == null)
             return;
 
-        Sprite shardsSprite = ResolveShardsSprite(_lastPlacedSpriteKey);
+        Sprite shardsSprite = FindShardsSprite(_lastPlacedSpriteKey);
         int topY = 0;
         int bottomY = BoardManager.Instance.Height - 1;
         for (int i = 0; i < cols.Count; i++)
         {
             int x = cols[i];
-            if (!BoardManager.Instance.TryGetCellWorldPosition(x, topY, out var top))
+            if (!BoardManager.Instance.TryGetCellWorldPosition(x, topY, out Vector3 top))
                 continue;
-            if (!BoardManager.Instance.TryGetCellWorldPosition(x, bottomY, out var bottom))
+            if (!BoardManager.Instance.TryGetCellWorldPosition(x, bottomY, out Vector3 bottom))
                 continue;
 
             Vector3 center = (top + bottom) * 0.5f;
@@ -116,19 +117,16 @@ public class LineParticleManager : Singleton<LineParticleManager>
         _poolManager.Prewarm(_lineClearEffectCol, _prewarmCount);
     }
 
-    private Sprite ResolveShardsSprite(string spriteKey)
+    private Sprite FindShardsSprite(string spriteKey)
     {
-        if (string.IsNullOrEmpty(spriteKey) || _shardsSpriteByKey.Count == 0)
+        if (string.IsNullOrEmpty(spriteKey))
             return null;
 
-        if (_shardsSpriteByKey.TryGetValue(spriteKey, out Sprite exact))
-            return exact;
+        string lookupKey = spriteKey + "shards";
 
-        for (int i = 0; i < _shardsSpriteKeys.Count; i++)
+        if (_shardsSpriteByKey.TryGetValue(lookupKey, out Sprite sprite))
         {
-            string key = _shardsSpriteKeys[i];
-            if (spriteKey.Contains(key) || key.Contains(spriteKey))
-                return _shardsSpriteByKey[key];
+            return sprite;
         }
 
         return null;
@@ -158,8 +156,6 @@ public class LineParticleManager : Singleton<LineParticleManager>
             _shardsSpriteByKey[key] = sprite;
             _shardsSpriteKeys.Add(key);
         }
-
-        _shardsSpriteKeys.Sort((a, b) => b.Length.CompareTo(a.Length));
     }
 
     private static void ApplyShardsSprite(ParticleSystem ps, Sprite sprite)
@@ -182,13 +178,6 @@ public class LineParticleManager : Singleton<LineParticleManager>
         if (string.IsNullOrEmpty(value))
             return string.Empty;
 
-        System.Text.StringBuilder sb = new System.Text.StringBuilder(value.Length);
-        for (int i = 0; i < value.Length; i++)
-        {
-            char c = value[i];
-            if (char.IsLetterOrDigit(c))
-                sb.Append(char.ToLowerInvariant(c));
-        }
-        return sb.ToString();
+        return value.ToLowerInvariant().Trim();
     }
 }
