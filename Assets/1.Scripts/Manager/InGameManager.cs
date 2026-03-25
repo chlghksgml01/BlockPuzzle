@@ -15,6 +15,9 @@ public class InGameManager : Singleton<InGameManager>
     [Header("Settings")]
     [SerializeField] private float _hintTimeInterval = 5f;
 
+    [Header("Game Over")]
+    [SerializeField, Min(0f)] private float _gameOverDelaySeconds = 5f;
+
     [Header("Block")]
     [SerializeField] private Sprite[] _blockSprites;
 
@@ -23,6 +26,8 @@ public class InGameManager : Singleton<InGameManager>
     public static event Action OnGameOver;
 
     private Coroutine _hintCoroutine;
+    private Coroutine _gameOverCoroutine;
+    private bool _isGameOverTriggered;
 
     override protected void OnAwake()
     {
@@ -44,7 +49,9 @@ public class InGameManager : Singleton<InGameManager>
 
     private void Start()
     {
+        _isGameOverTriggered = false;
         SpawnBlocksInSlots();
+        ScheduleGameOverIfNeeded();
     }
 
     private void HandleBlockPlaced(int blockShapeCount)
@@ -57,6 +64,8 @@ public class InGameManager : Singleton<InGameManager>
         {
             SpawnBlocksInSlots();
         }
+
+        ScheduleGameOverIfNeeded();
     }
 
     public void StartHintCoroutine(DraggableBlock block)
@@ -83,14 +92,15 @@ public class InGameManager : Singleton<InGameManager>
         if (_placementHandler.CanPlaceShape(block.CurrentOffsets))
             _placementHandler.ShowHint(true, block);
         else
-            IsGameOver();
+            TriggerGameOverIfAllBlocksCannotPlace();
 
         _hintCoroutine = null;
     }
 
-    private void IsGameOver()
+    private bool AreAllBlocksCannotPlace()
     {
-        bool allBlocksCannotPlace = true;
+        if (_placementHandler == null)
+            return true;
 
         foreach (BlockSlot slot in _slots)
         {
@@ -98,26 +108,63 @@ public class InGameManager : Singleton<InGameManager>
                 continue;
 
             if (_placementHandler.CanPlaceShape(slot.Block.CurrentOffsets))
-            {
-                allBlocksCannotPlace = false;
-                break;
-            }
+                return false;
         }
 
-        if (allBlocksCannotPlace)
-        {
-            Debug.Log("게임 오버");
-            OnGameOver?.Invoke();
-            _gameOverUI.Open();
+        return true;
+    }
+
+    private void TriggerGameOverIfAllBlocksCannotPlace()
+    {
+        if (_isGameOverTriggered)
             return;
-        }
+
+        if (!AreAllBlocksCannotPlace())
+            return;
+
+        _isGameOverTriggered = true;
+        Debug.Log("게임 오버");
+        OnGameOver?.Invoke();
+        _gameOverUI.Open();
     }
 
     public void ResetGame()
     {
+        if (_gameOverCoroutine != null)
+        {
+            StopCoroutine(_gameOverCoroutine);
+            _gameOverCoroutine = null;
+        }
+
+        _isGameOverTriggered = false;
         SpawnBlocksInSlots();
 
         OnResetGame?.Invoke();
+        ScheduleGameOverIfNeeded();
+    }
+
+    private void ScheduleGameOverIfNeeded()
+    {
+        if (_isGameOverTriggered)
+            return;
+
+        if (_gameOverCoroutine != null)
+        {
+            StopCoroutine(_gameOverCoroutine);
+            _gameOverCoroutine = null;
+        }
+
+        if (!AreAllBlocksCannotPlace())
+            return;
+
+        _gameOverCoroutine = StartCoroutine(GameOverDelayCoroutine());
+    }
+
+    private IEnumerator GameOverDelayCoroutine()
+    {
+        yield return new WaitForSeconds(_gameOverDelaySeconds);
+        _gameOverCoroutine = null;
+        TriggerGameOverIfAllBlocksCannotPlace();
     }
 
     private void SetNewBest(int newBestScore)
