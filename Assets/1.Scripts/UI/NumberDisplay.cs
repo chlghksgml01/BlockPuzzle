@@ -10,14 +10,14 @@ public class NumberDisplay : MonoBehaviour
 
     private Tween _scoreTween;
 
-    public void UpdateDisplay(int score, int skipCount = 0)
+    public void UpdateDisplay(int value, int skipCount = 0)
     {
         for (int i = _container.childCount - 1; i >= skipCount; i--)
         {
             Destroy(_container.GetChild(i).gameObject);
         }
 
-        string numberStr = score.ToString();
+        string numberStr = value.ToString();
 
         foreach (char num in numberStr)
         {

@@ -17,6 +17,7 @@ public class ScoreManager : Singleton<ScoreManager>
 
     public event Action<int, int> OnScoreChanged;
     public event Action OnResetScore;
+    public event Action<int, int> OnComboScore;
     public static event Action<int> OnHighScoreUpdated;
 
     private void OnEnable()
@@ -67,6 +68,8 @@ public class ScoreManager : Singleton<ScoreManager>
 
         // ÄÞº¸ 
         float comboMultiplier = 1f;
+        int comboBonusAddedScore = 0;
+        int comboCountForUI = 0;
         if (_currentPlaceCount <= _comboRemainCount)
         {
             _currentPlaceCount = 0;
@@ -75,15 +78,29 @@ public class ScoreManager : Singleton<ScoreManager>
             {
                 float comboBonus = Mathf.Clamp(_comboScoreMultiplier * _currentComboCount, 0f, 0.5f);
                 comboMultiplier = 1f + comboBonus;
+                comboCountForUI = _currentComboCount + 1;
             }
             _currentComboCount++;
         }
         else
             _currentComboCount = 0;
 
-        int totalScore = Mathf.FloorToInt(baseScore * comboMultiplier * multiLineBonusMultiplier);
+        float noComboScoreF = baseScore * 1f * multiLineBonusMultiplier;
+        float totalScoreF = baseScore * comboMultiplier * multiLineBonusMultiplier;
+
+        int totalScore = Mathf.FloorToInt(totalScoreF);
+        if (comboMultiplier > 1f)
+        {
+            int noComboScore = Mathf.FloorToInt(noComboScoreF);
+            comboBonusAddedScore = Mathf.Max(0, totalScore - noComboScore);
+        }
 
         AddScore(totalScore);
+
+        if (comboBonusAddedScore > 0)
+        {
+            OnComboScore?.Invoke(comboBonusAddedScore, comboCountForUI);
+        }
     }
 
     public void AddScore(int score)
