@@ -1,12 +1,5 @@
 fileFormatVersion: 2
-guid: 935dc68b23bd81f48891d5ddeb9b9b2a
-AssetOrigin:
-  serializedVersion: 1
-  productId: 254164
-  packageName: Puzzle Game SE Pack
-  packageVersion: 1.0
-  assetPath: Assets/Puzzle_Game_SE_Pack/in_game/break_and_chain/break_and_chain_01_2.wav
-  uploadId: 597403
+guid: cbe2e4675b756ba47926e73848c415d2
 AudioImporter:
   externalObjects: {}
   serializedVersion: 8
