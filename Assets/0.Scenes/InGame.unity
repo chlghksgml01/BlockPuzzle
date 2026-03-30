@@ -1758,48 +1758,16 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
-      propertyPath: text
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
-      propertyPath: text2
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
-      propertyPath: anchorPos
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
       propertyPath: _boardRoot
       value: 
       objectReference: {fileID: 27546566}
-    - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
-      propertyPath: debugPointer
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
       propertyPath: _hintBoardRoot
       value: 
       objectReference: {fileID: 1510317872}
     - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
-      propertyPath: _previewColor.a
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
-      propertyPath: _previewColor.b
-      value: 0.39215687
-      objectReference: {fileID: 0}
-    - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
-      propertyPath: _previewColor.g
-      value: 0.39215687
-      objectReference: {fileID: 0}
-    - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
-      propertyPath: _previewColor.r
-      value: 0.39215687
-      objectReference: {fileID: 0}
-    - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
-      propertyPath: _keepPreviewMaxDistancePx
-      value: 200
+      propertyPath: _introLineHold
+      value: 0.06
       objectReference: {fileID: 0}
     - target: {fileID: 7912788501387897607, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
       propertyPath: m_Name

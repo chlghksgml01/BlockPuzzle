@@ -69,7 +69,7 @@ public class BoardCell : MonoBehaviour
         _image.color = new Color(1f, 1f, 1f, 1f);
     }
 
-    public void SetLinePreview(bool active, Sprite lineSprite = null)
+    public void SetLinePreview(bool active, Sprite lineSprite = null, bool isIntroEffect = false)
     {
         if (IsPreviewFilled)
             return;
@@ -82,6 +82,9 @@ public class BoardCell : MonoBehaviour
         else
         {
             _image.sprite = _defaultSprite;
+
+            if (isIntroEffect)
+                _image.color = new Color(1f, 1f, 1f, 0f);
         }
     }
 }

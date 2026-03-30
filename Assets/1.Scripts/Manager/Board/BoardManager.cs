@@ -1,5 +1,8 @@
+using DG.Tweening;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -29,6 +32,12 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
     [SerializeField] private Color _previewColor = new Color(0.5f, 0.5f, 0.5f, 1f);
     public Color PreviewColor => _previewColor;
 
+    [Header("Intro Domino Effect")]
+    [SerializeField] private bool _playIntroDominoEffect = true;
+    [SerializeField] private Sprite _introEffectSprite;
+    [SerializeField, Min(0f)] private float _introLineInterval = 0.04f;
+    [SerializeField, Min(0f)] private float _introLineHold = 0.08f;
+
     [Header("Drag Preview Settings")]
     [SerializeField, Min(0f)] private float _keepPreviewMaxDistancePx = 180f;
 
@@ -51,6 +60,12 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
     override protected void OnAwake()
     {
         GenerateBoard();
+    }
+
+    private void Start()
+    {
+        if (_playIntroDominoEffect)
+            StartCoroutine(PlayIntroDominoEffect());
     }
 
     private void OnEnable()
@@ -211,5 +226,46 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
     public void ShowHint(bool showHint, DraggableBlock block, bool isPlaced = false)
     {
         _hint.ShowHint(showHint, block, isPlaced);
+    }
+
+    private IEnumerator PlayIntroDominoEffect()
+    {
+        if (_introEffectSprite == null || _cells == null)
+            yield break;
+
+        int maxSum = (_width - 1) + (_height - 1);
+
+        for (int sum = 0; sum <= maxSum; sum++)
+        {
+            for (int x = 0; x < _width; x++)
+            {
+                int y = sum - x;
+                if (y < 0 || y >= _height)
+                    continue;
+
+                _cells[x, y].SetLinePreview(true, _introEffectSprite);
+            }
+
+            if (_introLineInterval > 0f)
+                yield return new WaitForSeconds(_introLineInterval);
+        }
+
+        if (_introLineHold > 0f)
+            yield return new WaitForSeconds(_introLineHold);
+
+        for (int sum = 0; sum <= maxSum; sum++)
+        {
+            for (int x = 0; x < _width; x++)
+            {
+                int y = sum - x;
+                if (y < 0 || y >= _height)
+                    continue;
+
+                _cells[x, y].SetLinePreview(false, null, true);
+            }
+
+            if (_introLineInterval > 0f)
+                yield return new WaitForSeconds(_introLineInterval);
+        }
     }
 }
