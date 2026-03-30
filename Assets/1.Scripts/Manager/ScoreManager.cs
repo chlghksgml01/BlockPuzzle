@@ -30,7 +30,7 @@ public class ScoreManager : Singleton<ScoreManager>
 
     private void Start()
     {
-        if (BoardManager.Instance != null)
+        if (BoardManager.HasInstance)
             _boardWidth = BoardManager.Instance.Width;
         else
         {
@@ -40,10 +40,14 @@ public class ScoreManager : Singleton<ScoreManager>
 
     private void OnDisable()
     {
-        InGameManager.OnBlockSettled -= HandleBlockPlaced;
-        InGameManager.OnResetGame -= ResetScore;
-        InGameManager.OnGameOver -= CheckHighScore;
-        BoardManager.OnLinesCleared -= CalculateLineScore;
+        if (InGameManager.HasInstance)
+        {
+            InGameManager.OnBlockSettled -= HandleBlockPlaced;
+            InGameManager.OnResetGame -= ResetScore;
+            InGameManager.OnGameOver -= CheckHighScore;
+        }
+        if (BoardManager.HasInstance)
+            BoardManager.OnLinesCleared -= CalculateLineScore;
     }
 
     private void HandleBlockPlaced(int blockCount)

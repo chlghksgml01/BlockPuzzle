@@ -290,7 +290,7 @@ public class DraggableBlock : MonoBehaviour
 
     public void ClearBoardPreview()
     {
-        if (BoardManager.Instance != null)
+        if (BoardManager.HasInstance)
             BoardManager.Instance.ClearDragPreview();
     }
 }

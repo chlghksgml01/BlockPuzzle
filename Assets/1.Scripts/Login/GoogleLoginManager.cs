@@ -33,7 +33,7 @@ public class GoogleLoginManager : Singleton<GoogleLoginManager>
         {
             UpdateStatus("<color=green>BackEnd Login Success</color>");
 
-            if (LeaderboardManager.Instance != null)
+            if (LeaderboardManager.HasInstance)
             {
                 UpdateStatus("Login Succeed");
                 OnLoginSucceed?.Invoke(true);

@@ -47,13 +47,13 @@ public class ComboEffectController : MonoBehaviour
 
     private void OnEnable()
     {
-        if (ScoreManager.Instance != null)
+        if (ScoreManager.HasInstance)
             ScoreManager.Instance.OnComboScore += PlayCombo;
     }
 
     private void OnDisable()
     {
-        if (ScoreManager.Instance != null)
+        if (ScoreManager.HasInstance)
             ScoreManager.Instance.OnComboScore -= PlayCombo;
     }
 

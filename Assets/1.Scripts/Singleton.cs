@@ -32,6 +32,8 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         }
     }
 
+    public static bool HasInstance => _instance != null;
+
     [SerializeField]
     private bool _dontDestroyOnLoad = true;
 
@@ -46,7 +48,6 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         }
         else if (_instance != this)
         {
-            Debug.LogWarning(typeof(T).Name + " 중복 생성");
             Destroy(gameObject);
             return;
         }

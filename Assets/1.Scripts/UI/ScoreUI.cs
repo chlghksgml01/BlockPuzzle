@@ -12,7 +12,7 @@ public class ScoreUI : MonoBehaviour
 
     private void OnEnable()
     {
-        if (ScoreManager.Instance != null)
+        if (ScoreManager.HasInstance)
         {
             ScoreManager.Instance.OnScoreChanged += RollUpdateScoreUI;
             ScoreManager.Instance.OnResetScore += ResetScore;
@@ -22,7 +22,7 @@ public class ScoreUI : MonoBehaviour
 
     private void UpdateBestScore()
     {
-        if (LeaderboardManager.Instance != null)
+        if (LeaderboardManager.HasInstance)
         {
             _bestScore = LeaderboardManager.Instance.BestScore;
             if (_bestScore != 0)
