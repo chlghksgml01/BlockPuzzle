@@ -6,7 +6,9 @@ public enum SFXType
     GameOver,
     SelectBlock,
     PlaceBlock,
+    PlaceFailed,
     ClearLine,
+    Score,
     ClickUI
 }
 
@@ -17,7 +19,9 @@ public class SoundManager : Singleton<SoundManager>
     [SerializeField] private AudioClip _gameOver;
     [SerializeField] private AudioClip _selectBlock;
     [SerializeField] private AudioClip _placeBlock;
+    [SerializeField] private AudioClip _placeFailed;
     [SerializeField] private AudioClip[] _clearLine;
+    [SerializeField] private AudioClip _score;
     [SerializeField] private AudioClip _clickUI;
 
 
@@ -42,8 +46,14 @@ public class SoundManager : Singleton<SoundManager>
             case SFXType.PlaceBlock:
                 _audioSource.PlayOneShot(_placeBlock);
                 break;
+            case SFXType.PlaceFailed:
+                _audioSource.PlayOneShot(_placeFailed);
+                break;
             case SFXType.ClearLine:
                 PlayComboSFX(comboCount);
+                break;
+            case SFXType.Score:
+                _audioSource.PlayOneShot(_score);
                 break;
             case SFXType.ClickUI:
                 _audioSource.PlayOneShot(_clickUI);
