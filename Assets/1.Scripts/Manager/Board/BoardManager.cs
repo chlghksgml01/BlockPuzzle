@@ -62,12 +62,6 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
         GenerateBoard();
     }
 
-    private void Start()
-    {
-        if (_playIntroDominoEffect)
-            StartCoroutine(PlayIntroDominoEffect());
-    }
-
     private void OnEnable()
     {
         InGameManager.OnBlockSettled += ProcessFullLines;
@@ -228,8 +222,15 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
         _hint.ShowHint(showHint, block, isPlaced);
     }
 
+    public void PlayIntro()
+    {
+        if (_playIntroDominoEffect)
+            StartCoroutine(PlayIntroDominoEffect());
+    }
+
     private IEnumerator PlayIntroDominoEffect()
     {
+        SoundManager.Instance.PlaySFX(SFXType.Intro);
         if (_introEffectSprite == null || _cells == null)
             yield break;
 

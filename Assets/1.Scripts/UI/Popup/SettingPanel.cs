@@ -27,7 +27,7 @@ public class SettingPanel : BaseOptionUI
 
     public override void Replay()
     {
-        base.Open();
+        base.Replay();
         LeaderboardManager.Instance.UpdateBestScore(ScoreManager.Instance.CurrentScore);
     }
 

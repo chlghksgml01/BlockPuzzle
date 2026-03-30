@@ -53,7 +53,11 @@ public class InGameManager : Singleton<InGameManager>
     {
         _isGameOverTriggered = false;
         if (!TryLoadGame())
+        {
             SpawnBlocksInSlots();
+            BoardManager.Instance.PlayIntro();
+        }
+
         ScheduleGameOverIfNeeded();
     }
 
