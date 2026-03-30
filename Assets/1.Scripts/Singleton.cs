@@ -33,7 +33,6 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         }
     }
 
-
     [SerializeField]
     private bool _dontDestroyOnLoad = true;
 

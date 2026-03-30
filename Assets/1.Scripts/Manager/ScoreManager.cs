@@ -1,7 +1,7 @@
-using JetBrains.Annotations;
 using System;
 using UnityEngine;
 
+[DefaultExecutionOrder(-80)]
 public class ScoreManager : Singleton<ScoreManager>
 {
     [Header("Score Multipliers & Settings")]
@@ -108,6 +108,23 @@ public class ScoreManager : Singleton<ScoreManager>
         int newScore = CurrentScore + score;
         OnScoreChanged?.Invoke(CurrentScore, newScore);
         CurrentScore = newScore;
+    }
+
+    public void ExportState(out int score, out int currentPlaceCount, out int currentComboCount)
+    {
+        score = CurrentScore;
+        currentPlaceCount = _currentPlaceCount;
+        currentComboCount = _currentComboCount;
+    }
+
+    public void RestoreState(int score, int currentPlaceCount, int currentComboCount)
+    {
+        int prevScore = CurrentScore;
+        CurrentScore = Mathf.Max(0, score);
+        _currentPlaceCount = Mathf.Max(0, currentPlaceCount);
+        _currentComboCount = Mathf.Max(0, currentComboCount);
+
+        OnScoreChanged?.Invoke(prevScore, CurrentScore);
     }
 
     private void ResetScore()

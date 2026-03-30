@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[DefaultExecutionOrder(-70)]
 public class ComboEffectController : MonoBehaviour
 {
     [Header("Combo Feedback")]
@@ -46,12 +47,14 @@ public class ComboEffectController : MonoBehaviour
 
     private void OnEnable()
     {
-        ScoreManager.Instance.OnComboScore += PlayCombo;
+        if (ScoreManager.Instance != null)
+            ScoreManager.Instance.OnComboScore += PlayCombo;
     }
 
     private void OnDisable()
     {
-        ScoreManager.Instance.OnComboScore -= PlayCombo;
+        if (ScoreManager.Instance != null)
+            ScoreManager.Instance.OnComboScore -= PlayCombo;
     }
 
     // 테스트용

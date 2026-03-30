@@ -10,6 +10,7 @@ public interface IPlacementHandler
     public void ShowHint(bool showHint, DraggableBlock block, bool isPlaced = false);
 }
 
+[DefaultExecutionOrder(-90)]
 public class BoardManager : Singleton<BoardManager>, IPlacementHandler
 {
     [Header("Board Configurations")]
@@ -155,6 +156,51 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
     }
 
     public bool CanPlaceShape(Vector2Int[] shapeOffset) => _model.CanPlaceShape(shapeOffset);
+
+    public List<FilledCellData> ExportFilledCells()
+    {
+        List<FilledCellData> result = new List<FilledCellData>();
+        for (int x = 0; x < _width; x++)
+        {
+            for (int y = 0; y < _height; y++)
+            {
+                BoardCell cell = _cells[x, y];
+                if (!cell.IsFilled)
+                    continue;
+
+                result.Add(new FilledCellData
+                {
+                    x = x,
+                    y = y,
+                    spriteName = cell.FilledSprite != null ? cell.FilledSprite.name : string.Empty
+                });
+            }
+        }
+
+        return result;
+    }
+
+    public void RestoreFilledCells(List<FilledCellData> filledCells, Func<string, Sprite> spriteResolver)
+    {
+        _model.ResetBoard();
+        ClearDragPreview();
+
+        if (filledCells == null)
+            return;
+
+        for (int i = 0; i < filledCells.Count; i++)
+        {
+            FilledCellData data = filledCells[i];
+            if (data == null)
+                continue;
+
+            if (data.x < 0 || data.x >= _width || data.y < 0 || data.y >= _height)
+                continue;
+
+            Sprite sprite = spriteResolver != null ? spriteResolver(data.spriteName) : null;
+            _cells[data.x, data.y].RestoreFilledState(sprite);
+        }
+    }
 
     private void ResetBoard()
     {

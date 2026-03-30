@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.Rendering.DebugUI;
 
+[DefaultExecutionOrder(-60)]
 public class LineParticleManager : Singleton<LineParticleManager>
 {
     [SerializeField] private ParticleSystem _lineClearEffectRow;
@@ -15,10 +15,8 @@ public class LineParticleManager : Singleton<LineParticleManager>
     private string _lastPlacedSpriteKey = string.Empty;
     private LineParticlePoolManager _poolManager;
 
-    protected override void Awake()
+    protected override void OnAwake()
     {
-        base.Awake();
-
         BuildShardsSpriteLookup();
         Transform parent = _effectRoot != null ? _effectRoot : transform;
         _poolManager = new LineParticlePoolManager(parent);

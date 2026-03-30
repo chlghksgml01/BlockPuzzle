@@ -26,6 +26,23 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         Block.transform.DOScale(Vector3.one, _popDuration).SetEase(Ease.OutBack);
     }
 
+    public void SpawnSavedBlock(Sprite blockSprite, Vector2Int[] offsets)
+    {
+        HasBlock = true;
+        Block = Instantiate(_blockPrefab, transform.position, transform.rotation, this.transform);
+        Block.InitializeBlockFromOffsets(blockSprite, offsets);
+        Block.transform.localScale = Vector3.one;
+    }
+
+    public void ClearSlotBlock()
+    {
+        if (Block != null)
+            Destroy(Block.gameObject);
+
+        Block = null;
+        HasBlock = false;
+    }
+
     public void OnPointerDown(PointerEventData eventData)
     {
         InGameManager.Instance.StopHintCoroutine(Block, false);

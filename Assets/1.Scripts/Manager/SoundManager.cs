@@ -15,7 +15,7 @@ public enum SFXType
 
 public class SoundManager : Singleton<SoundManager>
 {
-    public static readonly string SFXVolumeParam = "Master";
+    public static readonly string SFXVolumeParam = "SFXVolume";
     public static readonly string SoundOnKey = "SoundOn";
     public static readonly string VibrateOnKey = "VibrateOn";
 
@@ -38,7 +38,7 @@ public class SoundManager : Singleton<SoundManager>
 
     public bool IsVibrateOn => _isVibrateOn;
 
-    protected override void Awake()
+    protected override void OnAwake()
     {
         _audioSource = GetComponent<AudioSource>();
 

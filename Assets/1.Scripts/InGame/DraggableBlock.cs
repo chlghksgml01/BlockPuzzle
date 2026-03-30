@@ -53,6 +53,13 @@ public class DraggableBlock : MonoBehaviour
         CreateBodyTiles();
     }
 
+    public void InitializeBlockFromOffsets(Sprite blockSprite, Vector2Int[] offsets)
+    {
+        _blockSprite = blockSprite;
+        CurrentOffsets = (Vector2Int[])offsets.Clone();
+        CreateBodyTiles();
+    }
+
     private int PickShapeIndexWeighted(BlockShape[] shapes)
     {
         if (shapes == null || shapes.Length == 0)

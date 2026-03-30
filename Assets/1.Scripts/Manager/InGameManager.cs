@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-[DefaultExecutionOrder(-99)]
+[DefaultExecutionOrder(-100)]
 public class InGameManager : Singleton<InGameManager>
 {
     [Header("References")]
@@ -20,6 +20,7 @@ public class InGameManager : Singleton<InGameManager>
 
     [Header("Block")]
     [SerializeField] private Sprite[] _blockSprites;
+    private Dictionary<string, Sprite> _spriteByName = new Dictionary<string, Sprite>();
 
     public static event Action<int> OnBlockSettled;
     public static event Action OnResetGame;
@@ -33,6 +34,7 @@ public class InGameManager : Singleton<InGameManager>
     {
         _gameOverUI.gameObject.SetActive(false);
         _placementHandler = FindFirstObjectByType<BoardManager>();
+        BuildSpriteLookup();
     }
 
     private void OnEnable()
@@ -50,7 +52,8 @@ public class InGameManager : Singleton<InGameManager>
     private void Start()
     {
         _isGameOverTriggered = false;
-        SpawnBlocksInSlots();
+        if (!TryLoadGame())
+            SpawnBlocksInSlots();
         ScheduleGameOverIfNeeded();
     }
 
@@ -65,6 +68,7 @@ public class InGameManager : Singleton<InGameManager>
             SpawnBlocksInSlots();
         }
 
+        SaveGame();
         ScheduleGameOverIfNeeded();
     }
 
@@ -140,6 +144,7 @@ public class InGameManager : Singleton<InGameManager>
         SpawnBlocksInSlots();
 
         OnResetGame?.Invoke();
+        SaveGame();
         ScheduleGameOverIfNeeded();
     }
 
@@ -174,6 +179,8 @@ public class InGameManager : Singleton<InGameManager>
 
     public void SpawnBlocksInSlots()
     {
+        ClearAllSlots();
+
         List<Sprite> spriteList = new List<Sprite>(_blockSprites);
 
         for (int i = 0; i < spriteList.Count; i++)
@@ -191,5 +198,130 @@ public class InGameManager : Singleton<InGameManager>
                 _slots[i].SpawnNewBlock(spriteList[i]);
             }
         }
+    }
+
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+            SaveGame();
+    }
+
+    protected override void OnApplicationQuit()
+    {
+        SaveGame();
+    }
+
+    private void BuildSpriteLookup()
+    {
+        _spriteByName.Clear();
+        if (_blockSprites == null)
+            return;
+
+        for (int i = 0; i < _blockSprites.Length; i++)
+        {
+            Sprite sprite = _blockSprites[i];
+            if (sprite == null)
+                continue;
+
+            if (!_spriteByName.ContainsKey(sprite.name))
+                _spriteByName.Add(sprite.name, sprite);
+        }
+    }
+
+    private Sprite ResolveSprite(string spriteName)
+    {
+        if (string.IsNullOrEmpty(spriteName))
+            return null;
+
+        if (_spriteByName.TryGetValue(spriteName, out Sprite sprite))
+            return sprite;
+
+        return null;
+    }
+
+    private void ClearAllSlots()
+    {
+        for (int i = 0; i < _slots.Count; i++)
+            _slots[i].ClearSlotBlock();
+    }
+
+    private void SaveGame()
+    {
+        BoardManager board = BoardManager.Instance;
+        ScoreManager scoreManager = ScoreManager.Instance;
+        if (board == null || scoreManager == null)
+            return;
+
+        InGameSaveData data = new InGameSaveData();
+
+        scoreManager.ExportState(out data.score, out data.currentPlaceCount, out data.currentComboCount);
+        data.filledCells = board.ExportFilledCells();
+
+        for (int i = 0; i < _slots.Count; i++)
+        {
+            BlockSlot slot = _slots[i];
+            SlotBlockData slotData = new SlotBlockData();
+            slotData.hasBlock = slot.HasBlock && slot.Block != null;
+
+            if (slotData.hasBlock)
+            {
+                slotData.spriteName = slot.Block.BlockSprite != null ? slot.Block.BlockSprite.name : string.Empty;
+                Vector2Int[] offsets = slot.Block.CurrentOffsets;
+                if (offsets != null)
+                {
+                    for (int k = 0; k < offsets.Length; k++)
+                        slotData.offsets.Add(new Vector2IntData(offsets[k]));
+                }
+            }
+
+            data.slots.Add(slotData);
+        }
+
+        InGameSaveStorage.Save(data);
+    }
+
+    private bool TryLoadGame()
+    {
+        if (!InGameSaveStorage.TryLoad(out InGameSaveData data))
+            return false;
+
+        if (data == null)
+            return false;
+
+        BoardManager board = BoardManager.Instance;
+        ScoreManager scoreManager = ScoreManager.Instance;
+        if (board == null || scoreManager == null)
+            return false;
+
+        ClearAllSlots();
+        board.RestoreFilledCells(data.filledCells, ResolveSprite);
+
+        if (data.slots != null)
+        {
+            int count = Mathf.Min(data.slots.Count, _slots.Count);
+            for (int i = 0; i < count; i++)
+            {
+                SlotBlockData sd = data.slots[i];
+                if (sd == null || !sd.hasBlock)
+                    continue;
+
+                Sprite sprite = ResolveSprite(sd.spriteName);
+                if (sprite == null)
+                    continue;
+
+                List<Vector2IntData> offsetData = sd.offsets;
+                if (offsetData == null || offsetData.Count == 0)
+                    continue;
+
+                Vector2Int[] offsets = new Vector2Int[offsetData.Count];
+                for (int k = 0; k < offsetData.Count; k++)
+                    offsets[k] = offsetData[k].ToVector2Int();
+
+                _slots[i].SpawnSavedBlock(sprite, offsets);
+            }
+        }
+
+        scoreManager.RestoreState(data.score, data.currentPlaceCount, data.currentComboCount);
+        return true;
     }
 }

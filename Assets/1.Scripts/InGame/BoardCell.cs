@@ -9,6 +9,7 @@ public class BoardCell : MonoBehaviour
 
     public bool IsFilled { get; private set; }
     public bool IsPreviewFilled { get; private set; }
+    public Sprite FilledSprite => _defaultSprite;
 
     private Sprite _defaultSprite;
 
@@ -53,6 +54,14 @@ public class BoardCell : MonoBehaviour
     }
 
     public void PlaceBlock(Sprite blockSprite)
+    {
+        SetFilled(true);
+        _defaultSprite = blockSprite;
+        _image.sprite = _defaultSprite;
+        _image.color = new Color(1f, 1f, 1f, 1f);
+    }
+
+    public void RestoreFilledState(Sprite blockSprite)
     {
         SetFilled(true);
         _defaultSprite = blockSprite;
