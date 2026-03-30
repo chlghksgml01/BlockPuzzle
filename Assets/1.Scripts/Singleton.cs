@@ -14,7 +14,6 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
             // 끝나는 중이면 null 반환
             if (_applicationIsQuitting)
             {
-                Debug.LogWarning(typeof(T).Name + " 이미 종료 중");
                 return null;
             }
 

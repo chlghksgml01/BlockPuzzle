@@ -94,6 +94,8 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
     private void RemoveBlock()
     {
+        Block.transform.DOKill();
+
         HasBlock = false;
         Destroy(Block.gameObject);
         Block = null;
