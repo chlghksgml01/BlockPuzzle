@@ -12,6 +12,9 @@ public class NumberDisplay : MonoBehaviour
 
     public void UpdateDisplay(int value, int skipCount = 0)
     {
+        if (this == null || gameObject == null)
+            return;
+
         for (int i = _container.childCount - 1; i >= skipCount; i--)
         {
             Destroy(_container.GetChild(i).gameObject);

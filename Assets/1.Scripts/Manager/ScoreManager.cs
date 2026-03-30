@@ -105,6 +105,8 @@ public class ScoreManager : Singleton<ScoreManager>
         {
             OnComboScore?.Invoke(comboBonusAddedScore, comboCountForUI);
         }
+
+        SoundManager.Instance.PlaySFX(SFXType.ClearLine, _currentComboCount);
     }
 
     public void AddScore(int score)
