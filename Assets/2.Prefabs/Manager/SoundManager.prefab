@@ -67,6 +67,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 77a0cc61a1174d74eb8bc559ced1ad30, type: 3}
   _score: {fileID: 8300000, guid: a398fd3d677db7f428c9763c88c52cc6, type: 3}
   _clickUI: {fileID: 8300000, guid: 1c10e0fcce2b01943b0838c1bb3fe1af, type: 3}
+  _audioMixer: {fileID: 24100000, guid: b466cd49a7153794b85c4694f7ea215d, type: 2}
 --- !u!82 &5368587036130098991
 AudioSource:
   m_ObjectHideFlags: 0

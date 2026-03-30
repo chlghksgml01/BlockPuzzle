@@ -56,13 +56,14 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
                 RemoveBlock();
                 OnBlockSpritePlaced?.Invoke(placedSprite);
                 OnBlockPlaced?.Invoke(placedCount);
+                SoundManager.Instance.PlaySFX(SFXType.PlaceBlock);
             }
             else
             {
-                // 배치 직전 상태가 바뀌었을 수 있으니 롤백
                 BoardManager.Instance.ClearDragPreview();
                 Block.BlockAnimate(Block.SlotBlockSize);
                 (Block.transform as RectTransform).anchoredPosition = Vector2.zero;
+                SoundManager.Instance.PlaySFX(SFXType.PlaceFailed);
             }
         }
 

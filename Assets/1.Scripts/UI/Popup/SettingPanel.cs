@@ -4,16 +4,25 @@ using UnityEngine.UI;
 public class SettingPanel : BaseOptionUI
 {
     [Header("Sound Settings")]
-    [SerializeField] private Image _soundBG;
-    [SerializeField] private GameObject _soundToggle;
+    [SerializeField] private Slider _soundSlider;
 
-    [Header("BGM Settings")]
-    [SerializeField] private Image _bgmBG;
-    [SerializeField] private GameObject _bgmToggle;
+    [Header("Vibration Settings")]
+    [SerializeField] private Slider _vibrateSlider;
 
     private void OnEnable()
     {
         Time.timeScale = 0f;
+
+        SetSliders();
+    }
+
+    private void SetSliders()
+    {
+        bool isSoundOn = PlayerPrefs.GetInt(SoundManager.SoundOnKey, 1) == 1;
+        _soundSlider.value = isSoundOn ? 1 : 0;
+
+        bool isVibrateOn = SoundManager.Instance.IsVibrateOn;
+        _vibrateSlider.value = isVibrateOn ? 1 : 0;
     }
 
     public override void Replay()
@@ -26,5 +35,26 @@ public class SettingPanel : BaseOptionUI
     {
         base.Home();
         LeaderboardManager.Instance.UpdateBestScore(ScoreManager.Instance.CurrentScore);
+    }
+
+    // UI에서 호출
+    public void ToggleSound()
+    {
+        float nextValue = (_soundSlider.value > 0.5f) ? 0f : 1f;
+        _soundSlider.value = nextValue;
+
+        SoundManager.Instance.ApplySoundSettings(nextValue > 0.5f);
+        if (nextValue > 0.5f)
+            SoundManager.Instance.PlaySFX(SFXType.ClickUI);
+    }
+
+    public void ToggleVibrate()
+    {
+        float nextValue = (_vibrateSlider.value > 0.5f) ? 0f : 1f;
+        _vibrateSlider.value = nextValue;
+
+        SoundManager.Instance.ApplyVibrateSettings(nextValue > 0.5f);
+        if (nextValue > 0.5f)
+            SoundManager.Instance.Vibrate(30);
     }
 }

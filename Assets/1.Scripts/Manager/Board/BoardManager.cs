@@ -136,11 +136,11 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
         if (!CanPlaceBlock)
             return false;
 
-        bool ok = _preview.PlaceLastPreview(block, blockSprite, out placedCount);
-        if (ok)
+        bool canPlaceBlock = _preview.PlaceLastPreview(block, blockSprite, out placedCount);
+        if (canPlaceBlock)
             CanPlaceBlock = false;
 
-        return ok;
+        return canPlaceBlock;
     }
 
     public void ClearDragPreview()
