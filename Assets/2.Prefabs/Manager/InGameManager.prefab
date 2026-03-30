@@ -51,6 +51,7 @@ MonoBehaviour:
   - {fileID: 0}
   _gameOverUI: {fileID: 0}
   _hintTimeInterval: 2
+  _gameOverDelaySeconds: 5
   _blockSprites:
   - {fileID: 21300000, guid: fb6ee944397fe4f43b7d396aa6ccdc5a, type: 3}
   - {fileID: 21300000, guid: 401a61196a5194c47a84127d6a617ff7, type: 3}

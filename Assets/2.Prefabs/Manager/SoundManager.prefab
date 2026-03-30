@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoundManager
   _dontDestroyOnLoad: 1
-  _gameStart: {fileID: 8300000, guid: 6bc18f379907d2445b6832c66ff36208, type: 3}
+  _intro: {fileID: 8300000, guid: 6bc18f379907d2445b6832c66ff36208, type: 3}
   _gameOver: {fileID: 8300000, guid: 4b8d7ca0d330bb24cae728d33d2c0e61, type: 3}
   _selectBlock: {fileID: 8300000, guid: 590953567ef3118469e4cf2227920e7b, type: 3}
   _placeBlock: {fileID: 8300000, guid: cbe2e4675b756ba47926e73848c415d2, type: 3}

@@ -3,7 +3,7 @@ using UnityEngine.Audio;
 
 public enum SFXType
 {
-    GameStart,
+    Intro,
     GameOver,
     SelectBlock,
     PlaceBlock,
@@ -22,7 +22,7 @@ public class SoundManager : Singleton<SoundManager>
     private AudioSource _audioSource;
 
     [Header("SFX")]
-    [SerializeField] private AudioClip _gameStart;
+    [SerializeField] private AudioClip _intro;
     [SerializeField] private AudioClip _gameOver;
     [SerializeField] private AudioClip _selectBlock;
     [SerializeField] private AudioClip _placeBlock;
@@ -58,8 +58,8 @@ public class SoundManager : Singleton<SoundManager>
     {
         switch (type)
         {
-            case SFXType.GameStart:
-                _audioSource.PlayOneShot(_gameStart);
+            case SFXType.Intro:
+                _audioSource.PlayOneShot(_intro);
                 break;
             case SFXType.GameOver:
                 _audioSource.PlayOneShot(_gameOver);
