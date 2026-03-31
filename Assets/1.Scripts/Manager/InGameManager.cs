@@ -53,9 +53,14 @@ public class InGameManager : Singleton<InGameManager>
     private void Start()
     {
         _isGameOverTriggered = false;
-        if (!TryLoadGame())
+
+        bool hasData = TryLoadGame(out bool isNewGame);
+
+        if (!hasData || isNewGame)
         {
-            SpawnBlocksInSlots();
+            if (!hasData)
+                SpawnBlocksInSlots();
+
             BoardManager.Instance.PlayIntro();
         }
 
@@ -305,8 +310,9 @@ public class InGameManager : Singleton<InGameManager>
         InGameSaveStorage.Save(data);
     }
 
-    private bool TryLoadGame()
+    private bool TryLoadGame(out bool isNewGame)
     {
+        isNewGame = true;
         if (!InGameSaveStorage.TryLoad(out InGameSaveData data))
             return false;
 
@@ -321,7 +327,7 @@ public class InGameManager : Singleton<InGameManager>
         ClearAllSlots();
         board.RestoreFilledCells(data.filledCells, ResolveSprite);
 
-        if (data.slots != null)
+        if (data.slots != null && data.slots.Count > 0)
         {
             int count = Mathf.Min(data.slots.Count, _slots.Count);
             for (int i = 0; i < count; i++)
@@ -345,6 +351,8 @@ public class InGameManager : Singleton<InGameManager>
                 _slots[i].SpawnSavedBlock(sprite, offsets);
             }
         }
+
+        isNewGame = (data.score == 0);
 
         scoreManager.RestoreState(data.score, data.currentPlaceCount, data.currentComboCount);
         return true;
