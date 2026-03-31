@@ -6,6 +6,7 @@ public class BaseOptionUI : BasePopupUI
     {
         InGameManager.Instance.ResetGame();
         Close();
+        BoardManager.Instance.ActivateGrayscale(false);
     }
 
     public virtual void Home()

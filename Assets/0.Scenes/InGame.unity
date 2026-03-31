@@ -1811,10 +1811,6 @@ PrefabInstance:
       propertyPath: _hintBoardRoot
       value: 
       objectReference: {fileID: 1510317872}
-    - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
-      propertyPath: _introLineHold
-      value: 0.06
-      objectReference: {fileID: 0}
     - target: {fileID: 7912788501387897607, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
       propertyPath: m_Name
       value: BaordManager
@@ -2033,14 +2029,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: ScoreManager
       objectReference: {fileID: 0}
-    - target: {fileID: 6202366534234418665, guid: 1dfb6a65e9a63c542bc89299af8d7c68, type: 3}
-      propertyPath: _comboRemainCount
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 6202366534234418665, guid: 1dfb6a65e9a63c542bc89299af8d7c68, type: 3}
-      propertyPath: _dontDestroyOnLoad
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 8547495030796401029, guid: 1dfb6a65e9a63c542bc89299af8d7c68, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -2167,10 +2155,6 @@ PrefabInstance:
       propertyPath: '_slots.Array.data[2]'
       value: 
       objectReference: {fileID: 1911241780}
-    - target: {fileID: 1320803725296828745, guid: b15f06c42f52afe4fb850481b49aa0ac, type: 3}
-      propertyPath: _gameOverDelaySeconds
-      value: 5
-      objectReference: {fileID: 0}
     - target: {fileID: 6521591746965993170, guid: b15f06c42f52afe4fb850481b49aa0ac, type: 3}
       propertyPath: m_LocalPosition.x
       value: 152.819
@@ -2232,38 +2216,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: LineParticleManger
       objectReference: {fileID: 0}
-    - target: {fileID: 4701811147981103069, guid: 001d8af48c78fde4783740edc70ff56d, type: 3}
-      propertyPath: _shardsSprites.Array.size
-      value: 7
-      objectReference: {fileID: 0}
-    - target: {fileID: 4701811147981103069, guid: 001d8af48c78fde4783740edc70ff56d, type: 3}
-      propertyPath: '_shardsSprites.Array.data[0]'
-      value: 
-      objectReference: {fileID: 21300000, guid: 233332b5fec9adc43b12491a5a6f2904, type: 3}
-    - target: {fileID: 4701811147981103069, guid: 001d8af48c78fde4783740edc70ff56d, type: 3}
-      propertyPath: '_shardsSprites.Array.data[1]'
-      value: 
-      objectReference: {fileID: 21300000, guid: 03d4d72a58c055b449b0cd04c2ea4e9e, type: 3}
-    - target: {fileID: 4701811147981103069, guid: 001d8af48c78fde4783740edc70ff56d, type: 3}
-      propertyPath: '_shardsSprites.Array.data[2]'
-      value: 
-      objectReference: {fileID: 21300000, guid: 70e22a6f311f60148b130b298afbde8a, type: 3}
-    - target: {fileID: 4701811147981103069, guid: 001d8af48c78fde4783740edc70ff56d, type: 3}
-      propertyPath: '_shardsSprites.Array.data[3]'
-      value: 
-      objectReference: {fileID: 21300000, guid: 1d6314f8a83a5b745a53ffb68a42a298, type: 3}
-    - target: {fileID: 4701811147981103069, guid: 001d8af48c78fde4783740edc70ff56d, type: 3}
-      propertyPath: '_shardsSprites.Array.data[4]'
-      value: 
-      objectReference: {fileID: 21300000, guid: c9eaacfb0064b2849bc0abb64876ec71, type: 3}
-    - target: {fileID: 4701811147981103069, guid: 001d8af48c78fde4783740edc70ff56d, type: 3}
-      propertyPath: '_shardsSprites.Array.data[5]'
-      value: 
-      objectReference: {fileID: 21300000, guid: 074b2581644c22842be92095043d29f5, type: 3}
-    - target: {fileID: 4701811147981103069, guid: 001d8af48c78fde4783740edc70ff56d, type: 3}
-      propertyPath: '_shardsSprites.Array.data[6]'
-      value: 
-      objectReference: {fileID: 21300000, guid: f0a9d07468e9c124c91a1f4f5378b145, type: 3}
     - target: {fileID: 7857013648923250218, guid: 001d8af48c78fde4783740edc70ff56d, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.99264

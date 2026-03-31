@@ -218,7 +218,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScoreUI
   _scoreDisplay: {fileID: 7603256286754476115}
   _bestScoreDisplay: {fileID: 6643136145924343048}
-  _animationDuration: 0.5
+  _animationDuration: 0.3
 --- !u!1 &7454137752746898135
 GameObject:
   m_ObjectHideFlags: 0

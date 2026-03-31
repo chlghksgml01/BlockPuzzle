@@ -57,7 +57,7 @@ public class SoundManager : Singleton<SoundManager>
     public void PlaySFX(SFXType type, int comboCount = 0)
     {
 #if UNITY_EDITOR
-        Debug.Log("Play SFX" + type);
+        Debug.Log("Play SFX " + type + ", Combo Count : " + comboCount);
 #endif
 
         switch (type)
@@ -101,9 +101,6 @@ public class SoundManager : Singleton<SoundManager>
     {
         if (comboCount <= 0)
             return;
-#if UNITY_EDITOR
-        Debug.Log("Play ComboSFX" + comboCount);
-#endif
 
         int index = Mathf.Min(comboCount - 1, _clearLine.Length - 1);
         _audioSource.PlayOneShot(_clearLine[index]);

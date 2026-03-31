@@ -49,11 +49,11 @@ MonoBehaviour:
   _lineClearEffectCol: {fileID: 638333086665246333, guid: d6a3d711dc9853e45beb58c8bd39ade4, type: 3}
   _effectRoot: {fileID: 7857013648923250218}
   _shardsSprites:
-  - {fileID: -3803900675424595780, guid: 233332b5fec9adc43b12491a5a6f2904, type: 3}
-  - {fileID: 4445442228287933172, guid: 03d4d72a58c055b449b0cd04c2ea4e9e, type: 3}
-  - {fileID: -329706599131953744, guid: 70e22a6f311f60148b130b298afbde8a, type: 3}
-  - {fileID: 6262088640213102883, guid: 1d6314f8a83a5b745a53ffb68a42a298, type: 3}
-  - {fileID: 275718073664459905, guid: c9eaacfb0064b2849bc0abb64876ec71, type: 3}
-  - {fileID: 8960012545776888217, guid: 074b2581644c22842be92095043d29f5, type: 3}
-  - {fileID: 7819489596173785328, guid: f0a9d07468e9c124c91a1f4f5378b145, type: 3}
+  - {fileID: 21300000, guid: 233332b5fec9adc43b12491a5a6f2904, type: 3}
+  - {fileID: 21300000, guid: 03d4d72a58c055b449b0cd04c2ea4e9e, type: 3}
+  - {fileID: 21300000, guid: 70e22a6f311f60148b130b298afbde8a, type: 3}
+  - {fileID: 21300000, guid: 1d6314f8a83a5b745a53ffb68a42a298, type: 3}
+  - {fileID: 21300000, guid: c9eaacfb0064b2849bc0abb64876ec71, type: 3}
+  - {fileID: 21300000, guid: 074b2581644c22842be92095043d29f5, type: 3}
+  - {fileID: 21300000, guid: f0a9d07468e9c124c91a1f4f5378b145, type: 3}
   _prewarmCount: 4

@@ -64,20 +64,15 @@ public class ScoreManager : Singleton<ScoreManager>
 
     private void CalculateLineScore(int lines)
     {
-        // 지워진 라인 기본 점수
         float baseScore = _boardWidth * lines * _lineScoreMultiplier;
-
-        // 여러 줄 동시 제거
         float multiLineBonusMultiplier = 1 + (lines - 1) * _lineBonusMultiplier;
 
-        // 콤보 
         float comboMultiplier = 1f;
         int comboBonusAddedScore = 0;
         int comboCountForUI = 0;
+
         if (_currentPlaceCount <= _comboRemainCount)
         {
-            _currentPlaceCount = 0;
-
             if (_currentComboCount >= 1)
             {
                 float comboBonus = Mathf.Clamp(_comboScoreMultiplier * _currentComboCount, 0f, 0.5f);
@@ -87,9 +82,14 @@ public class ScoreManager : Singleton<ScoreManager>
             _currentComboCount++;
         }
         else
-            _currentComboCount = 0;
+        {
+            _currentComboCount = 1;
+            comboMultiplier = 1f;
+        }
 
-        float noComboScoreF = baseScore * 1f * multiLineBonusMultiplier;
+        _currentPlaceCount = 0;
+
+        float noComboScoreF = baseScore * multiLineBonusMultiplier;
         float totalScoreF = baseScore * comboMultiplier * multiLineBonusMultiplier;
 
         int totalScore = Mathf.FloorToInt(totalScoreF);
