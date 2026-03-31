@@ -60,6 +60,7 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
     override protected void OnAwake()
     {
         GenerateBoard();
+        BoardManager.Instance.ActivateGrayscale(false);
     }
 
     private void OnEnable()
@@ -268,5 +269,10 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
             if (_introLineInterval > 0f)
                 yield return new WaitForSeconds(_introLineInterval);
         }
+    }
+
+    public void ActivateGrayscale(bool useGrayScale)
+    {
+        _cells[0, 0].ActivateGrayscale(useGrayScale);
     }
 }

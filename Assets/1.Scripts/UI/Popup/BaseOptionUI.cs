@@ -13,6 +13,7 @@ public class BaseOptionUI : BasePopupUI
         InGameManager.Instance.ResetGame();
         Close();
         SceneLoadManager.Instance.LoadScene(SceneName.Lobby);
+        BoardManager.Instance.ActivateGrayscale(false);
     }
 
     public override void Close()

@@ -221,7 +221,6 @@ public sealed class BoardModel
         if (shapeOffset == null || shapeOffset.Length == 0)
             return false;
 
-        // DraggableBlock: offset.y 클수록 UI에서 위쪽(anchoredPosition.y↑) / 보드는 y 클수록 아래행 → Y만 반대로 매핑
         foreach (Vector2Int offset in shapeOffset)
         {
             int tx = baseX + offset.x;

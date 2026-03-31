@@ -171,8 +171,10 @@ public class InGameManager : Singleton<InGameManager>
 
     private IEnumerator GameOverDelayCoroutine()
     {
+        BoardManager.Instance.ActivateGrayscale(true);
         yield return new WaitForSeconds(_gameOverDelaySeconds);
         _gameOverCoroutine = null;
+
         TriggerGameOverIfAllBlocksCannotPlace();
     }
 
