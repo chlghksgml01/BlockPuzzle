@@ -32,7 +32,7 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         }
     }
 
-    public static bool HasInstance => _instance != null;
+    public static bool HasInstance => _instance != null && !_applicationIsQuitting;
 
     [SerializeField]
     private bool _dontDestroyOnLoad = true;

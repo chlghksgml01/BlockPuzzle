@@ -130,12 +130,12 @@ public class InGameManager : Singleton<InGameManager>
             return;
 
         _isGameOverTriggered = true;
+#if UNITY_EDITOR
         Debug.Log("게임 오버");
-
+#endif
         OnGameOver?.Invoke();
         _gameOverUI.Open();
         ResetGame();
-        SaveGame();
     }
 
     public void ResetGame()
@@ -173,10 +173,14 @@ public class InGameManager : Singleton<InGameManager>
 
     private IEnumerator GameOverDelayCoroutine()
     {
+#if UNITY_EDITOR
         Debug.Log("wait gameOverDelaySeconds");
+#endif
         yield return new WaitForSeconds(_gameOverDelaySeconds);
 
+#if UNITY_EDITOR
         Debug.Log("wait grayEffectDuration");
+#endif
         SoundManager.Instance.PlaySFX(SFXType.GameOver);
         BoardManager.Instance.ActivateGrayscale(true, _grayEffectDuration);
         yield return new WaitForSeconds(_grayEffectDuration + 0.5f);
