@@ -2167,6 +2167,10 @@ PrefabInstance:
       propertyPath: '_slots.Array.data[2]'
       value: 
       objectReference: {fileID: 1911241780}
+    - target: {fileID: 1320803725296828745, guid: b15f06c42f52afe4fb850481b49aa0ac, type: 3}
+      propertyPath: _gameOverDelaySeconds
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 6521591746965993170, guid: b15f06c42f52afe4fb850481b49aa0ac, type: 3}
       propertyPath: m_LocalPosition.x
       value: 152.819

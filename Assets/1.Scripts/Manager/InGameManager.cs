@@ -17,6 +17,7 @@ public class InGameManager : Singleton<InGameManager>
 
     [Header("Game Over")]
     [SerializeField, Min(0f)] private float _gameOverDelaySeconds = 5f;
+    [SerializeField, Min(0f)] private float _grayEffectDuration = 1f;
 
     [Header("Block")]
     [SerializeField] private Sprite[] _blockSprites;
@@ -99,8 +100,6 @@ public class InGameManager : Singleton<InGameManager>
 
         if (_placementHandler.CanPlaceShape(block.CurrentOffsets))
             _placementHandler.ShowHint(true, block);
-        else
-            TriggerGameOverIfAllBlocksCannotPlace();
 
         _hintCoroutine = null;
     }
@@ -132,8 +131,11 @@ public class InGameManager : Singleton<InGameManager>
 
         _isGameOverTriggered = true;
         Debug.Log("게임 오버");
+
         OnGameOver?.Invoke();
         _gameOverUI.Open();
+        ResetGame();
+        SaveGame();
     }
 
     public void ResetGame()
@@ -171,8 +173,14 @@ public class InGameManager : Singleton<InGameManager>
 
     private IEnumerator GameOverDelayCoroutine()
     {
-        BoardManager.Instance.ActivateGrayscale(true);
+        Debug.Log("wait gameOverDelaySeconds");
         yield return new WaitForSeconds(_gameOverDelaySeconds);
+
+        Debug.Log("wait grayEffectDuration");
+        SoundManager.Instance.PlaySFX(SFXType.GameOver);
+        BoardManager.Instance.ActivateGrayscale(true, _grayEffectDuration);
+        yield return new WaitForSeconds(_grayEffectDuration + 0.5f);
+
         _gameOverCoroutine = null;
 
         TriggerGameOverIfAllBlocksCannotPlace();
@@ -261,6 +269,7 @@ public class InGameManager : Singleton<InGameManager>
         InGameSaveData data = new InGameSaveData();
 
         scoreManager.ExportState(out data.score, out data.currentPlaceCount, out data.currentComboCount);
+
         data.filledCells = board.ExportFilledCells();
 
         for (int i = 0; i < _slots.Count; i++)

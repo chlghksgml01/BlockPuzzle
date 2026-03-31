@@ -56,6 +56,8 @@ public class SoundManager : Singleton<SoundManager>
 
     public void PlaySFX(SFXType type, int comboCount = 0)
     {
+        Debug.Log("Play SFX" + type);
+
         switch (type)
         {
             case SFXType.Intro:

@@ -271,8 +271,20 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
         }
     }
 
-    public void ActivateGrayscale(bool useGrayScale)
+    public void ActivateGrayscale(bool useGrayScale, float effectDuration = 0f)
     {
-        _cells[0, 0].ActivateGrayscale(useGrayScale);
+        _cells[0, 0].ActivateGrayscale(useGrayScale, effectDuration);
+    }
+
+    [ContextMenu("Turn On GrayScale 1s")]
+    private void Test_TurnOn()
+    {
+        ActivateGrayscale(true, 1f);
+    }
+
+    [ContextMenu("Turn Off GrayScale")]
+    private void Test_TurnOff()
+    {
+        ActivateGrayscale(false);
     }
 }

@@ -49,14 +49,15 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _EffectStartTime: 1
+    - _EffectDuration: 0
+    - _EffectStartTime: 0
     - _EffectTime: 0
     - _GrayScale: 0.1
     - _QueueControl: -1
     - _QueueOffset: 0
     - _StartTime: 8.435898
     - _TurnToGray: 1
-    - _UseGrayscale: 1
+    - _UseGrayscale: 0
     - _grayScale: 1
     - _grayscale: 0.1
     m_Colors:

@@ -91,20 +91,21 @@ public class BoardCell : MonoBehaviour
         }
     }
 
-    [ContextMenu("Start Grayscale")]
-    public void ActivateGrayscale(bool useGrayScale)
+    public void ActivateGrayscale(bool useGrayScale, float effectDuration = 0f)
     {
         Debug.Log("Use GrayScale " + useGrayScale);
 
         if (useGrayScale)
         {
             _material.SetFloat("_UseGrayscale", 1f);
-            _material.SetFloat("_EffectTime", Time.time);
+            _material.SetFloat("_EffectStartTime", Time.time);
+            _material.SetFloat("_EffectDuration", effectDuration);
         }
         else
         {
             _material.SetFloat("_UseGrayscale", 0f);
-            _material.SetFloat("_EffectTime", 0f);
+            _material.SetFloat("_EffectStartTime", 0f);
+            _material.SetFloat("_EffectDuration", 0f);
         }
     }
 }
