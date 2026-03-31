@@ -109,6 +109,7 @@ public class InGameManager : Singleton<InGameManager>
         if (_placementHandler == null)
             return true;
 
+        int InvalidBlockCount = 0;
         foreach (BlockSlot slot in _slots)
         {
             if (!slot.HasBlock)
@@ -116,8 +117,13 @@ public class InGameManager : Singleton<InGameManager>
 
             if (_placementHandler.CanPlaceShape(slot.Block.CurrentOffsets))
                 return false;
+
+            InvalidBlockCount++;
         }
 
+#if UNITY_EDITOR
+        Debug.Log("놓을 수 없는 블럭 개수 : " + InvalidBlockCount);
+#endif
         return true;
     }
 

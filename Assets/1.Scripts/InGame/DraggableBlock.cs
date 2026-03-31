@@ -1,7 +1,7 @@
+using DG.Tweening;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using DG.Tweening;
 
 public class DraggableBlock : MonoBehaviour
 {
@@ -33,11 +33,16 @@ public class DraggableBlock : MonoBehaviour
         _rectTransform = GetComponent<RectTransform>();
     }
 
-    public void InitializeBlock(Sprite blockSprite)
+    public void InitializeBlock(Sprite blockSprite, BlockShape blockshape = null)
     {
         _blockSprite = blockSprite;
 
-        if (_blockShapes != null && _blockShapes.Length > 0)
+        if (blockshape != null)
+        {
+            CurrentOffsets = (Vector2Int[])blockshape.CellOffsets.Clone();
+        }
+
+        else if (_blockShapes != null && _blockShapes.Length > 0)
         {
             int index = PickShapeIndexWeighted(_blockShapes);
             CurrentOffsets = (Vector2Int[])_blockShapes[index].CellOffsets.Clone();

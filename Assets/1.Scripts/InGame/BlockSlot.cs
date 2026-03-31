@@ -10,6 +10,9 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     [Header("Spawn Effect")]
     [SerializeField] private float _popDuration = 0.3f;
 
+    [Header("Test")]
+    [SerializeField] private BlockShape _testBlockShape;
+
     public DraggableBlock Block { get; private set; }
 
     public static event Action<int> OnBlockPlaced;
@@ -29,7 +32,10 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     {
         HasBlock = true;
         Block = Instantiate(_blockPrefab, transform.position, transform.rotation, this.transform);
-        Block.InitializeBlock(blockSprite);
+        if (_testBlockShape != null)
+            Block.InitializeBlock(blockSprite, _testBlockShape);
+        else
+            Block.InitializeBlock(blockSprite);
 
         Block.transform.localScale = Vector3.zero;
         Block.transform.DOScale(Vector3.one, _popDuration).SetEase(Ease.OutBack);
