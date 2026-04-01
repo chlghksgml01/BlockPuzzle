@@ -1,13 +1,20 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SettingPanel : BaseOptionUI
+public class SettingPanel : BaseOptionUI, IInitializable
 {
     [Header("Sound Settings")]
     [SerializeField] private Slider _soundSlider;
 
     [Header("Vibration Settings")]
     [SerializeField] private Slider _vibrateSlider;
+
+    private ScoreSystem _scoreSystem;
+
+    public void OnInitialize(InitializeContext context)
+    {
+        _scoreSystem = context.ScoreSystem;
+    }
 
     private void OnEnable()
     {
@@ -28,13 +35,13 @@ public class SettingPanel : BaseOptionUI
     public override void Replay()
     {
         base.Replay();
-        LeaderboardManager.Instance.UpdateBestScore(ScoreManager.Instance.CurrentScore);
+        LeaderboardManager.Instance.UpdateBestScore(_scoreSystem.CurrentScore);
     }
 
     public override void Home()
     {
         base.Home();
-        LeaderboardManager.Instance.UpdateBestScore(ScoreManager.Instance.CurrentScore);
+        LeaderboardManager.Instance.UpdateBestScore(_scoreSystem.CurrentScore);
     }
 
     // UI에서 호출

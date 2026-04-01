@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GameOverUI : BaseOptionUI
+public class GameOverUI : BaseOptionUI, IInitializable
 {
     [Header("Displays")]
     [SerializeField] private NumberDisplay _scoreDisplay;
@@ -13,9 +13,16 @@ public class GameOverUI : BaseOptionUI
     [SerializeField] private Sprite _defaultBanner;
     [SerializeField] private Sprite _newBestBanner;
 
+    private ScoreSystem _scoreSystem;
+
+    public void OnInitialize(InitializeContext context)
+    {
+        _scoreSystem = context.ScoreSystem;
+    }
+
     private void OnEnable()
     {
-        _scoreDisplay.ScoreRollUpdate(0, ScoreManager.Instance.CurrentScore, _scoreUpdateDuration);
+        _scoreDisplay.ScoreRollUpdate(0, _scoreSystem.CurrentScore, _scoreUpdateDuration);
         _bestScoreDisplay.UpdateDisplay(LeaderboardManager.Instance.BestScore, 2);
     }
 

@@ -4,7 +4,7 @@ using System;
 using UnityEngine;
 
 [DefaultExecutionOrder(-100)]
-public class LeaderboardManager : Singleton<LeaderboardManager>
+public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
 {
     private const string RankUuid = "019cffa2-ab30-7c69-8b25-0025d37e6deb";
     private const string BestScoreKey = "BestScore";
@@ -18,6 +18,13 @@ public class LeaderboardManager : Singleton<LeaderboardManager>
     public static event Action<JsonData> OnRankDataReceived;
     public static event Action<JsonData> OnSetNickname;
 
+    private ScoreSystem _scoreSystem;
+
+    public void OnInitialize(InitializeContext context)
+    {
+        _scoreSystem = context.ScoreSystem;
+    }
+
     protected override void OnAwake()
     {
         _bestScore = PlayerPrefs.GetInt(BestScoreKey, 0);
@@ -26,13 +33,13 @@ public class LeaderboardManager : Singleton<LeaderboardManager>
     private void OnEnable()
     {
         GoogleLoginManager.OnLoginSucceed += SyncWithServer;
-        ScoreManager.OnHighScoreUpdated += UpdateBestScore;
+        _scoreSystem.OnHighScoreUpdated += UpdateBestScore;
     }
 
     private void OnDisable()
     {
         GoogleLoginManager.OnLoginSucceed -= SyncWithServer;
-        ScoreManager.OnHighScoreUpdated -= UpdateBestScore;
+        _scoreSystem.OnHighScoreUpdated -= UpdateBestScore;
     }
 
     private void SyncWithServer(bool isSucceed)

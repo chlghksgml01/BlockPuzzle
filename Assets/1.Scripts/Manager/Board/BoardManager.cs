@@ -1,8 +1,6 @@
-using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,7 +12,7 @@ public interface IPlacementHandler
 }
 
 [DefaultExecutionOrder(-90)]
-public class BoardManager : Singleton<BoardManager>, IPlacementHandler
+public class BoardManager : Singleton<BoardManager>, IPlacementHandler, IInitializable
 {
     [Header("Board Configurations")]
     [SerializeField] private int _width = 9;
@@ -54,8 +52,14 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
     private BoardPreviewController _preview;
     private BoardHintController _hint;
 
-    public static event Action<int> OnLinesCleared;
     public static event Action<IReadOnlyList<int>, IReadOnlyList<int>> OnLinesClearedDetailed;
+
+    private ScoreSystem _scoreSystem;
+
+    public void OnInitialize(InitializeContext context)
+    {
+        _scoreSystem = context.ScoreSystem;
+    }
 
     override protected void OnAwake()
     {
@@ -104,7 +108,7 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler
         _mapper = new BoardGridMapper(_boardRoot, _boardGrid, _width, _height);
         _model = new BoardModel(_width, _height, _cells, (cleared, rows, cols) =>
         {
-            OnLinesCleared?.Invoke(cleared);
+            _scoreSystem.CalculateLineScore(cleared);
             OnLinesClearedDetailed?.Invoke(rows, cols);
         });
         _preview = new BoardPreviewController(_model, _mapper, _keepPreviewMaxDistancePx);

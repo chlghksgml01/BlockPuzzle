@@ -5,11 +5,12 @@ using System.Linq;
 using UnityEngine;
 
 [DefaultExecutionOrder(-100)]
-public class InGameManager : Singleton<InGameManager>
+public class InGameManager : Singleton<InGameManager>, IInitializable
 {
     [Header("References")]
     [SerializeField] private List<BlockSlot> _slots;
     [SerializeField] private GameOverUI _gameOverUI;
+    private ScoreSystem _scoreSystem;
     private IPlacementHandler _placementHandler;
 
     [Header("Settings")]
@@ -25,11 +26,15 @@ public class InGameManager : Singleton<InGameManager>
 
     public static event Action<int> OnBlockSettled;
     public static event Action OnResetGame;
-    public static event Action OnGameOver;
 
     private Coroutine _hintCoroutine;
     private Coroutine _gameOverCoroutine;
     private bool _isGameOverTriggered;
+
+    public void OnInitialize(InitializeContext context)
+    {
+        _scoreSystem = context.ScoreSystem;
+    }
 
     override protected void OnAwake()
     {
@@ -40,14 +45,16 @@ public class InGameManager : Singleton<InGameManager>
 
     private void OnEnable()
     {
+        _scoreSystem.Initialize(BoardManager.Instance.Width);
+
         BlockSlot.OnBlockPlaced += HandleBlockPlaced;
-        ScoreManager.OnHighScoreUpdated += SetNewBest;
+        _scoreSystem.OnHighScoreUpdated += SetNewBest;
     }
 
     private void OnDisable()
     {
         BlockSlot.OnBlockPlaced -= HandleBlockPlaced;
-        ScoreManager.OnHighScoreUpdated -= SetNewBest;
+        _scoreSystem.OnHighScoreUpdated -= SetNewBest;
     }
 
     private void Start()
@@ -70,6 +77,7 @@ public class InGameManager : Singleton<InGameManager>
     private void HandleBlockPlaced(int blockShapeCount)
     {
         OnBlockSettled?.Invoke(blockShapeCount);
+        _scoreSystem.HandleBlockPlaced(blockShapeCount);
 
         bool hasBlocks = _slots.Any(slot => slot.HasBlock);
 
@@ -144,7 +152,7 @@ public class InGameManager : Singleton<InGameManager>
 #if UNITY_EDITOR
         Debug.Log("게임 오버");
 #endif
-        OnGameOver?.Invoke();
+        _scoreSystem.CheckHighScore(LeaderboardManager.Instance.BestScore);
         _gameOverUI.Open();
         SoundManager.Instance.PlaySFX(SFXType.Score);
         ResetGame();
@@ -162,6 +170,7 @@ public class InGameManager : Singleton<InGameManager>
         SpawnBlocksInSlots();
 
         OnResetGame?.Invoke();
+        _scoreSystem.ResetScore();
         SaveGame();
         ScheduleGameOverIfNeeded();
     }
@@ -278,13 +287,12 @@ public class InGameManager : Singleton<InGameManager>
     private void SaveGame()
     {
         BoardManager board = BoardManager.Instance;
-        ScoreManager scoreManager = ScoreManager.Instance;
-        if (board == null || scoreManager == null)
+        if (board == null || _scoreSystem == null)
             return;
 
         InGameSaveData data = new InGameSaveData();
 
-        scoreManager.ExportState(out data.score, out data.currentPlaceCount, out data.currentComboCount);
+        _scoreSystem.ExportState(out data.score, out data.currentPlaceCount, out data.currentComboCount);
 
         data.filledCells = board.ExportFilledCells();
 
@@ -321,8 +329,7 @@ public class InGameManager : Singleton<InGameManager>
             return false;
 
         BoardManager board = BoardManager.Instance;
-        ScoreManager scoreManager = ScoreManager.Instance;
-        if (board == null || scoreManager == null)
+        if (board == null || _scoreSystem == null)
             return false;
 
         ClearAllSlots();
@@ -355,7 +362,7 @@ public class InGameManager : Singleton<InGameManager>
 
         isNewGame = (data.score == 0);
 
-        scoreManager.RestoreState(data.score, data.currentPlaceCount, data.currentComboCount);
+        _scoreSystem.RestoreState(data.score, data.currentPlaceCount, data.currentComboCount);
         return true;
     }
 }

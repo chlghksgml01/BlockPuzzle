@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-public class ScoreUI : MonoBehaviour
+public class ScoreUI : MonoBehaviour, IInitializable
 {
     [Header("Score Display")]
     [SerializeField] private NumberDisplay _scoreDisplay;
@@ -9,13 +9,19 @@ public class ScoreUI : MonoBehaviour
     [SerializeField] private float _animationDuration = 0.5f;
 
     private int _bestScore;
+    private ScoreSystem _scoreSystem;
+
+    public void OnInitialize(InitializeContext context)
+    {
+        _scoreSystem = context.ScoreSystem;
+    }
 
     private void OnEnable()
     {
-        if (ScoreManager.HasInstance)
+        if (_scoreSystem != null)
         {
-            ScoreManager.Instance.OnScoreChanged += RollUpdateScoreUI;
-            ScoreManager.Instance.OnResetScore += ResetScore;
+            _scoreSystem.OnScoreChanged += RollUpdateScoreUI;
+            _scoreSystem.OnResetScore += ResetScore;
         }
         UpdateBestScore();
     }

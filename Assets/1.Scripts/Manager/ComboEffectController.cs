@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [DefaultExecutionOrder(-70)]
-public class ComboEffectController : MonoBehaviour
+public class ComboEffectController : MonoBehaviour, IInitializable
 {
     [Header("Combo Feedback")]
     [SerializeField] private bool _enableComboFeedback = true;
@@ -36,6 +36,13 @@ public class ComboEffectController : MonoBehaviour
 
     private Vector3 _startPos;
 
+    ScoreSystem _scoreSystem;
+
+    public void OnInitialize(InitializeContext context)
+    {
+        _scoreSystem = context.ScoreSystem;
+    }
+
     private void Awake()
     {
         _startPos = _comboBonusText.rectTransform.anchoredPosition;
@@ -47,14 +54,14 @@ public class ComboEffectController : MonoBehaviour
 
     private void OnEnable()
     {
-        if (ScoreManager.HasInstance)
-            ScoreManager.Instance.OnComboScore += PlayCombo;
+        if (_scoreSystem != null)
+            _scoreSystem.OnComboScore += PlayCombo;
     }
 
     private void OnDisable()
     {
-        if (ScoreManager.HasInstance)
-            ScoreManager.Instance.OnComboScore -= PlayCombo;
+        if (_scoreSystem != null)
+            _scoreSystem.OnComboScore -= PlayCombo;
     }
 
     // 테스트용

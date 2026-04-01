@@ -1,8 +1,8 @@
 using System;
 using UnityEngine;
 
-[DefaultExecutionOrder(-80)]
-public class ScoreManager : Singleton<ScoreManager>
+[CreateAssetMenu(fileName = "ScoreSystem", menuName = "Game")]
+public class ScoreSystem : ScriptableObject
 {
     [Header("Score Multipliers & Settings")]
     [SerializeField] private float _lineScoreMultiplier = 2f;
@@ -18,39 +18,14 @@ public class ScoreManager : Singleton<ScoreManager>
     public event Action<int, int> OnScoreChanged;
     public event Action OnResetScore;
     public event Action<int, int> OnComboScore;
-    public static event Action<int> OnHighScoreUpdated;
+    public event Action<int> OnHighScoreUpdated;
 
-    private void OnEnable()
+    public void Initialize(int width)
     {
-        InGameManager.OnBlockSettled += HandleBlockPlaced;
-        InGameManager.OnResetGame += ResetScore;
-        InGameManager.OnGameOver += CheckHighScore;
-        BoardManager.OnLinesCleared += CalculateLineScore;
+        _boardWidth = width;
     }
 
-    private void Start()
-    {
-        if (BoardManager.HasInstance)
-            _boardWidth = BoardManager.Instance.Width;
-        else
-        {
-            Debug.LogError("ScoreManager - BoardManager 없음, _boardWidth 초기화 안됨");
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (InGameManager.HasInstance)
-        {
-            InGameManager.OnBlockSettled -= HandleBlockPlaced;
-            InGameManager.OnResetGame -= ResetScore;
-            InGameManager.OnGameOver -= CheckHighScore;
-        }
-        if (BoardManager.HasInstance)
-            BoardManager.OnLinesCleared -= CalculateLineScore;
-    }
-
-    private void HandleBlockPlaced(int blockCount)
+    public void HandleBlockPlaced(int blockCount)
     {
         _currentPlaceCount++;
 
@@ -62,7 +37,7 @@ public class ScoreManager : Singleton<ScoreManager>
         AddScore(blockCount);
     }
 
-    private void CalculateLineScore(int lines)
+    public void CalculateLineScore(int lines)
     {
         float baseScore = _boardWidth * lines * _lineScoreMultiplier;
         float multiLineBonusMultiplier = 1 + (lines - 1) * _lineBonusMultiplier;
@@ -133,7 +108,7 @@ public class ScoreManager : Singleton<ScoreManager>
         OnScoreChanged?.Invoke(prevScore, CurrentScore);
     }
 
-    private void ResetScore()
+    public void ResetScore()
     {
         _currentPlaceCount = 0;
         _currentComboCount = 0;
@@ -141,9 +116,9 @@ public class ScoreManager : Singleton<ScoreManager>
         OnResetScore?.Invoke();
     }
 
-    private void CheckHighScore()
+    public void CheckHighScore(int bestScore)
     {
-        if (CurrentScore > LeaderboardManager.Instance.BestScore)
+        if (CurrentScore > bestScore)
         {
             OnHighScoreUpdated?.Invoke(CurrentScore);
         }
