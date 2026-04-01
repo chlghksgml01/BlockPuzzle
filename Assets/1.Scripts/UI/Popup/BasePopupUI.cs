@@ -1,5 +1,6 @@
-﻿using UnityEngine;
-using DG.Tweening;
+﻿using DG.Tweening;
+using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class BasePopupUI : MonoBehaviour
 {
@@ -35,5 +36,14 @@ public class BasePopupUI : MonoBehaviour
         {
             gameObject.SetActive(false);
         });
+    }
+
+    private void Update()
+    {
+        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            Close();
+            SoundManager.Instance.PlaySFX(SFXType.ClickUI);
+        }
     }
 }

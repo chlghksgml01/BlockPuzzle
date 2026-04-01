@@ -2570,6 +2570,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ComboEffect
       objectReference: {fileID: 0}
+    - target: {fileID: 1145235311990712787, guid: b841d1bb6fced234ea73593017711194, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3727472670762941952, guid: b841d1bb6fced234ea73593017711194, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
