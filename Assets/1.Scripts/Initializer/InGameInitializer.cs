@@ -16,8 +16,9 @@ public class InitializeContext
     {
         if (score == null)
             Debug.LogError("ScoreSystem is null");
+        else
+            ScoreSystem = score;
 
-        ScoreSystem = score;
         BoardManager = null;
     }
 
@@ -25,11 +26,13 @@ public class InitializeContext
     {
         if (score == null)
             Debug.LogError("ScoreSystem is null");
+        else
+            ScoreSystem = score;
+
         if (board == null)
             Debug.LogError("BoardManager is null");
-
-        ScoreSystem = score;
-        BoardManager = board;
+        else
+            BoardManager = board;
     }
 }
 
