@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [DefaultExecutionOrder(-60)]
-public class LineParticleManager : Singleton<LineParticleManager>, IInitializable
+public class LineParticleSystem : MonoBehaviour, IInitializable
 {
     [SerializeField] private ParticleSystem _lineClearEffectRow;
     [SerializeField] private ParticleSystem _lineClearEffectCol;
@@ -23,7 +23,7 @@ public class LineParticleManager : Singleton<LineParticleManager>, IInitializabl
         _boardInfo = context.BoardManager;
     }
 
-    protected override void OnAwake()
+    private void Awake()
     {
         BuildShardsSpriteLookup();
         Transform parent = _effectRoot != null ? _effectRoot : transform;
