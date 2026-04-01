@@ -180,7 +180,7 @@ public sealed class BoardModel
         if (shapeOffset == null || shapeOffset.Length == 0)
             return false;
 
-        for (int y = _height - 1; y >= 0; y--)
+        for (int y = 0; y < _height; y++)
         {
             for (int x = 0; x < _width; x++)
             {

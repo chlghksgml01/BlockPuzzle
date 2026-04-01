@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public sealed class BoardHintController
 {
@@ -39,10 +40,18 @@ public sealed class BoardHintController
         if (offsets == null || offsets.Length == 0)
             return;
 
-        for (int i = 0; i < offsets.Length; i++)
+        List<Vector2Int> ordered = new List<Vector2Int>(offsets);
+        ordered.Sort((a, b) =>
         {
-            int tx = basePos.x + offsets[i].x;
-            int ty = basePos.y - offsets[i].y;
+            int yCmp = b.y.CompareTo(a.y);
+            if (yCmp != 0) return yCmp;
+            return a.x.CompareTo(b.x);
+        });
+
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            int tx = basePos.x + ordered[i].x;
+            int ty = basePos.y - ordered[i].y;
 
             if (tx < 0 || tx >= _width || ty < 0 || ty >= _height)
                 continue;
