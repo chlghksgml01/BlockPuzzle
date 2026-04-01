@@ -11,7 +11,7 @@ public class SettingPanel : BaseOptionUI, IInitializable
 
     private ScoreSystem _scoreSystem;
 
-    public void OnInitialize(InitializeContext context)
+    public void Initialize(InitializeContext context)
     {
         _scoreSystem = context.ScoreSystem;
     }

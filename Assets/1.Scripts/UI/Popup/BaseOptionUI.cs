@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class BaseOptionUI : BasePopupUI
 {
@@ -6,7 +6,6 @@ public class BaseOptionUI : BasePopupUI
     {
         InGameManager.Instance.ResetGame();
         Close();
-        BoardManager.Instance.ActivateGrayscale(false);
     }
 
     public virtual void Home()
@@ -14,7 +13,6 @@ public class BaseOptionUI : BasePopupUI
         InGameManager.Instance.ResetGame();
         Close();
         SceneLoadManager.Instance.LoadScene(SceneName.Lobby);
-        BoardManager.Instance.ActivateGrayscale(false);
     }
 
     public override void Close()

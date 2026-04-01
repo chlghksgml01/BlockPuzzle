@@ -14,7 +14,7 @@ public class LobbyInitializer : MonoBehaviour
 
         foreach (IInitializable target in targets)
         {
-            target.OnInitialize(context);
+            target.Initialize(context);
         }
     }
 }

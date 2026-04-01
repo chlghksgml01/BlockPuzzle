@@ -13,19 +13,19 @@ public class BoardCell : MonoBehaviour
 
     private Sprite _defaultSprite;
 
-    private Material _material;
+    private IBoardInfo _boardInfo;
 
     private void Awake()
     {
         _image = GetComponent<Image>();
-        _material = GetComponent<Image>().material;
     }
 
-    public void Init(int x, int y)
+    public void Init(int x, int y, IBoardInfo boardInfo)
     {
         _x = x;
         _y = y;
         SetFilled(false);
+        _boardInfo = boardInfo;
     }
 
     public void SetFilled(bool isfilled)
@@ -47,7 +47,7 @@ public class BoardCell : MonoBehaviour
         if (isPreviewFilled)
         {
             _image.sprite = blockSprite;
-            _image.color = BoardManager.Instance.PreviewColor;
+            _image.color = _boardInfo.PreviewColor;
         }
         else if (!isPreviewFilled)
         {
@@ -88,26 +88,6 @@ public class BoardCell : MonoBehaviour
 
             if (isIntroEffect)
                 _image.color = new Color(1f, 1f, 1f, 0f);
-        }
-    }
-
-    public void ActivateGrayscale(bool useGrayScale, float effectDuration = 0f)
-    {
-#if UNITY_EDITOR
-        Debug.Log("Use GrayScale " + useGrayScale);
-#endif
-
-        if (useGrayScale)
-        {
-            _material.SetFloat("_UseGrayscale", 1f);
-            _material.SetFloat("_EffectStartTime", Time.time);
-            _material.SetFloat("_EffectDuration", effectDuration);
-        }
-        else
-        {
-            _material.SetFloat("_UseGrayscale", 0f);
-            _material.SetFloat("_EffectStartTime", 0f);
-            _material.SetFloat("_EffectDuration", 0f);
         }
     }
 }

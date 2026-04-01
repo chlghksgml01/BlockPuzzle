@@ -1,18 +1,10 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public interface IPlacementHandler
-{
-    public int Width { get; }
-    public bool CanPlaceShape(Vector2Int[] shapeOffset);
-    public void ShowHint(bool showHint, DraggableBlock block, bool isPlaced = false);
-}
-
 [DefaultExecutionOrder(-90)]
-public class BoardManager : Singleton<BoardManager>, IPlacementHandler, IInitializable
+public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoardQuery, IBoardInfo
 {
     [Header("Board Configurations")]
     [SerializeField] private int _width = 9;
@@ -30,12 +22,6 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler, IInitial
     [SerializeField] private Color _previewColor = new Color(0.5f, 0.5f, 0.5f, 1f);
     public Color PreviewColor => _previewColor;
 
-    [Header("Intro Domino Effect")]
-    [SerializeField] private bool _playIntroDominoEffect = true;
-    [SerializeField] private Sprite _introEffectSprite;
-    [SerializeField, Min(0f)] private float _introLineInterval = 0.04f;
-    [SerializeField, Min(0f)] private float _introLineHold = 0.08f;
-
     [Header("Drag Preview Settings")]
     [SerializeField, Min(0f)] private float _keepPreviewMaxDistancePx = 180f;
 
@@ -47,24 +33,26 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler, IInitial
     private GridLayoutGroup _boardGrid;
     private List<BoardCell> _lastPreviewCells;
 
+    private BoardEffect _boardEffect;
     private BoardGridMapper _mapper;
     private BoardModel _model;
     private BoardPreviewController _preview;
     private BoardHintController _hint;
 
-    public static event Action<IReadOnlyList<int>, IReadOnlyList<int>> OnLinesClearedDetailed;
+    public event Action<IReadOnlyList<int>, IReadOnlyList<int>> OnLinesClearedDetailed;
 
     private ScoreSystem _scoreSystem;
 
-    public void OnInitialize(InitializeContext context)
+    public void Initialize(InitializeContext context)
     {
         _scoreSystem = context.ScoreSystem;
     }
 
-    override protected void OnAwake()
+    private void Awake()
     {
         GenerateBoard();
-        BoardManager.Instance.ActivateGrayscale(false);
+        _boardEffect = GetComponentInChildren<BoardEffect>();
+        ActivateGrayscale(false);
     }
 
     private void OnEnable()
@@ -93,7 +81,7 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler, IInitial
             {
                 GameObject cell = Instantiate(_cellPrefab, _boardRoot);
                 _cells[x, y] = cell.GetComponent<BoardCell>();
-                _cells[x, y].Init(x, y);
+                _cells[x, y].Init(x, y, this);
 
                 GameObject hintCell = Instantiate(_hintCellPrefab, _hintBoardRoot);
                 _hintCells[x, y] = hintCell.GetComponent<HintBoardCell>();
@@ -130,11 +118,6 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler, IInitial
         return true;
     }
 
-    public void UpdatePreviewFromScreen(DraggableBlock block, Vector2 anchorScreenPos, Camera uiCam = null)
-    {
-        UpdatePreviewFromScreen(block, anchorScreenPos, Vector2Int.zero, uiCam);
-    }
-
     public void UpdatePreviewFromScreen(DraggableBlock block, Vector2 anchorScreenPos, Vector2Int anchorOffset, Camera uiCam = null)
     {
         bool canPlace;
@@ -169,29 +152,26 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler, IInitial
         _model.ProcessFullLines();
     }
 
-    public bool CanPlaceShape(Vector2Int[] shapeOffset) => _model.CanPlaceShape(shapeOffset);
-
-    public List<FilledCellData> ExportFilledCells()
+    private void ResetBoard()
     {
-        List<FilledCellData> result = new List<FilledCellData>();
-        for (int x = 0; x < _width; x++)
-        {
-            for (int y = 0; y < _height; y++)
-            {
-                BoardCell cell = _cells[x, y];
-                if (!cell.IsFilled)
-                    continue;
+        ClearDragPreview();
+        _model.ResetBoard();
+    }
 
-                result.Add(new FilledCellData
-                {
-                    x = x,
-                    y = y,
-                    spriteName = cell.FilledSprite != null ? cell.FilledSprite.name : string.Empty
-                });
-            }
-        }
+    public void ActivateGrayscale(bool useGrayScale, float effectDuration = 0f)
+    {
+        _boardEffect.ActivateGrayscale(useGrayScale, effectDuration);
+    }
 
-        return result;
+    #region InGameManager
+    public void PlayIntro()
+    {
+        _boardEffect.PlayIntro(_cells, _width, _height);
+    }
+
+    public void ShowHint(bool showHint, DraggableBlock block, bool isPlaced = false)
+    {
+        _hint.ShowHint(showHint, block, isPlaced);
     }
 
     public void RestoreFilledCells(List<FilledCellData> filledCells, Func<string, Sprite> spriteResolver)
@@ -216,69 +196,31 @@ public class BoardManager : Singleton<BoardManager>, IPlacementHandler, IInitial
         }
     }
 
-    private void ResetBoard()
+    public List<FilledCellData> ExportFilledCells()
     {
-        ClearDragPreview();
-        _model.ResetBoard();
-    }
-
-    public void ShowHint(bool showHint, DraggableBlock block, bool isPlaced = false)
-    {
-        _hint.ShowHint(showHint, block, isPlaced);
-    }
-
-    public void PlayIntro()
-    {
-        if (_playIntroDominoEffect)
-            StartCoroutine(PlayIntroDominoEffect());
-    }
-
-    private IEnumerator PlayIntroDominoEffect()
-    {
-        SoundManager.Instance.PlaySFX(SFXType.Intro);
-        if (_introEffectSprite == null || _cells == null)
-            yield break;
-
-        int maxSum = (_width - 1) + (_height - 1);
-
-        for (int sum = 0; sum <= maxSum; sum++)
+        List<FilledCellData> result = new List<FilledCellData>();
+        for (int x = 0; x < _width; x++)
         {
-            for (int x = 0; x < _width; x++)
+            for (int y = 0; y < _height; y++)
             {
-                int y = sum - x;
-                if (y < 0 || y >= _height)
+                BoardCell cell = _cells[x, y];
+                if (!cell.IsFilled)
                     continue;
 
-                _cells[x, y].SetLinePreview(true, _introEffectSprite);
+                result.Add(new FilledCellData
+                {
+                    x = x,
+                    y = y,
+                    spriteName = cell.FilledSprite != null ? cell.FilledSprite.name : string.Empty
+                });
             }
-
-            if (_introLineInterval > 0f)
-                yield return new WaitForSeconds(_introLineInterval);
         }
 
-        if (_introLineHold > 0f)
-            yield return new WaitForSeconds(_introLineHold);
-
-        for (int sum = 0; sum <= maxSum; sum++)
-        {
-            for (int x = 0; x < _width; x++)
-            {
-                int y = sum - x;
-                if (y < 0 || y >= _height)
-                    continue;
-
-                _cells[x, y].SetLinePreview(false, null, true);
-            }
-
-            if (_introLineInterval > 0f)
-                yield return new WaitForSeconds(_introLineInterval);
-        }
+        return result;
     }
 
-    public void ActivateGrayscale(bool useGrayScale, float effectDuration = 0f)
-    {
-        _cells[0, 0].ActivateGrayscale(useGrayScale, effectDuration);
-    }
+    public bool CanPlaceShape(Vector2Int[] shapeOffset) => _model.CanPlaceShape(shapeOffset);
+    #endregion
 
     [ContextMenu("Turn On GrayScale 1s")]
     private void Test_TurnOn()

@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler
+public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler, IInitializable
 {
     [Header("Prefab")]
     [SerializeField] private DraggableBlock _blockPrefab;
@@ -20,12 +20,21 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     public static event Action<Sprite> OnBlockSpritePlaced;
     public bool HasBlock { get; private set; }
 
-    private BoardManager _board;
+    private IBoardHandler _boardHandler;
+    private IBoardInfo _boardInfo;
     private InGameManager _inGame;
+
+    ScoreSystem _scoreSystem;
+
+    public void Initialize(InitializeContext context)
+    {
+        _scoreSystem = context.ScoreSystem;
+        _boardHandler = context.BoardManager;
+        _boardInfo = context.BoardManager;
+    }
 
     private void Start()
     {
-        _board = BoardManager.Instance;
         _inGame = InGameManager.Instance;
     }
 
@@ -72,7 +81,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
         UpdateBlockPositionAndPreview(eventData);
 
-        Block.BlockAnimate(_board.BoardCellSize);
+        Block.BlockAnimate(_boardInfo.BoardCellSize);
         _inGame.StartHintCoroutine(Block);
     }
 
@@ -86,11 +95,11 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
             return;
         }
 
-        if (_board.CanPlaceBlock)
+        if (_boardHandler.CanPlaceBlock)
         {
             _inGame.StopHintCoroutine(Block, true);
             Sprite placedSprite = Block.BlockSprite;
-            if (_board.PlaceLastPreview(Block, Block.BlockSprite, out int placedCount))
+            if (_boardHandler.PlaceLastPreview(Block, Block.BlockSprite, out int placedCount))
             {
                 RemoveBlock();
                 OnBlockSpritePlaced?.Invoke(placedSprite);
@@ -99,7 +108,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
             }
             else
             {
-                _board.ClearDragPreview();
+                _boardHandler.ClearDragPreview();
                 Block.BlockAnimate(Block.SlotBlockSize);
                 (Block.transform as RectTransform).anchoredPosition = Vector2.zero;
                 SoundManager.Instance.PlaySFX(SFXType.PlaceFailed);
@@ -108,7 +117,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
         else
         {
-            _board.ClearDragPreview();
+            _boardHandler.ClearDragPreview();
             Block.BlockAnimate(Block.SlotBlockSize);
             (Block.transform as RectTransform).anchoredPosition = Vector2.zero;
             SoundManager.Instance.PlaySFX(SFXType.PlaceFailed);
@@ -140,8 +149,8 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         Block.MoveToPointer(slotRect, eventData.position, cam);
 
         if (Block.TryGetAnchorScreenPoint(cam, out Vector2 anchorScreenPos, out Vector2Int anchorOffset))
-            _board.UpdatePreviewFromScreen(Block, anchorScreenPos, anchorOffset, cam);
+            _boardHandler.UpdatePreviewFromScreen(Block, anchorScreenPos, anchorOffset, cam);
         else
-            _board.UpdatePreviewFromScreen(Block, Block.GetScreenPosition(cam), cam);
+            _boardHandler.UpdatePreviewFromScreen(Block, Block.GetScreenPosition(cam), Vector2Int.zero, cam);
     }
 }

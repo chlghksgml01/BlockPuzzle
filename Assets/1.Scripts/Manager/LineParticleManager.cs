@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [DefaultExecutionOrder(-60)]
-public class LineParticleManager : Singleton<LineParticleManager>
+public class LineParticleManager : Singleton<LineParticleManager>, IInitializable
 {
     [SerializeField] private ParticleSystem _lineClearEffectRow;
     [SerializeField] private ParticleSystem _lineClearEffectCol;
@@ -14,6 +14,14 @@ public class LineParticleManager : Singleton<LineParticleManager>
     private readonly List<string> _shardsSpriteKeys = new List<string>();
     private string _lastPlacedSpriteKey = string.Empty;
     private LineParticlePoolManager _poolManager;
+    private IBoardQuery _boardQuery;
+    private IBoardInfo _boardInfo;
+
+    public void Initialize(InitializeContext context)
+    {
+        _boardQuery = context.BoardManager;
+        _boardInfo = context.BoardManager;
+    }
 
     protected override void OnAwake()
     {
@@ -25,14 +33,14 @@ public class LineParticleManager : Singleton<LineParticleManager>
     private void OnEnable()
     {
         BlockSlot.OnBlockSpritePlaced += HandleBlockSpritePlaced;
-        BoardManager.OnLinesClearedDetailed += HandleLinesCleared;
+        _boardQuery.OnLinesClearedDetailed += HandleLinesCleared;
         EnsurePrewarm();
     }
 
     private void OnDisable()
     {
         BlockSlot.OnBlockSpritePlaced -= HandleBlockSpritePlaced;
-        BoardManager.OnLinesClearedDetailed -= HandleLinesCleared;
+        _boardQuery.OnLinesClearedDetailed -= HandleLinesCleared;
     }
 
     private void HandleBlockSpritePlaced(Sprite sprite)
@@ -42,7 +50,7 @@ public class LineParticleManager : Singleton<LineParticleManager>
 
     private void HandleLinesCleared(IReadOnlyList<int> rows, IReadOnlyList<int> cols)
     {
-        if (BoardManager.Instance == null)
+        if (_boardQuery == null)
             return;
 
         PlayRowEffects(rows);
@@ -55,13 +63,13 @@ public class LineParticleManager : Singleton<LineParticleManager>
             return;
 
         Sprite shardsSprite = FindShardsSprite(_lastPlacedSpriteKey);
-        int width = BoardManager.Instance.Width;
+        int width = _boardInfo.Width;
         for (int i = 0; i < rows.Count; i++)
         {
             int y = rows[i];
-            if (!BoardManager.Instance.TryGetCellWorldPosition(0, y, out Vector3 left))
+            if (!_boardQuery.TryGetCellWorldPosition(0, y, out Vector3 left))
                 continue;
-            if (!BoardManager.Instance.TryGetCellWorldPosition(width - 1, y, out Vector3 right))
+            if (!_boardQuery.TryGetCellWorldPosition(width - 1, y, out Vector3 right))
                 continue;
 
             Vector3 center = (left + right) * 0.5f;
@@ -76,13 +84,13 @@ public class LineParticleManager : Singleton<LineParticleManager>
 
         Sprite shardsSprite = FindShardsSprite(_lastPlacedSpriteKey);
         int topY = 0;
-        int bottomY = BoardManager.Instance.Height - 1;
+        int bottomY = _boardInfo.Height - 1;
         for (int i = 0; i < cols.Count; i++)
         {
             int x = cols[i];
-            if (!BoardManager.Instance.TryGetCellWorldPosition(x, topY, out Vector3 top))
+            if (!_boardQuery.TryGetCellWorldPosition(x, topY, out Vector3 top))
                 continue;
-            if (!BoardManager.Instance.TryGetCellWorldPosition(x, bottomY, out Vector3 bottom))
+            if (!_boardQuery.TryGetCellWorldPosition(x, bottomY, out Vector3 bottom))
                 continue;
 
             Vector3 center = (top + bottom) * 0.5f;

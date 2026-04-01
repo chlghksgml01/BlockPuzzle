@@ -11,7 +11,6 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     [SerializeField] private List<BlockSlot> _slots;
     [SerializeField] private GameOverUI _gameOverUI;
     private ScoreSystem _scoreSystem;
-    private IPlacementHandler _placementHandler;
 
     [Header("Settings")]
     [SerializeField] private float _hintTimeInterval = 5f;
@@ -31,21 +30,23 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     private Coroutine _gameOverCoroutine;
     private bool _isGameOverTriggered;
 
-    public void OnInitialize(InitializeContext context)
+    private BoardManager _boardManger;
+
+    public void Initialize(InitializeContext context)
     {
         _scoreSystem = context.ScoreSystem;
+        _boardManger = context.BoardManager;
     }
 
     override protected void OnAwake()
     {
         _gameOverUI.gameObject.SetActive(false);
-        _placementHandler = FindFirstObjectByType<BoardManager>();
         BuildSpriteLookup();
     }
 
     private void OnEnable()
     {
-        _scoreSystem.Initialize(BoardManager.Instance.Width);
+        _scoreSystem.Initialize(_boardManger.Width);
 
         BlockSlot.OnBlockPlaced += HandleBlockPlaced;
         _scoreSystem.OnHighScoreUpdated += SetNewBest;
@@ -68,7 +69,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
             if (!hasData)
                 SpawnBlocksInSlots();
 
-            BoardManager.Instance.PlayIntro();
+            _boardManger.PlayIntro();
         }
 
         ScheduleGameOverIfNeeded();
@@ -98,7 +99,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
     public void StopHintCoroutine(DraggableBlock block, bool isPlaced)
     {
-        _placementHandler.ShowHint(false, block, isPlaced);
+        _boardManger.ShowHint(false, block, isPlaced);
 
         if (_hintCoroutine != null)
         {
@@ -111,15 +112,15 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     {
         yield return new WaitForSeconds(_hintTimeInterval);
 
-        if (_placementHandler.CanPlaceShape(block.CurrentOffsets))
-            _placementHandler.ShowHint(true, block);
+        if (_boardManger.CanPlaceShape(block.CurrentOffsets))
+            _boardManger.ShowHint(true, block);
 
         _hintCoroutine = null;
     }
 
     private bool AreAllBlocksCannotPlace()
     {
-        if (_placementHandler == null)
+        if (_boardManger == null)
             return true;
 
         int InvalidBlockCount = 0;
@@ -128,14 +129,14 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
             if (!slot.HasBlock)
                 continue;
 
-            if (_placementHandler.CanPlaceShape(slot.Block.CurrentOffsets))
+            if (_boardManger.CanPlaceShape(slot.Block.CurrentOffsets))
                 return false;
 
             InvalidBlockCount++;
         }
 
 #if UNITY_EDITOR
-        Debug.Log("놓을 수 없는 블럭 개수 : " + InvalidBlockCount);
+        Debug.Log("InvalidBlockCount : " + InvalidBlockCount);
 #endif
         return true;
     }
@@ -149,9 +150,6 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
             return;
 
         _isGameOverTriggered = true;
-#if UNITY_EDITOR
-        Debug.Log("게임 오버");
-#endif
         _scoreSystem.CheckHighScore(LeaderboardManager.Instance.BestScore);
         _gameOverUI.Open();
         SoundManager.Instance.PlaySFX(SFXType.Score);
@@ -173,6 +171,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         _scoreSystem.ResetScore();
         SaveGame();
         ScheduleGameOverIfNeeded();
+        _boardManger.ActivateGrayscale(false);
     }
 
     private void ScheduleGameOverIfNeeded()
@@ -203,7 +202,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         Debug.Log("wait grayEffectDuration");
 #endif
         SoundManager.Instance.PlaySFX(SFXType.GameOver);
-        BoardManager.Instance.ActivateGrayscale(true, _grayEffectDuration);
+        _boardManger.ActivateGrayscale(true, _grayEffectDuration);
         yield return new WaitForSeconds(_grayEffectDuration + 1f);
 
         _gameOverCoroutine = null;
@@ -286,7 +285,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
     private void SaveGame()
     {
-        BoardManager board = BoardManager.Instance;
+        BoardManager board = _boardManger;
         if (board == null || _scoreSystem == null)
             return;
 
@@ -328,7 +327,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         if (data == null)
             return false;
 
-        BoardManager board = BoardManager.Instance;
+        BoardManager board = _boardManger;
         if (board == null || _scoreSystem == null)
             return false;
 

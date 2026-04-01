@@ -294,10 +294,4 @@ public class DraggableBlock : MonoBehaviour
             rectTransform.DOSizeDelta(targetSizeDelta, _scaleDuration);
         }
     }
-
-    public void ClearBoardPreview()
-    {
-        if (BoardManager.HasInstance)
-            BoardManager.Instance.ClearDragPreview();
-    }
 }

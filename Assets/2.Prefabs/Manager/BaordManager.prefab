@@ -1,5 +1,54 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &468447165297134978
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 80458987783859645}
+  - component: {fileID: 132100596052046510}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &80458987783859645
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 468447165297134978}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 482992224638637391}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &132100596052046510
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 468447165297134978}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01a1e9466920f8b4faf8b4e2ef81f6b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BoardEffect
+  _playIntroDominoEffect: 1
+  _introEffectSprite: {fileID: 21300000, guid: fb6ee944397fe4f43b7d396aa6ccdc5a, type: 3}
+  _introLineInterval: 0.04
+  _introLineHold: 0.08
+  _cellMaterial: {fileID: 2100000, guid: d869c28afd200ea4baebda761b9493c4, type: 2}
 --- !u!1 &7912788501387897607
 GameObject:
   m_ObjectHideFlags: 0
@@ -29,7 +78,8 @@ Transform:
   m_LocalPosition: {x: 146.69443, y: 459.973, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 80458987783859645}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1871761609566701615
@@ -44,7 +94,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6015a3deb696d44daab6c5b05a87110, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BoardManager
-  _dontDestroyOnLoad: 0
   _width: 9
   _height: 9
   _boardRoot: {fileID: 0}
@@ -52,8 +101,5 @@ MonoBehaviour:
   _cellPrefab: {fileID: 7066565143273184599, guid: 264adafa540dba74aa345563c1dcc8ca, type: 3}
   _hintCellPrefab: {fileID: 7066565143273184599, guid: 32318d4053e1784429ad964970ac84f7, type: 3}
   _previewColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 1}
-  _playIntroDominoEffect: 1
-  _introEffectSprite: {fileID: 21300000, guid: fb6ee944397fe4f43b7d396aa6ccdc5a, type: 3}
-  _introLineInterval: 0.04
-  _introLineHold: 0.06
   _keepPreviewMaxDistancePx: 200
+  _boardEffect: {fileID: 0}

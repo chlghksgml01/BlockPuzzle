@@ -11,7 +11,7 @@ public class ScoreUI : MonoBehaviour, IInitializable
     private int _bestScore;
     private ScoreSystem _scoreSystem;
 
-    public void OnInitialize(InitializeContext context)
+    public void Initialize(InitializeContext context)
     {
         _scoreSystem = context.ScoreSystem;
     }
