@@ -29,8 +29,9 @@ public sealed class BoardPreviewController
 
         if (block == null || block.CurrentOffsets == null || block.CurrentOffsets.Length == 0)
         {
+            bool wasShowing = HasLastPreview;
             Clear();
-            return false;
+            return wasShowing;
         }
 
         bool isSameBlock = _lastPreviewBlock == block;
@@ -44,15 +45,16 @@ public sealed class BoardPreviewController
                 if (IsTooFarFromLastPreview(anchorScreenPos, uiCam))
                 {
                     Clear();
-                    return false;
+                    return true;
                 }
 
                 canPlace = true;
                 return false;
             }
 
+            bool wasShowing = HasLastPreview;
             Clear();
-            return false;
+            return wasShowing;
         }
 
         int baseX = anchorX - anchorOffset.x;
@@ -65,7 +67,7 @@ public sealed class BoardPreviewController
                 if (IsTooFarFromLastPreview(anchorScreenPos, uiCam))
                 {
                     Clear();
-                    return false;
+                    return true;
                 }
 
                 canPlace = true;
@@ -75,6 +77,8 @@ public sealed class BoardPreviewController
             Clear();
             return false;
         }
+
+        bool isPosChanged = (baseX != _lastPreviewBasePos.x || baseY != _lastPreviewBasePos.y || !isSameBlock);
 
         // 프리뷰 갱신
         ClearAllPreviewOnly();
@@ -93,7 +97,7 @@ public sealed class BoardPreviewController
         _lastPreviewAnchorScreenPos = anchorScreenPos;
         _lastPreviewBlock = block;
         canPlace = true;
-        return true;
+        return isPosChanged;
     }
 
     public bool PlaceLastPreview(DraggableBlock block, Sprite blockSprite, out int placedCount)
