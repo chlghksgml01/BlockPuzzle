@@ -11,11 +11,11 @@ public class LineParticleSystem : MonoBehaviour, IInitializable
     [SerializeField, Min(0)] private int _prewarmCount = 4;
 
     private readonly Dictionary<string, Sprite> _shardsSpriteByKey = new Dictionary<string, Sprite>();
-    private readonly List<string> _shardsSpriteKeys = new List<string>();
     private string _lastPlacedSpriteKey = string.Empty;
     private LineParticlePoolManager _poolManager;
     private IBoardQuery _boardQuery;
     private IBoardInfo _boardInfo;
+    private bool _subscriptionsBound;
 
     public void Initialize(InitializeContext context)
     {
@@ -32,15 +32,26 @@ public class LineParticleSystem : MonoBehaviour, IInitializable
 
     private void OnEnable()
     {
+        if (_boardQuery == null || _boardInfo == null)
+        {
+            Debug.LogError("LineParticleSystem - Initialize must be called before OnEnable.");
+            return;
+        }
+
         BlockSlot.OnBlockSpritePlaced += HandleBlockSpritePlaced;
         _boardQuery.OnLinesClearedDetailed += HandleLinesCleared;
         EnsurePrewarm();
+        _subscriptionsBound = true;
     }
 
     private void OnDisable()
     {
+        if (!_subscriptionsBound)
+            return;
+
         BlockSlot.OnBlockSpritePlaced -= HandleBlockSpritePlaced;
         _boardQuery.OnLinesClearedDetailed -= HandleLinesCleared;
+        _subscriptionsBound = false;
     }
 
     private void HandleBlockSpritePlaced(Sprite sprite)
@@ -141,7 +152,6 @@ public class LineParticleSystem : MonoBehaviour, IInitializable
     private void BuildShardsSpriteLookup()
     {
         _shardsSpriteByKey.Clear();
-        _shardsSpriteKeys.Clear();
 
         if (_shardsSprites == null || _shardsSprites.Length == 0)
             return;
@@ -160,7 +170,6 @@ public class LineParticleSystem : MonoBehaviour, IInitializable
                 continue;
 
             _shardsSpriteByKey[key] = sprite;
-            _shardsSpriteKeys.Add(key);
         }
     }
 

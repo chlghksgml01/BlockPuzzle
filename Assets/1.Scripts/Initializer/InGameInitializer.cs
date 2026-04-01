@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -11,8 +12,22 @@ public class InitializeContext
     public readonly ScoreSystem ScoreSystem;
     public readonly BoardManager BoardManager;
 
-    public InitializeContext(ScoreSystem score, BoardManager board = null)
+    public InitializeContext(ScoreSystem score)
     {
+        if (score == null)
+            Debug.LogError("ScoreSystem is null");
+
+        ScoreSystem = score;
+        BoardManager = null;
+    }
+
+    public InitializeContext(ScoreSystem score, BoardManager board)
+    {
+        if (score == null)
+            Debug.LogError("ScoreSystem is null");
+        if (board == null)
+            Debug.LogError("BoardManager is null");
+
         ScoreSystem = score;
         BoardManager = board;
     }
@@ -26,9 +41,17 @@ public class InGameInitializer : MonoBehaviour
 
     private void Awake()
     {
+        if (_scoreSystem == null || _boardManager == null)
+        {
+            Debug.LogError("InGameInitializer - Missing required references: ScoreSystem, BoardManager");
+            enabled = false;
+            return;
+        }
+
+        _scoreSystem.ResetRuntimeState();
         InitializeContext context = new InitializeContext(_scoreSystem, _boardManager);
 
-        var targets = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None).OfType<IInitializable>();
+        IEnumerable<IInitializable> targets = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None).OfType<IInitializable>();
 
         foreach (IInitializable target in targets)
         {

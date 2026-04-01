@@ -29,6 +29,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     private Coroutine _hintCoroutine;
     private Coroutine _gameOverCoroutine;
     private bool _isGameOverTriggered;
+    private bool _subscriptionsBound;
 
     private BoardManager _boardManger;
 
@@ -46,16 +47,27 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
     private void OnEnable()
     {
+        if (_scoreSystem == null || _boardManger == null)
+        {
+            Debug.LogError("InGameManager - Initialize must be called before OnEnable.");
+            return;
+        }
+
         _scoreSystem.Initialize(_boardManger.Width);
 
         BlockSlot.OnBlockPlaced += HandleBlockPlaced;
         _scoreSystem.OnHighScoreUpdated += SetNewBest;
+        _subscriptionsBound = true;
     }
 
     private void OnDisable()
     {
+        if (!_subscriptionsBound)
+            return;
+
         BlockSlot.OnBlockPlaced -= HandleBlockPlaced;
         _scoreSystem.OnHighScoreUpdated -= SetNewBest;
+        _subscriptionsBound = false;
     }
 
     private void Start()

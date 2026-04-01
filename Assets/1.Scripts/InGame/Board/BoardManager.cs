@@ -96,7 +96,8 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
         _mapper = new BoardGridMapper(_boardRoot, _boardGrid, _width, _height);
         _model = new BoardModel(_width, _height, _cells, (cleared, rows, cols) =>
         {
-            _scoreSystem.CalculateLineScore(cleared);
+            if (_scoreSystem != null)
+                _scoreSystem.CalculateLineScore(cleared);
             OnLinesClearedDetailed?.Invoke(rows, cols);
         });
         _preview = new BoardPreviewController(_model, _mapper, _keepPreviewMaxDistancePx);

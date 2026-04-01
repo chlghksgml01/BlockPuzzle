@@ -24,11 +24,8 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     private IBoardInfo _boardInfo;
     private InGameManager _inGame;
 
-    ScoreSystem _scoreSystem;
-
     public void Initialize(InitializeContext context)
     {
-        _scoreSystem = context.ScoreSystem;
         _boardHandler = context.BoardManager;
         _boardInfo = context.BoardManager;
     }

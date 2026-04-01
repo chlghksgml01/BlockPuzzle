@@ -25,6 +25,14 @@ public class ScoreSystem : ScriptableObject
         _boardWidth = width;
     }
 
+    public void ResetRuntimeState()
+    {
+        CurrentScore = 0;
+        _currentPlaceCount = 0;
+        _currentComboCount = 0;
+        _boardWidth = 0;
+    }
+
     public void HandleBlockPlaced(int blockCount)
     {
         _currentPlaceCount++;
