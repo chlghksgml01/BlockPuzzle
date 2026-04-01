@@ -11,6 +11,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     [SerializeField] private float _popDuration = 0.3f;
 
     [Header("Test")]
+    [SerializeField] private Sprite _testBlockSprite;
     [SerializeField] private BlockShape _testBlockShape;
 
     public DraggableBlock Block { get; private set; }
@@ -32,7 +33,11 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     {
         HasBlock = true;
         Block = Instantiate(_blockPrefab, transform.position, transform.rotation, this.transform);
-        if (_testBlockShape != null)
+        if (_testBlockSprite != null && _testBlockShape != null)
+            Block.InitializeBlock(_testBlockSprite, _testBlockShape);
+        else if (_testBlockSprite != null && _testBlockShape == null)
+            Block.InitializeBlock(_testBlockSprite);
+        else if (_testBlockSprite == null && _testBlockShape != null)
             Block.InitializeBlock(blockSprite, _testBlockShape);
         else
             Block.InitializeBlock(blockSprite);
