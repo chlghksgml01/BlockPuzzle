@@ -6,6 +6,7 @@ public class GameOverUI : BaseOptionUI
     [Header("Displays")]
     [SerializeField] private NumberDisplay _scoreDisplay;
     [SerializeField] private NumberDisplay _bestScoreDisplay;
+    [SerializeField] private float _scoreUpdateDuration = 1f;
 
     [Header("Banner")]
     [SerializeField] private Image _titleBanner;
@@ -14,7 +15,7 @@ public class GameOverUI : BaseOptionUI
 
     private void OnEnable()
     {
-        _scoreDisplay.UpdateDisplay(ScoreManager.Instance.CurrentScore, 0);
+        _scoreDisplay.ScoreRollUpdate(0, ScoreManager.Instance.CurrentScore, _scoreUpdateDuration);
         _bestScoreDisplay.UpdateDisplay(LeaderboardManager.Instance.BestScore, 2);
     }
 

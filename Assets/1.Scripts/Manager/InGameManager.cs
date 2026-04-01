@@ -146,6 +146,7 @@ public class InGameManager : Singleton<InGameManager>
 #endif
         OnGameOver?.Invoke();
         _gameOverUI.Open();
+        SoundManager.Instance.PlaySFX(SFXType.Score);
         ResetGame();
     }
 
@@ -194,7 +195,7 @@ public class InGameManager : Singleton<InGameManager>
 #endif
         SoundManager.Instance.PlaySFX(SFXType.GameOver);
         BoardManager.Instance.ActivateGrayscale(true, _grayEffectDuration);
-        yield return new WaitForSeconds(_grayEffectDuration + 0.5f);
+        yield return new WaitForSeconds(_grayEffectDuration + 1f);
 
         _gameOverCoroutine = null;
 
