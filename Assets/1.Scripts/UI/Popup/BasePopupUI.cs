@@ -63,13 +63,4 @@ public class BasePopupUI : MonoBehaviour
         if (_canvasGroup != null)
             _canvasGroup.DOKill();
     }
-
-    private void Update()
-    {
-        if (Keyboard.current.escapeKey.wasPressedThisFrame)
-        {
-            Close();
-            SoundManager.Instance.PlaySFX(SFXType.ClickUI);
-        }
-    }
 }
