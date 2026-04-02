@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 80458987783859645}
   - component: {fileID: 132100596052046510}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: BoardEffect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -102,4 +102,3 @@ MonoBehaviour:
   _hintCellPrefab: {fileID: 7066565143273184599, guid: 32318d4053e1784429ad964970ac84f7, type: 3}
   _previewColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 1}
   _keepPreviewMaxDistancePx: 200
-  _boardEffect: {fileID: 0}

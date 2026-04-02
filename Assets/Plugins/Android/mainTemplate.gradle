@@ -1,30 +1,12 @@
 apply plugin: 'com.android.library'
 apply from: '../shared/keepUnitySymbols.gradle'
+apply from: '../shared/common.gradle'
 **APPLY_PLUGINS**
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-
-// ADD
-  implementation 'androidx.credentials:credentials:1.5.0'
-  implementation 'androidx.credentials:credentials-play-services-auth:1.5.0'
-  implementation 'com.google.android.libraries.identity.googleid:googleid:1.1.1'
-// Android Resolver Dependencies Start
-    implementation 'com.google.android.gms:play-services-auth:19.0.0' // Assets/TheBackend/Toolkit/GoogleLogin/Android/Editor/BackendGoogleLoginAndroidDependencies.xml:9
-// Android Resolver Dependencies End
 **DEPS**}
 
-// Android Resolver Exclusions Start
-android {
-  packaging {
-      exclude ('/lib/armeabi/*' + '*')
-      exclude ('/lib/mips/*' + '*')
-      exclude ('/lib/mips64/*' + '*')
-      exclude ('/lib/x86/*' + '*')
-      exclude ('/lib/x86_64/*' + '*')
-  }
-}
-// Android Resolver Exclusions End
 android {
     namespace "com.unity3d.player"
     ndkPath "**NDKPATH**"
