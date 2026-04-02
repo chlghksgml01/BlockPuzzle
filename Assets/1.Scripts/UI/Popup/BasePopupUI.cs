@@ -1,4 +1,4 @@
-﻿using DG.Tweening;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -13,6 +13,9 @@ public class BasePopupUI : MonoBehaviour
 
     public virtual void Open()
     {
+        if (_canvasGroup == null || _popupTransform == null)
+            return;
+
         _canvasGroup.alpha = 0f;
         _popupTransform.localScale = Vector3.zero;
 
@@ -21,21 +24,44 @@ public class BasePopupUI : MonoBehaviour
         _popupTransform.DOKill();
         _canvasGroup.DOKill();
 
-        _popupTransform.DOScale(1f, _duration).SetEase(Ease.OutBack).SetUpdate(true);
-        _canvasGroup.DOFade(1f, _duration * 0.6f).SetUpdate(true);
+        _popupTransform.DOScale(1f, _duration)
+            .SetEase(Ease.OutBack)
+            .SetUpdate(true)
+            .SetLink(gameObject, LinkBehaviour.KillOnDestroy);
+        _canvasGroup.DOFade(1f, _duration * 0.6f)
+            .SetUpdate(true)
+            .SetLink(gameObject, LinkBehaviour.KillOnDestroy);
     }
 
     public virtual void Close()
     {
+        if (_canvasGroup == null || _popupTransform == null)
+            return;
+
         _popupTransform.DOKill();
         _canvasGroup.DOKill();
 
-        _popupTransform.DOScale(0f, _duration).SetEase(Ease.InBack).SetUpdate(true);
+        _popupTransform.DOScale(0f, _duration)
+            .SetEase(Ease.InBack)
+            .SetUpdate(true)
+            .SetLink(gameObject, LinkBehaviour.KillOnDestroy);
 
-        _canvasGroup.DOFade(0f, _duration).SetUpdate(true).OnComplete(() =>
-        {
-            gameObject.SetActive(false);
-        });
+        _canvasGroup.DOFade(0f, _duration)
+            .SetUpdate(true)
+            .SetLink(gameObject, LinkBehaviour.KillOnDestroy)
+            .OnComplete(() =>
+            {
+                if (this != null && gameObject != null)
+                    gameObject.SetActive(false);
+            });
+    }
+
+    protected virtual void OnDestroy()
+    {
+        if (_popupTransform != null)
+            _popupTransform.DOKill();
+        if (_canvasGroup != null)
+            _canvasGroup.DOKill();
     }
 
     private void Update()

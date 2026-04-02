@@ -1,4 +1,4 @@
-﻿using DG.Tweening;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -44,6 +44,12 @@ public class NumberDisplay : MonoBehaviour
         {
             UpdateDisplay(value);
         })
-        .SetEase(Ease.OutQuad);
+        .SetEase(Ease.OutQuad)
+        .SetLink(gameObject, LinkBehaviour.KillOnDestroy);
+    }
+
+    private void OnDestroy()
+    {
+        _scoreTween?.Kill();
     }
 }

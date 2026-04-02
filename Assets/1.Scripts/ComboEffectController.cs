@@ -35,6 +35,7 @@ public class ComboEffectController : MonoBehaviour, IInitializable
     [SerializeField] private float _comboTextDuration = 0.8f;
 
     private Vector3 _startPos;
+    private Tween _comboBonusDelayTween;
 
     ScoreSystem _scoreSystem;
 
@@ -103,14 +104,16 @@ public class ComboEffectController : MonoBehaviour, IInitializable
 
         TriggerComboShake();
         ShowComboCount(comboCount);
-        DOTween.Kill("ComboBonusTask");
-        DOVirtual.DelayedCall(_comboScoreDelay, () => ShowComboBonusText(comboAddedScore)).SetId("ComboBonusTask");
+        _comboBonusDelayTween?.Kill();
+        _comboBonusDelayTween = DOVirtual.DelayedCall(_comboScoreDelay, () => ShowComboBonusText(comboAddedScore))
+            .SetLink(gameObject, LinkBehaviour.KillOnDestroy);
     }
 
     private void TriggerComboShake()
     {
         _shakeTarget.DOKill(true);
-        _shakeTarget.DOShakeAnchorPos(_shakeDuration, _shakeStrength, _shakeVibrato);
+        _shakeTarget.DOShakeAnchorPos(_shakeDuration, _shakeStrength, _shakeVibrato)
+            .SetLink(gameObject, LinkBehaviour.KillOnDestroy);
     }
 
     private void ShowComboCount(int comboCount)
@@ -131,6 +134,7 @@ public class ComboEffectController : MonoBehaviour, IInitializable
             comboSeq.Append(_comboTextTransform.DOPunchScale(Vector3.one * _punchStrength, _punchDuration, 10, 1));
             comboSeq.AppendInterval(_hideDelay);
             comboSeq.Append(_comboTextTransform.DOScale(Vector3.zero, _hideDuration).SetEase(Ease.InBack));
+            comboSeq.SetLink(gameObject, LinkBehaviour.KillOnDestroy);
         }
     }
 
@@ -146,8 +150,12 @@ public class ComboEffectController : MonoBehaviour, IInitializable
         _comboBonusText.rectTransform.anchoredPosition = _startPos;
         float targetY = _startPos.y + _comboTextRiseY;
 
-        _comboBonusText.rectTransform.DOAnchorPosY(targetY, _comboTextDuration).SetEase(Ease.OutCubic);
-        _comboBonusText.DOFade(0f, _comboTextDuration).SetEase(Ease.InQuad);
+        _comboBonusText.rectTransform.DOAnchorPosY(targetY, _comboTextDuration)
+            .SetEase(Ease.OutCubic)
+            .SetLink(gameObject, LinkBehaviour.KillOnDestroy);
+        _comboBonusText.DOFade(0f, _comboTextDuration)
+            .SetEase(Ease.InQuad)
+            .SetLink(gameObject, LinkBehaviour.KillOnDestroy);
     }
 
     private void SetComboBonusColor(float alpha)
@@ -155,5 +163,19 @@ public class ComboEffectController : MonoBehaviour, IInitializable
         Color color = _comboBonusText.color;
         color.a = alpha;
         _comboBonusText.color = color;
+    }
+
+    private void OnDestroy()
+    {
+        _comboBonusDelayTween?.Kill();
+        if (_shakeTarget != null)
+            _shakeTarget.DOKill();
+        if (_comboTextTransform != null)
+            _comboTextTransform.DOKill();
+        if (_comboBonusText != null)
+        {
+            _comboBonusText.DOKill();
+            _comboBonusText.rectTransform.DOKill();
+        }
     }
 }

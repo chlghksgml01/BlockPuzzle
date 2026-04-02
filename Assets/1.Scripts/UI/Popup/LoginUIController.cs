@@ -1,4 +1,4 @@
-﻿using BackEnd;
+using BackEnd;
 using DG.Tweening;
 using LitJson;
 using TMPro;
@@ -14,17 +14,26 @@ public class LoginUIController : MonoBehaviour
     [SerializeField] private NicknameUI _nicknameUI;
     [SerializeField] private GameObject _nicknameDim;
     [SerializeField] private TMP_Text _nicknameErrorText;
+    private System.Action _hideNicknameErrorHandler;
 
     private void OnEnable()
     {
         LeaderboardManager.OnSetNickname += ActiveSetNickname;
-        _nicknameUI.OnNicknameChanged += () => _nicknameErrorText.gameObject.SetActive(false);
+        _hideNicknameErrorHandler = HideNicknameError;
+        _nicknameUI.OnNicknameChanged += _hideNicknameErrorHandler;
     }
 
     private void OnDisable()
     {
         LeaderboardManager.OnSetNickname -= ActiveSetNickname;
-        _nicknameUI.OnNicknameChanged -= () => _nicknameErrorText.gameObject.SetActive(false);
+        if (_hideNicknameErrorHandler != null)
+            _nicknameUI.OnNicknameChanged -= _hideNicknameErrorHandler;
+        _nicknameErrorText.transform.DOKill();
+    }
+
+    private void HideNicknameError()
+    {
+        _nicknameErrorText.gameObject.SetActive(false);
     }
 
     private void ActiveSetNickname(JsonData userData)
@@ -72,7 +81,8 @@ public class LoginUIController : MonoBehaviour
     {
         _nicknameErrorText.gameObject.SetActive(true);
         _nicknameErrorText.transform.DOComplete();
-        _nicknameErrorText.transform.DOPunchPosition(new Vector3(10f, 0, 0), 0.5f, 20, 1f);
+        _nicknameErrorText.transform.DOPunchPosition(new Vector3(10f, 0, 0), 0.5f, 20, 1f)
+            .SetLink(gameObject, LinkBehaviour.KillOnDestroy);
 
         switch (statusCode)
         {

@@ -49,7 +49,9 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
             Block.InitializeBlock(blockSprite);
 
         Block.transform.localScale = Vector3.zero;
-        Block.transform.DOScale(Vector3.one, _popDuration).SetEase(Ease.OutBack);
+        Block.transform.DOScale(Vector3.one, _popDuration)
+            .SetEase(Ease.OutBack)
+            .SetLink(Block.gameObject, LinkBehaviour.KillOnDestroy);
     }
 
     public void SpawnSavedBlock(Sprite blockSprite, Vector2Int[] offsets)
@@ -63,7 +65,10 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     public void ClearSlotBlock()
     {
         if (Block != null)
+        {
+            Block.transform.DOKill();
             Destroy(Block.gameObject);
+        }
 
         Block = null;
         HasBlock = false;
@@ -123,7 +128,8 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
     private void RemoveBlock()
     {
-        Block.transform.DOKill();
+        if (Block != null)
+            Block.transform.DOKill();
 
         HasBlock = false;
         Destroy(Block.gameObject);
