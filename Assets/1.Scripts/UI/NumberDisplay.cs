@@ -38,6 +38,9 @@ public class NumberDisplay : MonoBehaviour
 
     public void ScoreRollUpdate(int currentScore, int newScore, float animationDuration = 0.5f)
     {
+        if (this == null || gameObject == null || _container == null)
+            return;
+
         _scoreTween?.Kill();
 
         _scoreTween = DOVirtual.Int(currentScore, newScore, animationDuration, (value) =>

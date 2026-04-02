@@ -26,6 +26,15 @@ public class ScoreUI : MonoBehaviour, IInitializable
         UpdateBestScore();
     }
 
+    private void OnDisable()
+    {
+        if (_scoreSystem != null)
+        {
+            _scoreSystem.OnScoreChanged -= RollUpdateScoreUI;
+            _scoreSystem.OnResetScore -= ResetScore;
+        }
+    }
+
     private void UpdateBestScore()
     {
         if (LeaderboardManager.HasInstance)
@@ -40,6 +49,9 @@ public class ScoreUI : MonoBehaviour, IInitializable
 
     private void RollUpdateScoreUI(int currentScore, int newScore)
     {
+        if (_scoreDisplay == null || _bestScoreDisplay == null)
+            return;
+
         _scoreDisplay.ScoreRollUpdate(currentScore, newScore, _animationDuration);
         if (newScore > _bestScore)
         {
@@ -50,6 +62,9 @@ public class ScoreUI : MonoBehaviour, IInitializable
 
     private void ResetScore()
     {
+        if (_scoreDisplay == null)
+            return;
+
         _scoreDisplay.UpdateDisplay(0);
         UpdateBestScore();
     }

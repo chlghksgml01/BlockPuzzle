@@ -26,14 +26,18 @@ public class LoginUIController : MonoBehaviour
     private void OnDisable()
     {
         LeaderboardManager.OnSetNickname -= ActiveSetNickname;
-        if (_hideNicknameErrorHandler != null)
+        if (_hideNicknameErrorHandler != null && _nicknameUI != null)
             _nicknameUI.OnNicknameChanged -= _hideNicknameErrorHandler;
-        _nicknameErrorText.transform.DOKill();
+        _hideNicknameErrorHandler = null;
+
+        if (_nicknameErrorText != null)
+            _nicknameErrorText.transform.DOKill();
     }
 
     private void HideNicknameError()
     {
-        _nicknameErrorText.gameObject.SetActive(false);
+        if (_nicknameErrorText != null)
+            _nicknameErrorText.gameObject.SetActive(false);
     }
 
     private void ActiveSetNickname(JsonData userData)
