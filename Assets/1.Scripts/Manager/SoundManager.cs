@@ -109,7 +109,6 @@ public class SoundManager : Singleton<SoundManager>
         _audioSource.PlayOneShot(_clearLine[index]);
     }
 
-
     public void ApplyVibrateSettings(bool isOn)
     {
         _isVibrateOn = isOn;

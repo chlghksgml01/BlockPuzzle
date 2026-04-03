@@ -1078,9 +1078,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18b8cbb8a1a915f40a2f85dbb1180484, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SettingUI
-  _settingPanel: {fileID: 709315963735412988}
-  _GameOverUI: {fileID: 1495160516}
-  _escapeActionReference: {fileID: 8394099818539742695, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
 --- !u!1001 &811100969
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1819,10 +1816,70 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4158938162862356415, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 97d649e9a69575d40a081eeca0d7c841, type: 3}
+    - target: {fileID: 4733799134578493117, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 271
+      objectReference: {fileID: 0}
+    - target: {fileID: 4733799134578493117, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 39
+      objectReference: {fileID: 0}
+    - target: {fileID: 4733799134578493117, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 230
+      objectReference: {fileID: 0}
+    - target: {fileID: 4733799134578493117, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 81.803
+      objectReference: {fileID: 0}
+    - target: {fileID: 4852370678883024051, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4852370678883024051, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4852370678883024051, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5907061238157528263, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
       propertyPath: m_Name
       value: SettingPanel
       objectReference: {fileID: 0}
+    - target: {fileID: 5907061238157528263, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6362081124198333203, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 72
+      objectReference: {fileID: 0}
+    - target: {fileID: 6362081124198333203, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 68
+      objectReference: {fileID: 0}
+    - target: {fileID: 7049243765249210625, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7049243765249210625, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7049243765249210625, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7180453370043634988, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 8f89b148fae6ae446aff8574f213333b, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1852,6 +1909,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 132100596052046510, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
+      propertyPath: _introLineHold
+      value: 0.04
+      objectReference: {fileID: 0}
     - target: {fileID: 482992224638637391, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
