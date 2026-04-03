@@ -48,6 +48,7 @@ public class SoundManager : Singleton<SoundManager>
 
     void Start()
     {
+#if !UNITY_EDITOR && UNITY_ANDROID
         try
         {
             using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
@@ -57,6 +58,7 @@ public class SoundManager : Singleton<SoundManager>
             }
         }
         catch (System.Exception e) { Debug.LogError(e.Message); }
+#endif
     }
 
     private void InitSettings()
@@ -139,9 +141,11 @@ public class SoundManager : Singleton<SoundManager>
 
     public void Vibrate(long milliseconds = 50)
     {
+#if !UNITY_EDITOR && UNITY_ANDROID
         if (_vibrator != null && _vibrator.Call<bool>("hasVibrator"))
         {
             _vibrator.Call("vibrate", milliseconds);
         }
+#endif
     }
 }

@@ -8,6 +8,7 @@ using UnityEngine;
 public class InGameManager : Singleton<InGameManager>, IInitializable
 {
     [Header("References")]
+    [SerializeField] private CanvasGroup _slotsCanvasGroup;
     [SerializeField] private List<BlockSlot> _slots;
     [SerializeField] private GameOverUI _gameOverUI;
     private ScoreSystem _scoreSystem;
@@ -82,7 +83,10 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
                 SpawnBlocksInSlots();
 
             _boardManger.PlayIntro();
+            EnableInteraction(false);
         }
+        else
+            EnableInteraction(true);
 
         ScheduleGameOverIfNeeded();
     }
@@ -375,5 +379,10 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
         _scoreSystem.RestoreState(data.score, data.currentPlaceCount, data.currentComboCount);
         return true;
+    }
+
+    public void EnableInteraction(bool isEnable)
+    {
+        _slotsCanvasGroup.blocksRaycasts = isEnable;
     }
 }

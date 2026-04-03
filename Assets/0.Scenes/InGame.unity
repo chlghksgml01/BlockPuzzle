@@ -1519,6 +1519,7 @@ GameObject:
   - component: {fileID: 1807873979}
   - component: {fileID: 1807873980}
   - component: {fileID: 1807873981}
+  - component: {fileID: 1807873982}
   m_Layer: 5
   m_Name: Slot
   m_TagString: Untagged
@@ -1586,6 +1587,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &1807873982
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1807873978}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!114 &1911241780 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1151359815240372624, guid: 29c2bdba7893d3c41aff21c1e3a46874, type: 3}
@@ -2223,6 +2236,10 @@ PrefabInstance:
       propertyPath: _gameOverUI
       value: 
       objectReference: {fileID: 1495160516}
+    - target: {fileID: 1320803725296828745, guid: b15f06c42f52afe4fb850481b49aa0ac, type: 3}
+      propertyPath: _slotsCanvasGroup
+      value: 
+      objectReference: {fileID: 1807873982}
     - target: {fileID: 1320803725296828745, guid: b15f06c42f52afe4fb850481b49aa0ac, type: 3}
       propertyPath: '_slots.Array.data[0]'
       value: 

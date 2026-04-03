@@ -78,5 +78,7 @@ public class BoardEffect : MonoBehaviour
             if (_introLineInterval > 0f)
                 yield return new WaitForSeconds(_introLineInterval);
         }
+
+        InGameManager.Instance.EnableInteraction(true);
     }
 }
