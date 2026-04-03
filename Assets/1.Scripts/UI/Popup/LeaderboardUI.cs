@@ -41,6 +41,8 @@ public class LeaderboardUI : BasePopupUI
 
     private void DrawRankList(JsonData data)
     {
+        ClearOldItems();
+
         if (data.Count == 0)
         {
             _loadingText.text = "No Data";

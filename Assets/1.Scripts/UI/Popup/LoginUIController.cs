@@ -7,7 +7,6 @@ using UnityEngine;
 public class LoginUIController : MonoBehaviour
 {
     [Header("Leaderboard UI References")]
-    [SerializeField] private LeaderboardUI _leaderboardUI;
     [SerializeField] private GameObject _leaderboardDim;
 
     [Header("Nickname UI References")]
@@ -19,11 +18,12 @@ public class LoginUIController : MonoBehaviour
     private void OnEnable()
     {
         LeaderboardManager.OnSetNickname += ActiveSetNickname;
-        InputManager._onNicknameUIClose += CloseNicknameUI;
+        InputManager._onNicknameUIClose += () => OpenNicknameUI(false);
 
-        if (_hideNicknameErrorHandler != null && _nicknameUI != null)
+        if (_nicknameUI != null)
         {
-            _hideNicknameErrorHandler = HideNicknameError;
+            if (_hideNicknameErrorHandler == null)
+                _hideNicknameErrorHandler = HideNicknameError;
             _nicknameUI.OnNicknameChanged += _hideNicknameErrorHandler;
         }
     }
@@ -31,9 +31,9 @@ public class LoginUIController : MonoBehaviour
     private void OnDisable()
     {
         LeaderboardManager.OnSetNickname -= ActiveSetNickname;
-        InputManager._onNicknameUIClose -= CloseNicknameUI;
+        InputManager._onNicknameUIClose -= () => OpenNicknameUI(false);
 
-        if (_hideNicknameErrorHandler != null && _nicknameUI != null)
+        if (_nicknameUI != null && _hideNicknameErrorHandler != null)
             _nicknameUI.OnNicknameChanged -= _hideNicknameErrorHandler;
         _hideNicknameErrorHandler = null;
 
@@ -49,9 +49,7 @@ public class LoginUIController : MonoBehaviour
 
     private void ActiveSetNickname(JsonData userData)
     {
-        _nicknameUI.Open();
-        _leaderboardDim.SetActive(false);
-        _nicknameDim.SetActive(true);
+        OpenNicknameUI(true);
 
         string rawId = userData["gamerId"].ToString();
         string shortId = rawId.Substring(0, 4);
@@ -59,12 +57,29 @@ public class LoginUIController : MonoBehaviour
         _nicknameUI.SetDefaultNickname(defaultNick);
     }
 
-    // 버튼UI에서 호출
+    // UI에서 호출
+    public void OpenNicknameEditUI()
+    {
+        if (_nicknameUI == null)
+            return;
+
+        OpenNicknameUI(true);
+
+        if (_nicknameErrorText != null)
+            _nicknameErrorText.gameObject.SetActive(false);
+
+        string currentNick = PlayerPrefs.GetString(LeaderboardManager.LocalNicknameKey, string.Empty);
+        if (string.IsNullOrEmpty(currentNick))
+            currentNick = "Player";
+
+        _nicknameUI.SetDefaultNickname(currentNick);
+    }
+
+    // UI에서 호출
     public void ConfirmNicknameUI()
     {
         string nickname = _nicknameUI.GetNickname();
 
-        // 유효성 검사 (공백 등 기본 체크)
         if (string.IsNullOrEmpty(nickname))
             return;
 
@@ -74,7 +89,9 @@ public class LoginUIController : MonoBehaviour
             {
                 Debug.Log("닉네임 설정 성공 : " + nickname);
 
-                CloseNicknameUI();
+                OpenNicknameUI(false);
+
+                PlayerPrefs.SetString(LeaderboardManager.LocalNicknameKey, nickname);
 
                 LeaderboardManager.Instance.FetchGameData();
             }
@@ -85,12 +102,26 @@ public class LoginUIController : MonoBehaviour
         });
     }
 
-    private void CloseNicknameUI()
+    private void OpenNicknameUI(bool isOpen)
     {
-        _nicknameUI.Close();
-        _leaderboardDim.SetActive(true);
-        _nicknameDim.SetActive(false);
-        _nicknameErrorText.gameObject.SetActive(false);
+        if (isOpen)
+        {
+            _nicknameUI.Open();
+
+            if (_leaderboardDim != null)
+                _leaderboardDim.SetActive(false);
+            if (_nicknameDim != null)
+                _nicknameDim.SetActive(true);
+        }
+        else
+        {
+            _nicknameUI.Close();
+            if (_leaderboardDim != null)
+                _leaderboardDim.SetActive(true);
+            if (_nicknameDim != null)
+                _nicknameDim.SetActive(false);
+            _nicknameErrorText.gameObject.SetActive(false);
+        }
     }
 
     private void HandleNicknameError(string statusCode)

@@ -8,6 +8,7 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
 {
     private const string RankUuid = "019cffa2-ab30-7c69-8b25-0025d37e6deb";
     private const string BestScoreKey = "BestScore";
+    public const string LocalNicknameKey = "LocalNickname";
     private const string TableName = "BEST_SCORE";
     private const string ScoreColumn = "bestscore";
 
@@ -53,13 +54,13 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
             {
                 JsonData userData = userBro.GetReturnValuetoJSON()["row"];
 
-                // 닉네임 설정
                 if (userData["nickname"] == null || string.IsNullOrEmpty(userData["nickname"].ToString()))
                 {
                     OnSetNickname?.Invoke(userData);
                 }
                 else
                 {
+                    PlayerPrefs.SetString(LocalNicknameKey, userData["nickname"].ToString());
                     FetchGameData();
                 }
             }
@@ -179,23 +180,6 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
             }
 
             OnRankDataReceived?.Invoke(rankData);
-        });
-    }
-
-    public void UpdateNickname(string newNickname, Action<bool, string> onComplete)
-    {
-        Backend.BMember.CreateNickname(newNickname, (bro) =>
-        {
-            if (bro.IsSuccess())
-            {
-                Debug.Log("닉네임 설정 성공: " + newNickname);
-                FetchGameData(); // 닉네임 설정 후 데이터 로드
-                onComplete?.Invoke(true, "");
-            }
-            else
-            {
-                onComplete?.Invoke(false, bro.GetErrorCode());
-            }
         });
     }
 }
