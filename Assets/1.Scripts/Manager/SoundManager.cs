@@ -34,6 +34,7 @@ public class SoundManager : Singleton<SoundManager>
     [Header("Audio Mixer")]
     [SerializeField] private AudioMixer _audioMixer;
 
+    private AndroidJavaObject _vibrator;
     private bool _isVibrateOn = true;
 
     public bool IsVibrateOn => _isVibrateOn;
@@ -43,6 +44,19 @@ public class SoundManager : Singleton<SoundManager>
         _audioSource = GetComponent<AudioSource>();
 
         InitSettings();
+    }
+
+    void Start()
+    {
+        try
+        {
+            using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+            {
+                AndroidJavaObject currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                _vibrator = currentActivity.Call<AndroidJavaObject>("getSystemService", "vibrator");
+            }
+        }
+        catch (System.Exception e) { Debug.LogError(e.Message); }
     }
 
     private void InitSettings()
@@ -76,14 +90,14 @@ public class SoundManager : Singleton<SoundManager>
                 break;
             case SFXType.PlaceBlock:
                 _audioSource.PlayOneShot(_placeBlock);
-                if (_isVibrateOn)
-                    Vibrate();
                 break;
             case SFXType.PlaceFailed:
                 _audioSource.PlayOneShot(_placeFailed);
                 break;
             case SFXType.ClearLine:
                 PlayComboSFX(comboCount);
+                if (_isVibrateOn)
+                    Vibrate();
                 break;
             case SFXType.Score:
                 _audioSource.PlayOneShot(_score);
@@ -125,22 +139,9 @@ public class SoundManager : Singleton<SoundManager>
 
     public void Vibrate(long milliseconds = 50)
     {
-#if UNITY_ANDROID && !UNITY_EDITOR
-    try
-    {
-        AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-        AndroidJavaObject currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-        AndroidJavaObject vibrator = currentActivity.Call<AndroidJavaObject>("getSystemService", "vibrator");
-
-        if (vibrator.Call<bool>("hasVibrator"))
+        if (_vibrator != null && _vibrator.Call<bool>("hasVibrator"))
         {
-            vibrator.Call("vibrate", milliseconds);
+            _vibrator.Call("vibrate", milliseconds);
         }
-    }
-    catch (System.Exception e)
-    {
-        Debug.LogError("Vibration Error: " + e.Message);
-    }
-#endif
     }
 }

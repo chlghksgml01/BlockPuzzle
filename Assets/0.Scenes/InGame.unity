@@ -933,7 +933,6 @@ GameObject:
   - component: {fileID: 795249424}
   - component: {fileID: 795249423}
   - component: {fileID: 795249426}
-  - component: {fileID: 795249427}
   m_Layer: 5
   m_Name: Setting
   m_TagString: Untagged
@@ -1066,18 +1065,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e24596abe737bd46bb7f9bfb88a19ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIButtonSound
---- !u!114 &795249427
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 795249421}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 18b8cbb8a1a915f40a2f85dbb1180484, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SettingUI
 --- !u!1001 &811100969
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1838,15 +1825,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4852370678883024051, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4852370678883024051, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4852370678883024051, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5907061238157528263, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
       propertyPath: m_Name
@@ -1866,15 +1853,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7049243765249210625, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7049243765249210625, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7049243765249210625, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7180453370043634988, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
       propertyPath: m_Sprite
