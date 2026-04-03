@@ -164,7 +164,7 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
 
     public void GetRank()
     {
-        Backend.URank.User.GetRankList(RankUuid, 10, (bro) =>
+        Backend.URank.User.GetRankList(RankUuid, 50, (bro) =>
         {
             JsonData rankData = new JsonData();
 

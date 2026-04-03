@@ -505,3 +505,4 @@ MonoBehaviour:
   _rankText: {fileID: 7299591752705870491}
   _nicknameText: {fileID: 96676111719371601}
   _scoreText: {fileID: 8738172125794725656}
+  _background: {fileID: 6576243156330224310}

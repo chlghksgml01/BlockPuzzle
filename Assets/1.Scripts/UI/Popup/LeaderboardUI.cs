@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class LeaderboardUI : BasePopupUI
 {
@@ -9,6 +10,9 @@ public class LeaderboardUI : BasePopupUI
     [SerializeField] private GameObject _leaderboardItemPrefab;
     [SerializeField] private Transform _content;
     [SerializeField] private TMP_Text _loadingText;
+
+    [SerializeField] private Color _localUserColor;
+    [SerializeField] private Sprite _localUserSprite;
 
     private List<GameObject> _instantiatedItems = new List<GameObject>();
 
@@ -50,10 +54,16 @@ public class LeaderboardUI : BasePopupUI
                 string nickname = data[i].ContainsKey("nickname") ? data[i]["nickname"].ToString() : "Player";
                 string score = data[i]["score"].ToString();
 
-                GameObject item = Instantiate(_leaderboardItemPrefab, _content);
-                item.GetComponent<LeaderboardItem>().SetData(rank, nickname, score);
+                LeaderboardItem item = Instantiate(_leaderboardItemPrefab, _content).GetComponent<LeaderboardItem>();
+                item.SetData(rank, nickname, score);
 
-                _instantiatedItems.Add(item);
+                bool isLocal = data[i].ContainsKey("isUser") && data[i]["isUser"].ToString().ToLower() == "true";
+                if (isLocal)
+                {
+                    item.SetLocalUser(_localUserColor, _localUserSprite);
+                }
+
+                _instantiatedItems.Add(item.gameObject);
             }
         }
     }
