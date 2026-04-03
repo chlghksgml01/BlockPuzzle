@@ -23,6 +23,6 @@ public class LoadingSceneController : MonoBehaviour
 
     private void OnAfterLoading()
     {
-        SceneLoadManager.Instance.LoadScene(_nextScene);
+        SceneLoadManager.LoadScene(_nextScene);
     }
 }

@@ -19,13 +19,20 @@ public class LoginUIController : MonoBehaviour
     private void OnEnable()
     {
         LeaderboardManager.OnSetNickname += ActiveSetNickname;
-        _hideNicknameErrorHandler = HideNicknameError;
-        _nicknameUI.OnNicknameChanged += _hideNicknameErrorHandler;
+        InputManager._onNicknameUIClose += CloseNicknameUI;
+
+        if (_hideNicknameErrorHandler != null && _nicknameUI != null)
+        {
+            _hideNicknameErrorHandler = HideNicknameError;
+            _nicknameUI.OnNicknameChanged += _hideNicknameErrorHandler;
+        }
     }
 
     private void OnDisable()
     {
         LeaderboardManager.OnSetNickname -= ActiveSetNickname;
+        InputManager._onNicknameUIClose -= CloseNicknameUI;
+
         if (_hideNicknameErrorHandler != null && _nicknameUI != null)
             _nicknameUI.OnNicknameChanged -= _hideNicknameErrorHandler;
         _hideNicknameErrorHandler = null;
@@ -67,10 +74,7 @@ public class LoginUIController : MonoBehaviour
             {
                 Debug.Log("닉네임 설정 성공 : " + nickname);
 
-                _nicknameUI.Close();
-                _leaderboardDim.SetActive(true);
-                _nicknameDim.SetActive(false);
-                _nicknameErrorText.gameObject.SetActive(false);
+                CloseNicknameUI();
 
                 LeaderboardManager.Instance.FetchGameData();
             }
@@ -79,6 +83,14 @@ public class LoginUIController : MonoBehaviour
                 HandleNicknameError(createBro.GetStatusCode());
             }
         });
+    }
+
+    private void CloseNicknameUI()
+    {
+        _nicknameUI.Close();
+        _leaderboardDim.SetActive(true);
+        _nicknameDim.SetActive(false);
+        _nicknameErrorText.gameObject.SetActive(false);
     }
 
     private void HandleNicknameError(string statusCode)

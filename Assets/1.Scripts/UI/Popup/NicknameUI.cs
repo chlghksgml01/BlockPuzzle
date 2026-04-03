@@ -8,7 +8,6 @@ public class NicknameUI : BasePopupUI
     [Header("Nickname UI Reference")]
     [SerializeField] private TMP_Text _defaultNicknameText;
     [SerializeField] private TMP_InputField _nicknameInput;
-    [SerializeField] private Button _confirmButton;
 
     public event Action OnNicknameChanged;
 

@@ -162,7 +162,7 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
         });
     }
 
-    private void GetRank()
+    public void GetRank()
     {
         Backend.URank.User.GetRankList(RankUuid, 10, (bro) =>
         {
