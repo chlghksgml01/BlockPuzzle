@@ -1,4 +1,4 @@
-﻿using BackEnd;
+using BackEnd;
 using LitJson;
 using System;
 using UnityEngine;

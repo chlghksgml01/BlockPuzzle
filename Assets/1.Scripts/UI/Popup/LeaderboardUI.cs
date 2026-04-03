@@ -1,4 +1,5 @@
-﻿using LitJson;
+using BackEnd;
+using LitJson;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -47,6 +48,8 @@ public class LeaderboardUI : BasePopupUI
         else
         {
             _loadingText.text = "";
+            string myGamerInDate = Backend.UserInDate;
+
             for (int i = 0; i < data.Count; i++)
             {
                 Debug.Log(data[i].ToJson());
@@ -57,8 +60,10 @@ public class LeaderboardUI : BasePopupUI
                 LeaderboardItem item = Instantiate(_leaderboardItemPrefab, _content).GetComponent<LeaderboardItem>();
                 item.SetData(rank, nickname, score);
 
-                bool isLocal = data[i].ContainsKey("isUser") && data[i]["isUser"].ToString().ToLower() == "true";
-                if (isLocal)
+                Debug.Log("Leaderboard Data : " + data.ToJson());
+
+                string targetInDate = data[i]["gamerInDate"].ToString();
+                if (targetInDate == myGamerInDate)
                 {
                     item.SetLocalUser(_localUserColor, _localUserSprite);
                 }
