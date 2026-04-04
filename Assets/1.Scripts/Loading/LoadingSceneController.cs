@@ -11,6 +11,7 @@ public class LoadingSceneController : MonoBehaviour
     private void Awake()
     {
         SystemSetup();
+        Application.targetFrameRate = 60;
     }
 
     private void SystemSetup()
