@@ -107,10 +107,12 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
     }
 
     public void UpdateBestScore(int newScore)
-    {
+    { 
+        Debug.Log("Current Score " + newScore);
         if (_bestScore > newScore)
             return;
 
+        Debug.Log("New high score " + newScore);
         _bestScore = newScore;
 
         PlayerPrefs.SetInt(BestScoreKey, _bestScore);
@@ -182,4 +184,6 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
             OnRankDataReceived?.Invoke(rankData);
         });
     }
+
+    public void DeleteBestScore() => _bestScore = 0;
 }

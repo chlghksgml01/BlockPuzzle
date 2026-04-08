@@ -33,6 +33,19 @@ public class InputManager : MonoBehaviour
         }
     }
 
+    // 테스트용
+#if UNITY_EDITOR
+    private void Update()
+    {
+        if (Keyboard.current.kKey.wasPressedThisFrame)
+        {
+            PlayerPrefs.DeleteAll();
+            LeaderboardManager.Instance.DeleteBestScore();
+        }
+    }
+#endif
+
+
     private void HandleEscape(InputAction.CallbackContext context)
     {
         SceneName currentScene = SceneLoadManager.GetActiveScene();

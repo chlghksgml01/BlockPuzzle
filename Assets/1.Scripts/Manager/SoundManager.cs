@@ -72,13 +72,6 @@ public class SoundManager : Singleton<SoundManager>
 
     public void PlaySFX(SFXType type, int comboCount = 0)
     {
-#if UNITY_EDITOR
-        if (type == SFXType.ClearLine)
-            Debug.Log("Play SFX " + type + ", Combo Count : " + comboCount);
-        else
-            Debug.Log("Play SFX " + type);
-#endif
-
         switch (type)
         {
             case SFXType.Intro:

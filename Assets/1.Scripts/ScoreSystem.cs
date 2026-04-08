@@ -125,6 +125,7 @@ public class ScoreSystem : ScriptableObject
 
     public void ResetScore()
     {
+        CheckHighScore(LeaderboardManager.Instance.BestScore);
         _currentPlaceCount = 0;
         _currentComboCount = 0;
         CurrentScore = 0;
