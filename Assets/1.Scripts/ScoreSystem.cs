@@ -128,7 +128,6 @@ public class ScoreSystem : ScriptableObject
         _currentPlaceCount = 0;
         _currentComboCount = 0;
         CurrentScore = 0;
-        OnResetScore?.Invoke();
     }
 
     public void CheckHighScore(int bestScore)

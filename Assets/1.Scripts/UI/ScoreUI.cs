@@ -19,20 +19,14 @@ public class ScoreUI : MonoBehaviour, IInitializable
     private void OnEnable()
     {
         if (_scoreSystem != null)
-        {
             _scoreSystem.OnScoreChanged += RollUpdateScoreUI;
-            _scoreSystem.OnResetScore += ResetScore;
-        }
         UpdateBestScore();
     }
 
     private void OnDisable()
     {
         if (_scoreSystem != null)
-        {
             _scoreSystem.OnScoreChanged -= RollUpdateScoreUI;
-            _scoreSystem.OnResetScore -= ResetScore;
-        }
     }
 
     private void UpdateBestScore()
@@ -58,14 +52,5 @@ public class ScoreUI : MonoBehaviour, IInitializable
             _bestScore = newScore;
             _bestScoreDisplay.UpdateDisplay(_bestScore);
         }
-    }
-
-    private void ResetScore()
-    {
-        if (_scoreDisplay == null)
-            return;
-
-        _scoreDisplay.UpdateDisplay(0);
-        UpdateBestScore();
     }
 }
