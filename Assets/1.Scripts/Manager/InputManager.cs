@@ -76,6 +76,13 @@ public class InputManager : MonoBehaviour
             _leaderboardUI.Close();
             PlayClickSound();
         }
+        else
+        {
+            Application.Quit();
+#if UNITY_EDITOR
+            Debug.Log("Quit requested from Lobby back key.");
+#endif
+        }
     }
 
     private void HandleInGameEscape()
