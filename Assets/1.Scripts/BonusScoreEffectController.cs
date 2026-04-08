@@ -4,11 +4,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [DefaultExecutionOrder(-70)]
-public class ComboEffectController : MonoBehaviour, IInitializable
+public class BonusScoreEffectController : MonoBehaviour, IInitializable
 {
-    [Header("Combo Feedback")]
-    [SerializeField] private bool _enableComboFeedback = true;
-
     [Header("Shake Settings")]
     [SerializeField] private float _shakeDuration = 0.1f;
     [SerializeField] private float _shakeStrength = 30f;
@@ -56,16 +53,17 @@ public class ComboEffectController : MonoBehaviour, IInitializable
     private void OnEnable()
     {
         if (_scoreSystem != null)
-            _scoreSystem.OnComboScore += PlayCombo;
+            _scoreSystem.OnBonusScore += PlayBonusScoreEffect;
     }
 
     private void OnDisable()
     {
         if (_scoreSystem != null)
-            _scoreSystem.OnComboScore -= PlayCombo;
+            _scoreSystem.OnBonusScore -= PlayBonusScoreEffect;
     }
 
     // 테스트용
+#if UNITY_EDITOR
     private void Update()
     {
         if (Keyboard.current.hKey.wasPressedThisFrame)
@@ -75,38 +73,43 @@ public class ComboEffectController : MonoBehaviour, IInitializable
                 _comboTextTransform.gameObject.SetActive(true);
             }
 
-            PlayCombo(50, 4);
+            PlayBonusScoreEffect(true, 50, 4);
         }
-
-        if (Keyboard.current.kKey.wasPressedThisFrame)
+        if (Keyboard.current.gKey.wasPressedThisFrame)
         {
             if (!_comboTextTransform.gameObject.activeSelf)
             {
                 _comboTextTransform.gameObject.SetActive(true);
             }
 
-            PlayCombo(50, 40);
+            PlayBonusScoreEffect(false, 50, 0);
         }
     }
+#endif
 
-    private void PlayCombo(int comboAddedScore, int comboCount)
+    private void PlayBonusScoreEffect(bool isCombo, int bonusScore, int comboCount)
     {
-        if (!_enableComboFeedback)
+        if (bonusScore <= 0)
             return;
 
-        if (comboAddedScore <= 0)
-            return;
+        _comboBonusDelayTween?.Kill();
 
-        if (!_comboTextTransform.gameObject.activeSelf)
+        if (isCombo)
         {
-            _comboTextTransform.gameObject.SetActive(true);
+            if (!_comboTextTransform.gameObject.activeSelf)
+                _comboTextTransform.gameObject.SetActive(true);
+
+            TriggerComboShake();
+            ShowComboCount(comboCount);
+            _comboBonusDelayTween = DOVirtual.DelayedCall(_comboScoreDelay, () => ShowComboBonusText(bonusScore))
+                .SetLink(gameObject, LinkBehaviour.KillOnDestroy);
+            return;
         }
 
-        TriggerComboShake();
-        ShowComboCount(comboCount);
-        _comboBonusDelayTween?.Kill();
-        _comboBonusDelayTween = DOVirtual.DelayedCall(_comboScoreDelay, () => ShowComboBonusText(comboAddedScore))
-            .SetLink(gameObject, LinkBehaviour.KillOnDestroy);
+        if (_comboTextTransform.gameObject.activeSelf)
+            _comboTextTransform.gameObject.SetActive(false);
+
+        ShowComboBonusText(bonusScore);
     }
 
     private void TriggerComboShake()

@@ -5,7 +5,7 @@ using UnityEngine;
 public class ScoreSystem : ScriptableObject
 {
     [Header("Score Multipliers & Settings")]
-    [SerializeField] private float _lineScoreMultiplier = 2f;
+    [SerializeField] private float _lineScoreMultiplier = 5f;
     [SerializeField] private float _lineBonusMultiplier = 0.5f;
     [SerializeField] private float _comboScoreMultiplier = 0.1f;
     [SerializeField] private int _comboRemainCount = 5;
@@ -17,7 +17,7 @@ public class ScoreSystem : ScriptableObject
 
     public event Action<int, int> OnScoreChanged;
     public event Action OnResetScore;
-    public event Action<int, int> OnComboScore;
+    public event Action<bool, int, int> OnBonusScore;
     public event Action<int> OnHighScoreUpdated;
 
     public void Initialize(int width)
@@ -75,10 +75,13 @@ public class ScoreSystem : ScriptableObject
         float noComboScoreF = baseScore * multiLineBonusMultiplier;
         float totalScoreF = baseScore * comboMultiplier * multiLineBonusMultiplier;
 
+        int baseLineScore = Mathf.FloorToInt(baseScore);
+        int noComboScore = Mathf.FloorToInt(noComboScoreF);
         int totalScore = Mathf.FloorToInt(totalScoreF);
+        int lineBonusAddedScore = Mathf.Max(0, noComboScore - baseLineScore);
+
         if (comboMultiplier > 1f)
         {
-            int noComboScore = Mathf.FloorToInt(noComboScoreF);
             comboBonusAddedScore = Mathf.Max(0, totalScore - noComboScore);
         }
 
@@ -86,7 +89,11 @@ public class ScoreSystem : ScriptableObject
 
         if (comboBonusAddedScore > 0)
         {
-            OnComboScore?.Invoke(comboBonusAddedScore, comboCountForUI);
+            OnBonusScore?.Invoke(true, totalScore, comboCountForUI);
+        }
+        else
+        {
+            OnBonusScore?.Invoke(false, totalScore, 0);
         }
 
         SoundManager.Instance.PlaySFX(SFXType.ClearLine, _currentComboCount);

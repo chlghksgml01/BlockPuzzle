@@ -2681,7 +2681,7 @@ PrefabInstance:
       objectReference: {fileID: 715516576}
     - target: {fileID: 1145235311990712787, guid: b841d1bb6fced234ea73593017711194, type: 3}
       propertyPath: m_Name
-      value: ComboEffect
+      value: BonusScoreEffect
       objectReference: {fileID: 0}
     - target: {fileID: 1145235311990712787, guid: b841d1bb6fced234ea73593017711194, type: 3}
       propertyPath: m_IsActive
@@ -2766,6 +2766,10 @@ PrefabInstance:
     - target: {fileID: 3727472670762941952, guid: b841d1bb6fced234ea73593017711194, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4667913591540439205, guid: b841d1bb6fced234ea73593017711194, type: 3}
+      propertyPath: m_Name
+      value: BonusScore
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

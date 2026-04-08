@@ -11,6 +11,13 @@ public class GoogleLoginManager : Singleton<GoogleLoginManager>
 
     public void StartGoogleLogin()
     {
+        if (Backend.IsLogin)
+        {
+            UpdateStatus("Already logged in. Skip login.");
+            OnLoginSucceed?.Invoke(true);
+            return;
+        }
+
         UpdateStatus("Starting Google Login...");
         TheBackend.ToolKit.GoogleLogin.Android.GoogleLogin(true, GoogleLoginCallback);
     }

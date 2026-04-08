@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 275ec2deb13005a41bf4d72616d007f3, type: 3}
   m_Name: ScoreSystem
   m_EditorClassIdentifier: Assembly-CSharp::ScoreSystem
-  _lineScoreMultiplier: 2
+  _lineScoreMultiplier: 5
   _lineBonusMultiplier: 0.5
   _comboScoreMultiplier: 0.1
   _comboRemainCount: 5
