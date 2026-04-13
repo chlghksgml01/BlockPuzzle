@@ -48,6 +48,7 @@
 - `DraggableBlock`에서 `BlockShape`(ScriptableObject) 오프셋을 기반으로 블록 형태 구성
 - Shape 가중치(`Weights`) 기반 랜덤 선택 + 랜덤 회전 후 정규화로 블록 변형 생성
 - `BlockSlot`이 포인터 이벤트를 받아 프리뷰 갱신, 최종 배치, 실패 복귀, 사운드 재생 처리
+- 보드의 점유율이 50% 이상일 때 5개 이상의 셀로 구성된 블록 출현 확률 조정
 
 ### 3. 점수/콤보 시스템
 - `ScoreSystem`(ScriptableObject)에서 배치 점수, 라인 클리어 점수, 멀티라인 보너스, 콤보 보너스 계산
