@@ -64,4 +64,13 @@ public class SettingPanel : BaseOptionUI, IInitializable
         if (nextValue > 0.5f)
             SoundManager.Instance.Vibrate(30);
     }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
+    }
 }
