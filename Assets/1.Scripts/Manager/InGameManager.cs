@@ -22,6 +22,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
     [Header("Block")]
     [SerializeField] private Sprite[] _blockSprites;
+    [SerializeField, Range(0f, 1f)] private float _largeShapeSpawnReduceStartFillRatio = 0.5f;
     private Dictionary<string, Sprite> _spriteByName = new Dictionary<string, Sprite>();
 
     public static event Action<int> OnBlockSettled;
@@ -234,6 +235,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     public void SpawnBlocksInSlots()
     {
         ClearAllSlots();
+        bool reduceLargeShapeSpawnRate = ShouldReduceLargeShapeSpawnRate();
 
         List<Sprite> spriteList = new List<Sprite>(_blockSprites);
 
@@ -249,9 +251,23 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         {
             if (i < spriteList.Count)
             {
-                _slots[i].SpawnNewBlock(spriteList[i]);
+                _slots[i].SpawnNewBlock(spriteList[i], reduceLargeShapeSpawnRate);
             }
         }
+    }
+
+    private bool ShouldReduceLargeShapeSpawnRate()
+    {
+        if (_boardManger == null)
+            return false;
+
+        int totalCells = _boardManger.Width * _boardManger.Height;
+        if (totalCells <= 0)
+            return false;
+
+        int filledCellCount = _boardManger.ExportFilledCells().Count;
+        float filledRatio = (float)filledCellCount / totalCells;
+        return filledRatio >= _largeShapeSpawnReduceStartFillRatio;
     }
 
     private void OnApplicationPause(bool pauseStatus)

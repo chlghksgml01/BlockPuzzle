@@ -7,6 +7,8 @@ public class DraggableBlock : MonoBehaviour
 {
     [Header("Block Data & Shapes")]
     [SerializeField] private BlockShape[] _blockShapes;
+    [SerializeField, Min(1)] private int _largeShapeCellThreshold = 5;
+    [SerializeField, Range(0f, 1f)] private float _highFillLargeShapeWeightMultiplier = 0.7f;
 
     public Vector2Int[] CurrentOffsets { get; private set; }
     private Sprite _blockSprite;
@@ -33,7 +35,7 @@ public class DraggableBlock : MonoBehaviour
         _rectTransform = GetComponent<RectTransform>();
     }
 
-    public void InitializeBlock(Sprite blockSprite, BlockShape blockshape = null)
+    public void InitializeBlock(Sprite blockSprite, BlockShape blockshape = null, bool reduceLargeShapeSpawnRate = false)
     {
         _blockSprite = blockSprite;
 
@@ -44,7 +46,7 @@ public class DraggableBlock : MonoBehaviour
 
         else if (_blockShapes != null && _blockShapes.Length > 0)
         {
-            int index = PickShapeIndexWeighted(_blockShapes);
+            int index = PickShapeIndexWeighted(_blockShapes, reduceLargeShapeSpawnRate);
             CurrentOffsets = (Vector2Int[])_blockShapes[index].CellOffsets.Clone();
         }
         else
@@ -67,7 +69,7 @@ public class DraggableBlock : MonoBehaviour
         CreateBodyTiles();
     }
 
-    private int PickShapeIndexWeighted(BlockShape[] shapes)
+    private int PickShapeIndexWeighted(BlockShape[] shapes, bool reduceLargeShapeSpawnRate)
     {
         if (shapes == null || shapes.Length == 0)
             return 0;
@@ -78,7 +80,7 @@ public class DraggableBlock : MonoBehaviour
             if (shapes[i] == null)
                 continue;
 
-            float weight = shapes[i].Weights;
+            float weight = GetAdjustedShapeWeight(shapes[i], reduceLargeShapeSpawnRate);
             if (weight > 0f)
                 total += weight;
         }
@@ -94,7 +96,7 @@ public class DraggableBlock : MonoBehaviour
             if (shapes[i] == null)
                 continue;
 
-            float w = shapes[i].Weights;
+            float w = GetAdjustedShapeWeight(shapes[i], reduceLargeShapeSpawnRate);
             if (w <= 0f || float.IsNaN(w) || float.IsInfinity(w))
                 continue;
 
@@ -105,11 +107,28 @@ public class DraggableBlock : MonoBehaviour
 
         for (int i = shapes.Length - 1; i >= 0; i--)
         {
-            if (shapes[i] != null && shapes[i].Weights > 0f)
+            if (shapes[i] != null && GetAdjustedShapeWeight(shapes[i], reduceLargeShapeSpawnRate) > 0f)
                 return i;
         }
 
         return Random.Range(0, shapes.Length);
+    }
+
+    private float GetAdjustedShapeWeight(BlockShape shape, bool reduceLargeShapeSpawnRate)
+    {
+        if (shape == null)
+            return 0f;
+
+        float weight = shape.Weights;
+        if (!reduceLargeShapeSpawnRate)
+            return weight;
+
+        Vector2Int[] offsets = shape.CellOffsets;
+        int cellCount = offsets != null ? offsets.Length : 0;
+        if (cellCount >= _largeShapeCellThreshold)
+            weight *= _highFillLargeShapeWeightMultiplier;
+
+        return weight;
     }
 
     private void ApplyRandomRotation()

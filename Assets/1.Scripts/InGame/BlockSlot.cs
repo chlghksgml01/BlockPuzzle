@@ -35,18 +35,18 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         _inGame = InGameManager.Instance;
     }
 
-    public void SpawnNewBlock(Sprite blockSprite)
+    public void SpawnNewBlock(Sprite blockSprite, bool reduceLargeShapeSpawnRate = false)
     {
         HasBlock = true;
         Block = Instantiate(_blockPrefab, transform.position, transform.rotation, this.transform);
         if (_testBlockSprite != null && _testBlockShape != null)
-            Block.InitializeBlock(_testBlockSprite, _testBlockShape);
+            Block.InitializeBlock(_testBlockSprite, _testBlockShape, reduceLargeShapeSpawnRate);
         else if (_testBlockSprite != null && _testBlockShape == null)
-            Block.InitializeBlock(_testBlockSprite);
+            Block.InitializeBlock(_testBlockSprite, null, reduceLargeShapeSpawnRate);
         else if (_testBlockSprite == null && _testBlockShape != null)
-            Block.InitializeBlock(blockSprite, _testBlockShape);
+            Block.InitializeBlock(blockSprite, _testBlockShape, reduceLargeShapeSpawnRate);
         else
-            Block.InitializeBlock(blockSprite);
+            Block.InitializeBlock(blockSprite, null, reduceLargeShapeSpawnRate);
 
         Block.transform.localScale = Vector3.zero;
         Block.transform.DOScale(Vector3.one, _popDuration)
