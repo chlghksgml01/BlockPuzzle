@@ -12,17 +12,15 @@ public class BackendManager : Singleton<BackendManager>
     {
         BackendReturnObject bro = Backend.Initialize();
 
+#if UNITY_EDITOR
         if (bro.IsSuccess())
         {
-#if UNITY_EDITOR
             Debug.Log($"초기화 성공 : {bro}");
-#endif
         }
         else
         {
-#if UNITY_EDITOR
             Debug.Log($"초기화 실패 : {bro}");
-#endif
         }
+#endif
     }
 }
