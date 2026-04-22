@@ -8,6 +8,7 @@ public class SettingPanel : BaseOptionUI, IInitializable
 
     [Header("Vibration Settings")]
     [SerializeField] private Slider _vibrateSlider;
+    [SerializeField] private ScoreUI _scoreUI;
 
     private ScoreSystem _scoreSystem;
 
@@ -34,6 +35,7 @@ public class SettingPanel : BaseOptionUI, IInitializable
 
     public override void Replay()
     {
+        _scoreUI?.ResetScore();
         base.Replay();
         LeaderboardManager.Instance.UpdateBestScore(_scoreSystem.CurrentScore);
     }

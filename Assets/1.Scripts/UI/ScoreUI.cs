@@ -1,4 +1,3 @@
-using TMPro;
 using UnityEngine;
 
 public class ScoreUI : MonoBehaviour, IInitializable
@@ -52,5 +51,10 @@ public class ScoreUI : MonoBehaviour, IInitializable
             _bestScore = newScore;
             _bestScoreDisplay.UpdateDisplay(_bestScore);
         }
+    }
+
+    public void ResetScore()
+    {
+        _scoreDisplay.UpdateDisplay(0);
     }
 }
