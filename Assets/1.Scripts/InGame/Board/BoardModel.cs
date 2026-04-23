@@ -214,12 +214,18 @@ public sealed class BoardModel
         return true;
     }
 
-    public bool CanPlaceAt(int baseX, int baseY, Vector2Int[] shapeOffset, out List<BoardCell> cells)
+    public bool CanPlaceAt(int baseX, int baseY, Vector2Int[] shapeOffset, List<BoardCell> cells)
     {
-        cells = new List<BoardCell>(shapeOffset?.Length ?? 0);
+        if (cells == null)
+            return false;
+
+        cells.Clear();
 
         if (shapeOffset == null || shapeOffset.Length == 0)
             return false;
+
+        if (cells.Capacity < shapeOffset.Length)
+            cells.Capacity = shapeOffset.Length;
 
         foreach (Vector2Int offset in shapeOffset)
         {

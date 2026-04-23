@@ -25,7 +25,8 @@ public sealed class BoardPreviewController
     public bool UpdatePreview(DraggableBlock block, Vector2 anchorScreenPos, Vector2Int anchorOffset, Camera uiCam, out bool canPlace, out List<BoardCell> lastPreviewCells)
     {
         canPlace = false;
-        lastPreviewCells = new List<BoardCell>();
+        _lastPreviewCells.Clear();
+        lastPreviewCells = _lastPreviewCells;
 
         if (block == null || block.CurrentOffsets == null || block.CurrentOffsets.Length == 0)
         {
@@ -60,7 +61,7 @@ public sealed class BoardPreviewController
         int baseX = anchorX - anchorOffset.x;
         int baseY = anchorY + anchorOffset.y;
 
-        if (!_model.CanPlaceAt(baseX, baseY, block.CurrentOffsets, out List<BoardCell> previewCells))
+        if (!_model.CanPlaceAt(baseX, baseY, block.CurrentOffsets, _lastPreviewCells))
         {
             if (isSameBlock && HasLastPreview)
             {
@@ -82,9 +83,6 @@ public sealed class BoardPreviewController
 
         // 프리뷰 갱신
         ClearAllPreviewOnly();
-        _lastPreviewCells.Clear();
-        _lastPreviewCells.AddRange(previewCells);
-        lastPreviewCells = _lastPreviewCells;
 
         foreach (BoardCell cell in _lastPreviewCells)
         {
@@ -116,13 +114,13 @@ public sealed class BoardPreviewController
         if (block.CurrentOffsets == null || block.CurrentOffsets.Length == 0)
             return false;
 
-        if (!_model.CanPlaceAt(_lastPreviewBasePos.x, _lastPreviewBasePos.y, block.CurrentOffsets, out List<BoardCell> cellsToPlace))
+        if (!_model.CanPlaceAt(_lastPreviewBasePos.x, _lastPreviewBasePos.y, block.CurrentOffsets, _lastPreviewCells))
             return false;
 
-        foreach (BoardCell cell in cellsToPlace)
+        foreach (BoardCell cell in _lastPreviewCells)
             cell.PlaceBlock(blockSprite);
 
-        placedCount = cellsToPlace.Count;
+        placedCount = _lastPreviewCells.Count;
         ClearAllPreviewOnly();
         ClearStateOnly();
         return true;
