@@ -119,9 +119,7 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
 
     public void UpdateBestScore(int newScore)
     {
-#if UNITY_EDITOR
         Debug.Log("Current Score " + newScore);
-#endif
         bool hasNewAllTimeBest = newScore > _bestScore;
         bool hasNewWeeklyBest = newScore > _weeklyBestScore;
 
@@ -130,18 +128,14 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
 
         if (hasNewAllTimeBest)
         {
-#if UNITY_EDITOR
             Debug.Log("New all-time high score " + newScore);
-#endif
             _bestScore = newScore;
             PlayerPrefs.SetInt(BestScoreKey, _bestScore);
         }
 
         if (hasNewWeeklyBest)
         {
-#if UNITY_EDITOR
             Debug.Log("New weekly high score " + newScore);
-#endif
             _weeklyBestScore = newScore;
             PlayerPrefs.SetInt(WeeklyBestScoreKey, _weeklyBestScore);
         }
@@ -192,7 +186,6 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
 
         Backend.URank.User.UpdateUserScore(RankUuid, TableName, _userIndate, param, (bro) =>
         {
-#if UNITY_EDITOR
             if (bro.IsSuccess())
             {
                 Debug.Log($"[리더보드] 점수 갱신 성공: {score}");
@@ -201,7 +194,6 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
             {
                 Debug.LogError($"[리더보드] 갱신 실패: {bro.GetErrorCode()} - {bro.GetMessage()}");
             }
-#endif
             GetRank();
         });
     }
@@ -215,16 +207,12 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
             if (bro.IsSuccess())
             {
                 rankData = bro.FlattenRows();
-#if UNITY_EDITOR
                 Debug.Log("Ranking lookup succeeded");
-#endif
             }
-#if UNITY_EDITOR
             else
             {
                 Debug.LogError("Ranking lookup failed : " + bro.GetErrorCode());
             }
-#endif
 
             OnRankDataReceived?.Invoke(rankData);
         });

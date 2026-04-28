@@ -91,9 +91,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     {
         if (Block == null || !HasBlock)
         {
-#if UNITY_EDITOR
             Debug.Log("BlockSlot - Block is null");
-#endif
             return;
         }
 

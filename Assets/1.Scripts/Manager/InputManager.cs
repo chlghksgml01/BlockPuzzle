@@ -79,9 +79,7 @@ public class InputManager : MonoBehaviour
         else
         {
             Application.Quit();
-#if UNITY_EDITOR
             Debug.Log("Quit requested from Lobby back key.");
-#endif
         }
     }
 

@@ -14,9 +14,7 @@ public class BoardEffect : MonoBehaviour
 
     public void ActivateGrayscale(bool useGrayScale, float effectDuration = 0f)
     {
-#if UNITY_EDITOR
         Debug.Log("Use GrayScale " + useGrayScale);
-#endif
 
         if (useGrayScale)
         {

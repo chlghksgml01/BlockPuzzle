@@ -51,9 +51,7 @@ public class DraggableBlock : MonoBehaviour
         }
         else
         {
-#if UNITY_EDITOR
             Debug.LogError("Block Shapes is empty");
-#endif
             return;
         }
 

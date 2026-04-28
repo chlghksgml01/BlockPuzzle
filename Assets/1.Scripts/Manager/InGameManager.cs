@@ -152,9 +152,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
             InvalidBlockCount++;
         }
 
-#if UNITY_EDITOR
         Debug.Log("InvalidBlockCount : " + InvalidBlockCount);
-#endif
         return true;
     }
 
@@ -210,14 +208,10 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
     private IEnumerator GameOverDelayCoroutine()
     {
-#if UNITY_EDITOR
         Debug.Log("wait gameOverDelaySeconds");
-#endif
         yield return new WaitForSeconds(_gameOverDelaySeconds);
 
-#if UNITY_EDITOR
         Debug.Log("wait grayEffectDuration");
-#endif
         SoundManager.Instance.PlaySFX(SFXType.GameOver);
         _boardManger.ActivateGrayscale(true, _grayEffectDuration);
         yield return new WaitForSeconds(_grayEffectDuration + 1f);
