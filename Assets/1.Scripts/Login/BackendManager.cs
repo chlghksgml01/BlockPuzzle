@@ -1,6 +1,7 @@
 using BackEnd;
 using UnityEngine;
 
+[DefaultExecutionOrder(-999)]
 public class BackendManager : Singleton<BackendManager>
 {
     protected override void OnAwake()

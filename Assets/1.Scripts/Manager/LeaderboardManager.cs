@@ -274,7 +274,7 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
 
         Param param = new Param();
         param.Add(ScoreColumn, _bestScore);
-        Backend.GameData.UpdateV2(TableName, _userIndate, Backend.UserInDate, param, null);
+        Backend.GameData.UpdateV2(TableName, _userIndate, Backend.UserInDate, param, _ => { });
     }
 
     private void TryUpdateWeeklyLeaderboardFromCache()
