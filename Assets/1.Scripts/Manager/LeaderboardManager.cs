@@ -6,7 +6,7 @@ using UnityEngine;
 [DefaultExecutionOrder(-100)]
 public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
 {
-    private const string RankUuid = "019cffa2-ab30-7c69-8b25-0025d37e6deb";
+    private const string RankUuid = "019dd363-ac5b-7aa6-9309-b0cca0839e5d";
     private const string GameConfigChartId = "236370";
     private const string BestScoreKey = "BestScore";
     private const string WeeklyBestScoreKey = "WeeklyBestScore";
@@ -14,6 +14,8 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
     public const string LocalNicknameKey = "LocalNickname";
     private const string TableName = "BEST_SCORE";
     private const string ScoreColumn = "bestscore";
+    private const string WeeklyScoreColumn = "weeklyBestScore";
+    private const string WeeklySeasonColumn = "weeklySeasonKey";
 
     private int _bestScore = 0;
     public int BestScore => _bestScore;
@@ -86,14 +88,26 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
                 // 기존 유저
                 if (bro.FlattenRows().Count > 0)
                 {
-                    _userIndate = bro.FlattenRows()[0]["inDate"].ToString();
-                    int serverScore = int.Parse(bro.FlattenRows()[0][ScoreColumn].ToString());
+                    JsonData row = bro.FlattenRows()[0];
+                    _userIndate = row["inDate"].ToString();
+                    int serverScore = int.Parse(row[ScoreColumn].ToString());
+                    int serverWeeklyScore = TryGetIntFromJson(row, WeeklyScoreColumn, out int parsedWeeklyScore) ? parsedWeeklyScore : 0;
+
+                    string currentSeason = GetCurrentSeasonKey();
+                    string serverWeeklySeason = TryGetStringFromJson(row, WeeklySeasonColumn, out string parsedWeeklySeason)
+                        ? parsedWeeklySeason
+                        : string.Empty;
 
                     _bestScore = Mathf.Max(_bestScore, serverScore);
                     PlayerPrefs.SetInt(BestScoreKey, _bestScore);
+                    _weeklyBestScore = string.Equals(serverWeeklySeason, currentSeason, StringComparison.Ordinal)
+                        ? Mathf.Max(_weeklyBestScore, serverWeeklyScore)
+                        : _weeklyBestScore;
+                    PlayerPrefs.SetInt(WeeklyBestScoreKey, _weeklyBestScore);
+                    PlayerPrefs.SetString(WeeklySeasonKey, currentSeason);
 
-                    TrySyncAllTimeBestToServer();
-                    TryUpdateWeeklyLeaderboardFromCache();
+                    TrySyncScoreDataToServer();
+                    TrySyncWeeklyLeaderboard();
                 }
                 // 신규 유저
                 else
@@ -106,20 +120,22 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
 
     private void CreateInitialServerData()
     {
+        Debug.Log("Creating initial server data with score: " + _bestScore);
         Param param = new Param();
         param.Add(ScoreColumn, _bestScore);
+        param.Add(WeeklyScoreColumn, _weeklyBestScore);
+        param.Add(WeeklySeasonColumn, GetCurrentSeasonKey());
 
         var bro = Backend.GameData.Insert(TableName, param);
         if (bro.IsSuccess())
         {
             _userIndate = bro.GetInDate();
-            TryUpdateWeeklyLeaderboardFromCache();
+            TrySyncWeeklyLeaderboard();
         }
     }
 
     public void UpdateBestScore(int newScore)
     {
-        Debug.Log("Current Score " + newScore);
         bool hasNewAllTimeBest = newScore > _bestScore;
         bool hasNewWeeklyBest = newScore > _weeklyBestScore;
 
@@ -128,14 +144,12 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
 
         if (hasNewAllTimeBest)
         {
-            Debug.Log("New all-time high score " + newScore);
             _bestScore = newScore;
             PlayerPrefs.SetInt(BestScoreKey, _bestScore);
         }
 
         if (hasNewWeeklyBest)
         {
-            Debug.Log("New weekly high score " + newScore);
             _weeklyBestScore = newScore;
             PlayerPrefs.SetInt(WeeklyBestScoreKey, _weeklyBestScore);
         }
@@ -144,55 +158,70 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
             return;
 
         if (hasNewAllTimeBest)
-        {
-            Param param = new Param();
-            param.Add(ScoreColumn, _bestScore);
+            SyncAllTimeBestToServer(hasNewWeeklyBest);
+        else
+            SyncWeeklyBestToServer();
+    }
 
-            if (string.IsNullOrEmpty(_userIndate))
-            {
-                Backend.GameData.Insert(TableName, param, (bro) =>
-                {
-                    if (bro.IsSuccess())
-                    {
-                        _userIndate = bro.GetInDate();
-                        if (hasNewWeeklyBest)
-                            UpdateLeaderboard(_weeklyBestScore);
-                    }
-                });
-            }
-            else
-            {
-                Backend.GameData.UpdateV2(TableName, _userIndate, Backend.UserInDate, param, (bro) =>
-                {
-                    if (bro.IsSuccess())
-                    {
-                        if (hasNewWeeklyBest)
-                            UpdateLeaderboard(_weeklyBestScore);
-                    }
-                });
-            }
-        }
-        else if (hasNewWeeklyBest)
+    private void SyncAllTimeBestToServer(bool shouldUpdateLeaderboard)
+    {
+        Param param = new Param();
+        param.Add(ScoreColumn, _bestScore);
+        param.Add(WeeklyScoreColumn, _weeklyBestScore);
+        param.Add(WeeklySeasonColumn, GetCurrentSeasonKey());
+
+        if (string.IsNullOrEmpty(_userIndate))
         {
-            if (!string.IsNullOrEmpty(_userIndate))
-                UpdateLeaderboard(_weeklyBestScore);
+            Backend.GameData.Insert(TableName, param, (bro) =>
+            {
+                if (bro.IsSuccess())
+                {
+                    _userIndate = bro.GetInDate();
+                    if (shouldUpdateLeaderboard)
+                        UpdateLeaderboard(_weeklyBestScore);
+                }
+            });
         }
+        else
+        {
+            Backend.GameData.UpdateV2(TableName, _userIndate, Backend.UserInDate, param, (bro) =>
+            {
+                if (bro.IsSuccess() && shouldUpdateLeaderboard)
+                    UpdateLeaderboard(_weeklyBestScore);
+            });
+        }
+    }
+
+    private void SyncWeeklyBestToServer()
+    {
+        if (string.IsNullOrEmpty(_userIndate))
+            return;
+
+        Param param = new Param();
+        param.Add(WeeklyScoreColumn, _weeklyBestScore);
+        param.Add(WeeklySeasonColumn, GetCurrentSeasonKey());
+        Backend.GameData.UpdateV2(TableName, _userIndate, Backend.UserInDate, param, (bro) =>
+        {
+            if (bro.IsSuccess())
+                UpdateLeaderboard(_weeklyBestScore);
+        });
     }
 
     private void UpdateLeaderboard(int score)
     {
+        Debug.Log("Updating leaderboard with score: " + score);
         Param param = new Param();
-        param.Add(ScoreColumn, score);
+        param.Add(WeeklyScoreColumn, score);
 
         Backend.URank.User.UpdateUserScore(RankUuid, TableName, _userIndate, param, (bro) =>
         {
             if (bro.IsSuccess())
             {
-                Debug.Log($"[리더보드] 점수 갱신 성공: {score}");
+                Debug.Log($"Leaderboard updated successfully: {score}");
             }
             else
             {
-                Debug.LogError($"[리더보드] 갱신 실패: {bro.GetErrorCode()} - {bro.GetMessage()}");
+                Debug.LogError($"Leaderboard update failed: {bro.GetErrorCode()} - {bro.GetMessage()}");
             }
             GetRank();
         });
@@ -255,23 +284,39 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
         return weeklyResetAnchor.ToString("yyyyMMddHH");
     }
 
-    private void TrySyncAllTimeBestToServer()
+    private void TrySyncScoreDataToServer()
     {
         if (!Backend.IsLogin || string.IsNullOrEmpty(_userIndate))
             return;
 
         Param param = new Param();
         param.Add(ScoreColumn, _bestScore);
-        Backend.GameData.UpdateV2(TableName, _userIndate, Backend.UserInDate, param, _ => { });
+        param.Add(WeeklyScoreColumn, _weeklyBestScore);
+        param.Add(WeeklySeasonColumn, GetCurrentSeasonKey());
+        Debug.Log($"[TrySyncScoreDataToServer] UpdateV2 호출 - inDate: {_userIndate}");
+        Backend.GameData.UpdateV2(TableName, _userIndate, Backend.UserInDate, param, (bro) =>
+        {
+            if (bro.IsSuccess())
+                Debug.Log("[TrySyncScoreDataToServer] Succeeded");
+            else
+                Debug.LogError($"[TrySyncScoreDataToServer] Failed: {bro.GetErrorCode()} - {bro.GetMessage()}");
+        });
     }
 
-    private void TryUpdateWeeklyLeaderboardFromCache()
+    private void TrySyncWeeklyLeaderboard()
     {
         if (!Backend.IsLogin || string.IsNullOrEmpty(_userIndate))
+        {
+            Debug.LogWarning("Cannot sync weekly leaderboard: user not logged in or userIndate is empty");
             return;
+        }
 
         if (_weeklyBestScore <= 0)
+        {
+            Debug.Log("Skipping weekly leaderboard sync");
+            GetRank();
             return;
+        }
 
         UpdateLeaderboard(_weeklyBestScore);
     }
@@ -301,7 +346,7 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
 
     private DateTime GetCurrentWeekResetDateTime(DateTime nowKst)
     {
-        int today = ToResetDayNumber(nowKst.DayOfWeek); // 1~7
+        int today = ToResetDayNumber(nowKst.DayOfWeek);
         int dayOffset = (today - _weeklyResetDay + 7) % 7;
         return nowKst.Date.AddDays(-dayOffset).AddHours(_weeklyResetHour);
     }
@@ -318,5 +363,15 @@ public class LeaderboardManager : Singleton<LeaderboardManager>, IInitializable
             return false;
 
         return int.TryParse(data[key].ToString(), out value);
+    }
+
+    private static bool TryGetStringFromJson(JsonData data, string key, out string value)
+    {
+        value = string.Empty;
+        if (data == null || string.IsNullOrEmpty(key) || !data.ContainsKey(key) || data[key] == null)
+            return false;
+
+        value = data[key].ToString();
+        return !string.IsNullOrEmpty(value);
     }
 }

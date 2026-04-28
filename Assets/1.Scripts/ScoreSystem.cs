@@ -133,13 +133,6 @@ public class ScoreSystem : ScriptableObject
 
     public void CheckHighScore(int bestScore)
     {
-        if (CurrentScore > bestScore)
-        {
-            OnHighScoreUpdated?.Invoke(CurrentScore);
-        }
-        else
-        {
-            OnHighScoreUpdated?.Invoke(-1);
-        }
+        OnHighScoreUpdated?.Invoke(CurrentScore);
     }
 }

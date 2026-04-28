@@ -2096,6 +2096,7 @@ MonoBehaviour:
   _duration: 0.3
   _soundSlider: {fileID: 4840970603846519199}
   _vibrateSlider: {fileID: 1263418822061363151}
+  _scoreUI: {fileID: 0}
 --- !u!114 &362930090635816612
 MonoBehaviour:
   m_ObjectHideFlags: 0

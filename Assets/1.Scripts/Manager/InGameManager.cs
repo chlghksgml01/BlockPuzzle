@@ -32,6 +32,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     private Coroutine _gameOverCoroutine;
     private bool _isGameOverTriggered;
     private bool _subscriptionsBound;
+    private int _previousBestScore;
 
     private BoardManager _boardManger;
 
@@ -165,7 +166,8 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
             return;
 
         _isGameOverTriggered = true;
-        _scoreSystem.CheckHighScore(LeaderboardManager.Instance.BestScore);
+        _previousBestScore = LeaderboardManager.Instance.BestScore;
+        _scoreSystem.CheckHighScore(_previousBestScore);
         _gameOverUI.Open();
         SoundManager.Instance.PlaySFX(SFXType.Score);
         ResetGame();
@@ -223,7 +225,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
     private void SetNewBest(int newBestScore)
     {
-        _gameOverUI.UpdateBanner(newBestScore != -1);
+        _gameOverUI.UpdateBanner(newBestScore > _previousBestScore);
     }
 
     public void SpawnBlocksInSlots()
