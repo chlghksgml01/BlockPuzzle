@@ -181,6 +181,12 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
             _gameOverCoroutine = null;
         }
 
+        if (_hintCoroutine != null)
+        {
+            StopCoroutine(_hintCoroutine);
+            _hintCoroutine = null;
+        }
+
         _isGameOverTriggered = false;
         SpawnBlocksInSlots();
 

@@ -18,6 +18,14 @@ public sealed class BoardHintController
         _model = model;
     }
 
+    public void ClearAll()
+    {
+        for (int x = 0; x < _width; x++)
+            for (int y = 0; y < _height; y++)
+                _hintCells[x, y].ShowHint(false);
+        _prevBlock = null;
+    }
+
     public void ShowHint(bool showHint, DraggableBlock block, bool isPlaced = false)
     {
         if (block == null)

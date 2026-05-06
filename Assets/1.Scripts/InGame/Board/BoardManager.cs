@@ -156,6 +156,7 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
     private void ResetBoard()
     {
         ClearDragPreview();
+        _hint.ClearAll();
         _model.ResetBoard();
     }
 
