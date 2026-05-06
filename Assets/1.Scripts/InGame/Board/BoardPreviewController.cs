@@ -12,6 +12,7 @@ public sealed class BoardPreviewController
     private Vector2 _lastPreviewAnchorScreenPos = default;
     private DraggableBlock _lastPreviewBlock;
     private readonly List<BoardCell> _lastPreviewCells = new List<BoardCell>();
+    private bool _hasActivePreview = false;
 
     public BoardPreviewController(BoardModel model, BoardGridMapper mapper, float keepPreviewMaxDistancePx)
     {
@@ -20,7 +21,7 @@ public sealed class BoardPreviewController
         _keepPreviewMaxDistancePx = keepPreviewMaxDistancePx;
     }
 
-    public bool HasLastPreview => _lastPreviewBlock != null && _lastPreviewCells.Count > 0;
+    public bool HasLastPreview => _lastPreviewBlock != null && _hasActivePreview;
 
     public bool UpdatePreview(DraggableBlock block, Vector2 anchorScreenPos, Vector2Int anchorOffset, Camera uiCam, out bool canPlace, out List<BoardCell> lastPreviewCells)
     {
@@ -94,6 +95,7 @@ public sealed class BoardPreviewController
         _lastPreviewAnchorOffset = anchorOffset;
         _lastPreviewAnchorScreenPos = anchorScreenPos;
         _lastPreviewBlock = block;
+        _hasActivePreview = true;
         canPlace = true;
         return isPosChanged;
     }
@@ -148,10 +150,10 @@ public sealed class BoardPreviewController
         _lastPreviewAnchorOffset = Vector2Int.zero;
         _lastPreviewAnchorScreenPos = default;
         _lastPreviewBlock = null;
+        _hasActivePreview = false;
         _lastPreviewCells.Clear();
     }
 
-    // 마지막 프리뷰 위치에서 멀리 떨어졌는지 확인
     private bool IsTooFarFromLastPreview(Vector2 currentAnchorScreenPos, Camera uiCam)
     {
         if (_keepPreviewMaxDistancePx <= 0f)
