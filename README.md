@@ -163,10 +163,11 @@ classDiagram
 ### 실행
 1. [BlockPuzzleReleases](https://github.com/chlghksgml01/BlockPuzzle/releases/tag/1.0) BlockPuzleBuild.zip 다운로드
 2. 압축 해제 후 BlockPuzzle.exe 실행
+* 모바일 환경에 최적화되어 있으므로 비율이 깨질 수 있는 점 양해 부탁드립니다.
 
 
 ### 빌드
 1. Unity Version: `6000.3.9f1` (동일 / 마이너에 가깝게 맞춰 실행)
 2. 시작 씬: Assets/0Scenes/Loading.unity
 3. 흐름: `Loading` -> `Lobby` -> `InGame`
-4. 모바일 환경에 최적화되어 있으므로 유니티 에디터 내 테스트 시 Game 뷰 대신 Simulator 뷰 사용 권장
+* 모바일 환경에 최적화되어 있으므로 유니티 에디터 내 테스트 시 Game 뷰 대신 Simulator 뷰 사용 권장
