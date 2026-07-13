@@ -54,7 +54,7 @@ public class InputManager : MonoBehaviour
         {
             HandleLobbyEscape();
         }
-        else if (currentScene == SceneName.InGame)
+        else if (currentScene == SceneName.Classic)
         {
             HandleInGameEscape();
         }
