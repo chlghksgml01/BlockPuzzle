@@ -10,6 +10,6 @@ public class MainUIButtonController : MonoBehaviour
     private void Start()
     {
         _leaderBoardButton.onClick.AddListener(() => _leaderBoardUI.Open());
-        _startButton.onClick.AddListener(() => SceneLoadManager.LoadScene(SceneName.InGame));
+        _startButton.onClick.AddListener(() => SceneLoadManager.LoadScene(SceneName.Classic));
     }
 }
