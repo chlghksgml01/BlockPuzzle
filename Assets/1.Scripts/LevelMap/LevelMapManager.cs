@@ -1,105 +1,88 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 레벨 맵 스크롤을 소유하고 LevelMapModel(레이아웃 계산)과 LevelMapVirtualizer(재사용 배치)를 조립한다.
-/// Content RectTransform은 pivot/anchor가 상단 기준이어야 하며, LevelMapRouteData의 노드 Y좌표는
-/// 0(상단)에서 아래로 갈수록 음수가 되도록 배치되어 있어야 한다.
+/// 레벨맵 ScrollView를 소유하고 LevelMapLayout/LevelMapVirtualizer를 연결하는 진입점.
+/// 스크롤이 변경될 때마다(이벤트 기반, Update 폴링 없음) 보이는 범위의 노드/도로만 생성·회수한다.
 /// </summary>
 public class LevelMapManager : MonoBehaviour
 {
     [Header("Scroll References")]
-    [Tooltip("레벨 맵을 스크롤하는 ScrollRect")]
+    [Tooltip("레벨맵 스크롤을 담당하는 ScrollRect")]
     [SerializeField] private ScrollRect _scrollRect;
 
-    [Tooltip("노드/경로 막대가 배치되는 콘텐츠 RectTransform (pivot/anchor: 상단 기준)")]
+    [Tooltip("스크롤 뷰의 보이는 영역(Viewport)")]
+    [SerializeField] private RectTransform _viewport;
+
+    [Tooltip("노드/도로가 배치되는 Content. Pivot(0.5, 0) / AnchorMin,Max(0~1, 0)으로 하단 고정되어 있어야 함")]
     [SerializeField] private RectTransform _content;
 
-    [Header("Route Data & Prefabs")]
-    [Tooltip("레벨 노드 배치 데이터")]
-    [SerializeField] private LevelMapRouteData _routeData;
+    [Header("Containers")]
+    [Tooltip("생성된 LevelNode들이 자식으로 들어갈 Content 하위 트랜스폼")]
+    [SerializeField] private RectTransform _nodeContainer;
 
-    [Tooltip("레벨 노드 프리팹")]
+    [Tooltip("생성된 Road들이 자식으로 들어갈 Content 하위 트랜스폼")]
+    [SerializeField] private RectTransform _roadContainer;
+
+    [Header("Prefabs")]
+    [Tooltip("레벨 노드 프리팹 (LevelNodeView 포함)")]
     [SerializeField] private LevelNodeView _nodePrefab;
 
-    [Tooltip("경로 막대 프리팹")]
-    [SerializeField] private LevelPathSegmentView _segmentPrefab;
+    [Tooltip("노드 사이를 잇는 Road 프리팹 (LevelRoadView 포함)")]
+    [SerializeField] private LevelRoadView _roadPrefab;
 
-    [Header("Layout Settings")]
-    [Tooltip("경로 막대의 두께(px)")]
-    [SerializeField, Min(1f)] private float _pathThickness = 24f;
-
-    [Tooltip("콘텐츠 상하 여백(px)")]
-    [SerializeField, Min(0f)] private float _contentPaddingY = 200f;
+    [Header("Layout Data")]
+    [Tooltip("노드/도로 간격을 정의하는 패턴 데이터 에셋")]
+    [SerializeField] private LevelMapPatternData _patternData;
 
     [Header("Virtualization Settings")]
-    [Tooltip("뷰포트 위아래로 미리 활성화해둘 여유 영역(px). 너무 작으면 빠른 스크롤 시 노드가 팝인하는 게 보일 수 있음")]
-    [SerializeField, Min(0f)] private float _recycleBufferPx = 400f;
+    [Tooltip("전체 레벨 수. 0 이하로 두면 스크롤이 끝에 가까워질 때마다 Content가 절차적으로 늘어남")]
+    [SerializeField] private int _totalLevelCount = 0;
 
-    [Tooltip("이 값(px) 이상 스크롤되어야 표시 목록을 다시 계산함 (매 프레임 풀 재계산 방지)")]
-    [SerializeField, Min(0f)] private float _updateThresholdPx = 80f;
+    [Tooltip("뷰포트 밖으로 미리 스폰해 둘 여유 영역 (px)")]
+    [SerializeField] private float _viewportPadding = 300f;
 
-    /// <summary>레벨 노드가 클릭되었을 때 (1-based 레벨 번호)</summary>
-    public event Action<int> OnLevelSelected;
+    [Tooltip("무제한 모드에서 Content 높이를 한 번에 늘리는 단위 (px)")]
+    [SerializeField] private float _contentGrowthChunk = 2000f;
 
-    /// <summary>레벨 잠금 해제 여부 조회 훅. 저장 데이터 연동 전까지는 null이면 전부 해제 상태로 표시된다.</summary>
-    public Func<int, bool> IsLevelUnlocked;
+    [Tooltip("마지막 노드 위쪽으로 남겨둘 여백 (px). 전체 레벨 수가 정해져 있을 때만 사용")]
+    [SerializeField] private float _topPadding = 300f;
 
-    private LevelMapModel _model;
+    private LevelMapLayout _layout;
     private LevelMapVirtualizer _virtualizer;
-    private float _lastUpdateViewportTopY = float.NaN;
 
     private void Awake()
     {
-        if (_scrollRect == null || _content == null || _routeData == null || _nodePrefab == null || _segmentPrefab == null)
-        {
-            Debug.LogError("LevelMapManager - Missing required references: ScrollRect, Content, RouteData, NodePrefab, SegmentPrefab");
-            enabled = false;
-            return;
-        }
+        _layout = new LevelMapLayout(_patternData);
+        _virtualizer = new LevelMapVirtualizer(
+            _content,
+            _viewport,
+            _nodePrefab,
+            _roadPrefab,
+            _nodeContainer,
+            _roadContainer,
+            _layout,
+            _viewportPadding,
+            _contentGrowthChunk,
+            _topPadding,
+            _totalLevelCount);
 
-        _model = new LevelMapModel(_routeData, _pathThickness, _contentPaddingY);
-        _content.sizeDelta = new Vector2(_content.sizeDelta.x, _model.ContentSize.y);
-
-        _virtualizer = new LevelMapVirtualizer(_model, _content, _nodePrefab, _segmentPrefab,
-            levelIndex => IsLevelUnlocked == null || IsLevelUnlocked(levelIndex),
-            HandleLevelClicked);
+        _scrollRect.verticalNormalizedPosition = 0f;
     }
 
     private void OnEnable()
     {
-        _scrollRect.onValueChanged.AddListener(HandleScrollChanged);
-        RefreshVisible(true);
+        _scrollRect.onValueChanged.AddListener(OnScrollChanged);
+        _virtualizer.Refresh();
     }
 
     private void OnDisable()
     {
-        _scrollRect.onValueChanged.RemoveListener(HandleScrollChanged);
+        _scrollRect.onValueChanged.RemoveListener(OnScrollChanged);
     }
 
-    private void HandleScrollChanged(Vector2 _)
+    private void OnScrollChanged(Vector2 _)
     {
-        RefreshVisible(false);
-    }
-
-    private void RefreshVisible(bool force)
-    {
-        float viewportTopY = -_content.anchoredPosition.y;
-
-        if (!force && !float.IsNaN(_lastUpdateViewportTopY) && Mathf.Abs(viewportTopY - _lastUpdateViewportTopY) < _updateThresholdPx)
-            return;
-
-        _lastUpdateViewportTopY = viewportTopY;
-
-        float viewportHeight = _scrollRect.viewport != null ? _scrollRect.viewport.rect.height : ((RectTransform)_scrollRect.transform).rect.height;
-        float viewportBottomY = viewportTopY - viewportHeight;
-
-        _virtualizer.UpdateVisible(viewportBottomY - _recycleBufferPx, viewportTopY + _recycleBufferPx);
-    }
-
-    private void HandleLevelClicked(int levelIndex)
-    {
-        OnLevelSelected?.Invoke(levelIndex);
+        _virtualizer.Refresh();
     }
 }

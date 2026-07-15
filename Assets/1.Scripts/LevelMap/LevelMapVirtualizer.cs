@@ -1,121 +1,154 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
 
 /// <summary>
-/// 뷰포트에 걸치는 노드/경로 막대만 오브젝트 풀에서 꺼내 배치하고, 벗어난 항목은 풀로 반납한다.
-/// 레벨 맵 전체를 미리 생성해두지 않고 스크롤에 따라 필요한 만큼만 동적으로 유지하기 위한 재사용 엔진.
+/// 뷰포트에 보이는 범위에 맞춰 LevelNodeView / LevelRoadView를 풀링으로 생성·회수하는 가상 스크롤 엔진.
+/// Content는 하단(pivot 0,0) 기준으로 위로 자라나며, 노드 0번이 맨 아래에 위치한다.
 /// </summary>
-public class LevelMapVirtualizer
+public sealed class LevelMapVirtualizer
 {
-    private readonly LevelMapModel _model;
+    private readonly RectTransform _content;
+    private readonly RectTransform _viewport;
+    private readonly LevelMapLayout _layout;
+    private readonly float _viewportPadding;
+    private readonly float _contentGrowthChunk;
+    private readonly float _topPadding;
+    private readonly int _totalLevelCount;
+
     private readonly ObjectPool<LevelNodeView> _nodePool;
-    private readonly ObjectPool<LevelPathSegmentView> _segmentPool;
-    private readonly Func<int, bool> _isLevelUnlocked;
-    private readonly Action<int> _onLevelClicked;
-
+    private readonly ObjectPool<LevelRoadView> _roadPool;
     private readonly Dictionary<int, LevelNodeView> _activeNodes = new Dictionary<int, LevelNodeView>();
-    private readonly Dictionary<int, LevelPathSegmentView> _activeSegments = new Dictionary<int, LevelPathSegmentView>();
+    private readonly Dictionary<int, LevelRoadView> _activeRoads = new Dictionary<int, LevelRoadView>();
+    private readonly List<int> _releaseBuffer = new List<int>();
 
-    private readonly HashSet<int> _visibleNodeIndices = new HashSet<int>();
-    private readonly HashSet<int> _visibleSegmentIndices = new HashSet<int>();
-    private readonly List<int> _removeBuffer = new List<int>();
+    private readonly Vector3[] _cornerBuffer = new Vector3[4];
 
-    public LevelMapVirtualizer(LevelMapModel model, RectTransform content, LevelNodeView nodePrefab, LevelPathSegmentView segmentPrefab,
-        Func<int, bool> isLevelUnlocked, Action<int> onLevelClicked)
+    public LevelMapVirtualizer(
+        RectTransform content,
+        RectTransform viewport,
+        LevelNodeView nodePrefab,
+        LevelRoadView roadPrefab,
+        Transform nodeContainer,
+        Transform roadContainer,
+        LevelMapLayout layout,
+        float viewportPadding,
+        float contentGrowthChunk,
+        float topPadding,
+        int totalLevelCount)
     {
-        _model = model;
-        _isLevelUnlocked = isLevelUnlocked;
-        _onLevelClicked = onLevelClicked;
+        _content = content;
+        _viewport = viewport;
+        _layout = layout;
+        _viewportPadding = viewportPadding;
+        _contentGrowthChunk = contentGrowthChunk;
+        _topPadding = topPadding;
+        _totalLevelCount = totalLevelCount;
 
         _nodePool = new ObjectPool<LevelNodeView>(
-            createFunc: () => UnityEngine.Object.Instantiate(nodePrefab, content),
-            actionOnGet: view => view.gameObject.SetActive(true),
-            actionOnRelease: view =>
-            {
-                view.ResetView();
-                view.gameObject.SetActive(false);
-            },
-            actionOnDestroy: view => UnityEngine.Object.Destroy(view.gameObject),
-            collectionCheck: false,
-            defaultCapacity: 16,
-            maxSize: 128);
-
-        _segmentPool = new ObjectPool<LevelPathSegmentView>(
-            createFunc: () => UnityEngine.Object.Instantiate(segmentPrefab, content),
+            createFunc: () => Object.Instantiate(nodePrefab, nodeContainer),
             actionOnGet: view => view.gameObject.SetActive(true),
             actionOnRelease: view => view.gameObject.SetActive(false),
-            actionOnDestroy: view => UnityEngine.Object.Destroy(view.gameObject),
+            actionOnDestroy: view => Object.Destroy(view.gameObject),
             collectionCheck: false,
-            defaultCapacity: 16,
-            maxSize: 128);
+            defaultCapacity: 12,
+            maxSize: 64);
+
+        _roadPool = new ObjectPool<LevelRoadView>(
+            createFunc: () => Object.Instantiate(roadPrefab, roadContainer),
+            actionOnGet: view => view.gameObject.SetActive(true),
+            actionOnRelease: view => view.gameObject.SetActive(false),
+            actionOnDestroy: view => Object.Destroy(view.gameObject),
+            collectionCheck: false,
+            defaultCapacity: 6,
+            maxSize: 32);
+
+        if (_totalLevelCount > 0)
+        {
+            float finalTopY = _layout.GetNodePosition(_totalLevelCount - 1).y + _topPadding;
+            SetContentHeight(finalTopY);
+        }
     }
 
-    public void UpdateVisible(float viewportMinY, float viewportMaxY)
+    public void Refresh()
     {
-        _model.GetVisibleNodeIndices(viewportMinY, viewportMaxY, _visibleNodeIndices);
-        SyncNodes();
+        GrowContentIfNeeded();
 
-        _model.GetVisibleSegmentIndices(viewportMinY, viewportMaxY, _visibleSegmentIndices);
-        SyncSegments();
+        (float minY, float maxY) = GetVisibleContentYRange();
+
+        int minNodeIndex = Mathf.Max(0, _layout.GetNodeIndexNearY(minY) - 2);
+        int maxNodeIndex = _layout.GetNodeIndexNearY(maxY) + 2;
+        if (_totalLevelCount > 0)
+            maxNodeIndex = Mathf.Min(maxNodeIndex, _totalLevelCount - 1);
+
+        int minPairIndex = Mathf.Max(0, minNodeIndex / 2 - 1);
+        int maxPairIndex = Mathf.Max(minPairIndex, maxNodeIndex / 2);
+
+        SyncActive(_activeNodes, _nodePool, minNodeIndex, maxNodeIndex,
+            (index, view) => view.Bind(index, _layout.GetNodePosition(index)));
+
+        SyncActive(_activeRoads, _roadPool, minPairIndex, maxPairIndex,
+            (index, view) =>
+            {
+                Vector2 position = _layout.GetRoadPosition(index, out bool mirrored);
+                view.Bind(index, position, mirrored);
+            });
     }
 
-    private void SyncNodes()
+    private void SyncActive<T>(Dictionary<int, T> active, ObjectPool<T> pool, int minIndex, int maxIndex, System.Action<int, T> bind)
+        where T : Component
     {
-        _removeBuffer.Clear();
-        foreach (int key in _activeNodes.Keys)
+        _releaseBuffer.Clear();
+        foreach (KeyValuePair<int, T> kvp in active)
         {
-            if (!_visibleNodeIndices.Contains(key))
-                _removeBuffer.Add(key);
+            if (kvp.Key < minIndex || kvp.Key > maxIndex)
+                _releaseBuffer.Add(kvp.Key);
         }
 
-        for (int i = 0; i < _removeBuffer.Count; i++)
+        for (int i = 0; i < _releaseBuffer.Count; i++)
         {
-            int key = _removeBuffer[i];
-            _nodePool.Release(_activeNodes[key]);
-            _activeNodes.Remove(key);
+            int index = _releaseBuffer[i];
+            pool.Release(active[index]);
+            active.Remove(index);
         }
 
-        foreach (int index in _visibleNodeIndices)
+        for (int i = minIndex; i <= maxIndex; i++)
         {
-            if (_activeNodes.ContainsKey(index))
+            if (active.ContainsKey(i))
                 continue;
 
-            LevelNodeLayout layout = _model.NodeLayouts[index];
-            bool unlocked = _isLevelUnlocked == null || _isLevelUnlocked(layout.LevelIndex);
-
-            LevelNodeView view = _nodePool.Get();
-            view.Bind(layout, unlocked, _onLevelClicked);
-            _activeNodes[index] = view;
+            T view = pool.Get();
+            bind(i, view);
+            active[i] = view;
         }
     }
 
-    private void SyncSegments()
+    private (float minY, float maxY) GetVisibleContentYRange()
     {
-        _removeBuffer.Clear();
-        foreach (int key in _activeSegments.Keys)
-        {
-            if (!_visibleSegmentIndices.Contains(key))
-                _removeBuffer.Add(key);
-        }
+        _viewport.GetWorldCorners(_cornerBuffer);
 
-        for (int i = 0; i < _removeBuffer.Count; i++)
-        {
-            int key = _removeBuffer[i];
-            _segmentPool.Release(_activeSegments[key]);
-            _activeSegments.Remove(key);
-        }
+        Vector2 bottomLocal = _content.InverseTransformPoint(_cornerBuffer[0]);
+        Vector2 topLocal = _content.InverseTransformPoint(_cornerBuffer[2]);
 
-        foreach (int index in _visibleSegmentIndices)
-        {
-            if (_activeSegments.ContainsKey(index))
-                continue;
+        float minY = Mathf.Min(bottomLocal.y, topLocal.y) - _viewportPadding;
+        float maxY = Mathf.Max(bottomLocal.y, topLocal.y) + _viewportPadding;
+        return (minY, maxY);
+    }
 
-            PathSegmentLayout layout = _model.SegmentLayouts[index];
-            LevelPathSegmentView view = _segmentPool.Get();
-            view.Bind(layout);
-            _activeSegments[index] = view;
-        }
+    private void GrowContentIfNeeded()
+    {
+        if (_totalLevelCount > 0)
+            return;
+
+        _viewport.GetWorldCorners(_cornerBuffer);
+        Vector2 topLocal = _content.InverseTransformPoint(_cornerBuffer[2]);
+
+        if (topLocal.y > _content.sizeDelta.y - _contentGrowthChunk)
+            SetContentHeight(_content.sizeDelta.y + _contentGrowthChunk);
+    }
+
+    private void SetContentHeight(float height)
+    {
+        _content.sizeDelta = new Vector2(_content.sizeDelta.x, height);
     }
 }

@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &4323854460472875542
+--- !u!1 &7865155779361747502
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,24 +8,24 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3934784294322463748}
-  - component: {fileID: 6161925133712250639}
-  - component: {fileID: 7513998718474293070}
-  - component: {fileID: 4638401638516334236}
+  - component: {fileID: 2399463239375477988}
+  - component: {fileID: 3046664813864770597}
+  - component: {fileID: 6432988506161452358}
+  - component: {fileID: 1464315426212334532}
   m_Layer: 5
-  m_Name: LevelNode
+  m_Name: Road
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!224 &3934784294322463748
+--- !u!224 &2399463239375477988
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4323854460472875542}
+  m_GameObject: {fileID: 7865155779361747502}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -35,24 +35,24 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: -920.5}
-  m_SizeDelta: {x: 138, y: 138}
+  m_AnchoredPosition: {x: 217, y: -742}
+  m_SizeDelta: {x: 434, y: 432}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!222 &6161925133712250639
+--- !u!222 &3046664813864770597
 CanvasRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4323854460472875542}
+  m_GameObject: {fileID: 7865155779361747502}
   m_CullTransparentMesh: 1
---- !u!114 &7513998718474293070
+--- !u!114 &6432988506161452358
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4323854460472875542}
+  m_GameObject: {fileID: 7865155779361747502}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
@@ -66,25 +66,25 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: a9e6f00d4e20f504eadf6aeb07767038, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 533842ab45be87b4283d41532bea2a99, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
+  m_FillMethod: 1
+  m_FillAmount: 0.5
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &4638401638516334236
+--- !u!114 &1464315426212334532
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4323854460472875542}
+  m_GameObject: {fileID: 7865155779361747502}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8c26a1ebf9e200c22c5e84afcf6deee0, type: 3}
+  m_Script: {fileID: 11500000, guid: 7b3e49fa90817b349b68eaf57fe008b5, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LevelNodeView
+  m_EditorClassIdentifier: Assembly-CSharp::LevelRoadView
