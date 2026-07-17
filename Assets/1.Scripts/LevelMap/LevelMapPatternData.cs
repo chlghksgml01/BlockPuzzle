@@ -8,11 +8,8 @@ using UnityEngine;
 public class LevelMapPatternData : ScriptableObject
 {
     [Header("Node Layout")]
-    [Tooltip("짝수 인덱스 노드에서 Road를 거쳐 다음(홀수) 노드로 이어질 때의 세로 간격")]
+    [Tooltip("짝수 인덱스 노드에서 Road를 거쳐 다음 노드로 이어질 때의 세로 간격")]
     [SerializeField] private float _connectedNodeGap = 180.5f;
-
-    [Tooltip("홀수 인덱스 노드에서 Road 없이 바로 다음(짝수) 노드로 이어질 때의 세로 간격")]
-    [SerializeField] private float _directNodeGap = 190.5f;
 
     [Tooltip("노드가 좌우로 벌어지는 가로 진폭. 인덱스 4개 주기로 0, +진폭, 0, -진폭 순서로 반복")]
     [SerializeField] private float _horizontalAmplitude = 412.5f;
@@ -29,12 +26,11 @@ public class LevelMapPatternData : ScriptableObject
     [SerializeField] private float _originYOffset = 178.5f;
 
     public float ConnectedNodeGap => _connectedNodeGap;
-    public float DirectNodeGap => _directNodeGap;
     public float HorizontalAmplitude => _horizontalAmplitude;
     public float RoadHorizontalOffset => _roadHorizontalOffset;
     public float RoadVerticalOffsetFromLowerNode => _roadVerticalOffsetFromLowerNode;
     public float OriginYOffset => _originYOffset;
 
     /// <summary>노드 2개 + Road 1개가 차지하는 세로 주기 길이</summary>
-    public float PairCycleHeight => _connectedNodeGap + _directNodeGap;
+    public float PairCycleHeight => _connectedNodeGap * 2;
 }

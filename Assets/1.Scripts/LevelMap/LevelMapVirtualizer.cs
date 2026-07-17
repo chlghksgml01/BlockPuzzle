@@ -84,6 +84,9 @@ public sealed class LevelMapVirtualizer
         int minPairIndex = Mathf.Max(0, minNodeIndex / 2 - 1);
         int maxPairIndex = Mathf.Max(minPairIndex, maxNodeIndex / 2);
 
+        int lastRoadPairIndex = _totalLevelCount > 0 ? (_totalLevelCount - 1) / 2 : -1;
+        bool lastRoadIsHalfFilled = _totalLevelCount > 0 && _totalLevelCount % 2 == 0;
+
         SyncActive(_activeNodes, _nodePool, minNodeIndex, maxNodeIndex,
             (index, view) => view.Bind(index, _layout.GetNodePosition(index)));
 
@@ -91,7 +94,8 @@ public sealed class LevelMapVirtualizer
             (index, view) =>
             {
                 Vector2 position = _layout.GetRoadPosition(index, out bool mirrored);
-                view.Bind(index, position, mirrored);
+                bool forceHalfFill = lastRoadIsHalfFilled && index == lastRoadPairIndex;
+                view.Bind(index, position, mirrored, forceHalfFill);
             });
     }
 

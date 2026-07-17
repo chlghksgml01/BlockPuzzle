@@ -13,8 +13,7 @@ MonoBehaviour:
   m_Name: LevelMapPattern
   m_EditorClassIdentifier: Assembly-CSharp::LevelMapPatternData
   _connectedNodeGap: 180.5
-  _directNodeGap: 190.5
   _horizontalAmplitude: 412.5
   _roadHorizontalOffset: 217
   _roadVerticalOffsetFromLowerNode: 178.5
-  _originYOffset: 178.5
+  _originYOffset: 80
