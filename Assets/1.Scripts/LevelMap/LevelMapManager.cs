@@ -1,4 +1,3 @@
-using UnityEditor.EditorTools;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -63,12 +62,6 @@ public class LevelMapManager : MonoBehaviour
     private LevelMapLayout _layout;
     private LevelMapVirtualizer _virtualizer;
 
-    /// <summary>레벨 인덱스(0-base)에 해당하는 클리어 미션을 반환.</summary>
-    public LevelMissionData GetMission(int levelIndex)
-    {
-        return _missionTable?.GetMission(levelIndex);
-    }
-
     private void OnValidate()
     {
         if (_missionTable != null && _totalLevelCount > 0 && _missionTable.LevelCount != _totalLevelCount)
@@ -117,7 +110,11 @@ public class LevelMapManager : MonoBehaviour
 
     public void OpenMissionPopup(int levelIndex)
     {
-        _missionPopup.Open();
+        LevelMissionData mission = _missionTable.GetMission<LevelMissionData>(levelIndex);
+        if (mission == null)
+            return;
+
+        _missionPopup.Open(levelIndex, mission);
         SoundManager.Instance.PlayUISFX();
     }
 }

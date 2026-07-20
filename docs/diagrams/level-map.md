@@ -52,9 +52,11 @@ classDiagram
         -RectTransform _content
         -RectTransform _nodeContainer
         -RectTransform _roadContainer
+        -MissionPopupUI _missionPopup
         -LevelNodeView _nodePrefab
         -LevelRoadView _roadPrefab
         -LevelMapPatternData _patternData
+        -LevelMissionTableData _missionTable
         -int _totalLevelCount
         -LevelMapLayout _layout
         -LevelMapVirtualizer _virtualizer
@@ -62,12 +64,15 @@ classDiagram
         +OnEnable()
         +OnDisable()
         -OnScrollChanged(Vector2)
+        +OpenMissionPopup(levelIndex)
     }
 
     class LevelNodeView {
         -TMP_Text _levelText
+        -Button _nodeButton
         +RectTransform RectTransform
         +int NodeIndex
+        +event Action~int~ OnClicked
         +Bind(nodeIndex, anchoredPosition)
     }
 
@@ -80,26 +85,32 @@ classDiagram
     LevelMapManager --> LevelMapLayout : creates
     LevelMapManager --> LevelMapVirtualizer : creates
     LevelMapManager --> LevelMapPatternData : reads
+    LevelMapManager --> LevelMissionTableData : reads
+    LevelMapManager --> MissionPopupUI : opens
     LevelMapVirtualizer --> LevelMapLayout : uses
     LevelMapVirtualizer --> LevelNodeView : pools
     LevelMapVirtualizer --> LevelRoadView : pools
+    LevelMapVirtualizer ..> LevelNodeView : subscribes OnClicked
     LevelMapLayout --> LevelMapPatternData : reads
 ```
+
+노드 클릭 시 `LevelNodeView.OnClicked(nodeIndex)` 이벤트가 발생하고, `LevelMapVirtualizer`가 노드 생성 시점(풀링되므로 1회만)에 이를 `LevelMapManager.OpenMissionPopup`으로 구독시켜 전달한다. `LevelNodeView`는 `LevelMapManager`를 직접 참조하지 않는다(Action 기반 설계).
 
 ## 레벨 클리어 미션 데이터
 
 레벨마다 클리어 조건이 다르므로, 미션 타입별로 데이터 형태가 다른 부분만 하위 클래스로 확장한다(OCP).
-ICE/GRASS 제거와 보석 수집은 "대상 종류 + 목표 개수"로 데이터 형태가 동일해 `BoardBlockGoalMissionData`
-하나로 표현하고, 점수+시간 조합인 목표 점수 미션만 별도 클래스로 분리했다.
+ICE/GRASS 제거는 "대상 블록 종류 + 목표 개수"로 `CollectBlockGoalMissionData` 하나로 표현하고,
+보석 수집은 보석 종류별 목표 개수가 여러 개일 수 있어 `CollectGemMissionData`로 분리했다.
+점수+시간 조합인 목표 점수 미션은 `ScoreGoalMissionData`로 별도 분리했다.
 
 ```mermaid
 classDiagram
     class LevelMissionData {
         <<abstract>>
         -string _missionDescription
-        -Sprite _missionIcon
+        -bool _isHard
         +string MissionDescription
-        +Sprite MissionIcon
+        +bool IsHard
     }
 
     class ScoreGoalMissionData {
@@ -109,26 +120,63 @@ classDiagram
         +float TimeLimitSeconds
     }
 
-    class BoardBlockGoalMissionData {
-        -BlockGoalType _goalType
+    class CollectBlockGoalMissionData {
+        -BlockType _targetBlockType
         -int _targetCount
-        +BlockGoalType GoalType
+        +BlockType TargetBlockType
         +int TargetCount
     }
 
-    class BlockGoalType {
+    class CollectGemMissionData {
+        -List~GemTargetInfo~ _gemTargets
+        +IReadOnlyList~GemTargetInfo~ GemTargets
+    }
+
+    class BlockType {
         <<enumeration>>
-        ClearIce
-        ClearGrass
-        CollectGem
+        Ice
+        Grass
+    }
+
+    class GemType {
+        <<enumeration>>
+        Pentagon
+        Square
+        Star
+    }
+
+    class GemTargetInfo {
+        +GemType gemType
+        +int count
+    }
+
+    class LevelMissionTableData {
+        -LevelMissionData[] _missions
+        +int LevelCount
+        +GetMission~T~(levelIndex) T
+    }
+
+    class MissionPopupUI {
+        -TextMeshProUGUI _levelText
+        -GameObject _skull
+        -GameObject _scoreGoalMission
+        -GameObject _iceGrassMission
+        -GameObject _collectGemMission
+        +Open(levelIndex, missionData)
     }
 
     LevelMissionData <|-- ScoreGoalMissionData
-    LevelMissionData <|-- BoardBlockGoalMissionData
-    BoardBlockGoalMissionData --> BlockGoalType : uses
+    LevelMissionData <|-- CollectBlockGoalMissionData
+    LevelMissionData <|-- CollectGemMissionData
+    CollectBlockGoalMissionData --> BlockType : uses
+    CollectGemMissionData --> GemTargetInfo : uses
+    GemTargetInfo --> GemType : uses
+    LevelMissionTableData --> LevelMissionData : holds
+    MissionPopupUI --> LevelMissionData : reads (switch by type)
 ```
 
-> 현재는 레벨별 클리어 조건을 정의하는 데이터 단계이며, 보드에 ICE/GRASS/GEM 블록 타입과
+> `MissionPopupUI.Open`은 미션 데이터 타입에 따라 점수 목표/블록 수집/보석 수집 UI 그룹 중
+> 하나만 활성화하고 내용을 채운다. 다만 실제 인게임 보드에서 ICE/GRASS/보석 블록 타입과
 > 클리어 판정 로직(예: `MissionEvaluator`)은 아직 구현되어 있지 않다. 해당 블록 시스템을
 > 추가할 때 이 미션 데이터를 참조해 클리어 여부를 판정하도록 연동해야 한다.
 

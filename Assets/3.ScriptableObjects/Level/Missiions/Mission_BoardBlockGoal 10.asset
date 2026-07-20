@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: Mission_BoardBlockGoal 10
   m_EditorClassIdentifier: Assembly-CSharp::BoardBlockGoalMissionData
   _missionDescription: 
-  _goalType: 0
+  _isHard: 0
+  _targetBlockType: 1
   _targetCount: 0

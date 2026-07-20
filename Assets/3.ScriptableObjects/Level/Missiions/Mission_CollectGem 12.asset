@@ -10,10 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 372b8a60f8c2f62459f9d43d186d76e1, type: 3}
-  m_Name: Mission_CollectGem
+  m_Name: Mission_CollectGem 12
   m_EditorClassIdentifier: Assembly-CSharp::CollectGemMissionData
   _missionDescription: 
-  _isHard: 0
+  _isHard: 1
   _gemTargets:
   - gemType: 0
-    count: 0
+    count: 2
+  - gemType: 2
+    count: 5
+  - gemType: 1
+    count: 1

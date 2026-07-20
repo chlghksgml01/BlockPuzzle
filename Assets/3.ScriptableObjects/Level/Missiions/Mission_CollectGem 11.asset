@@ -9,9 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5902b797504e02c418f4831a013d11f1, type: 3}
-  m_Name: Mission_BoardBlockGoal 11
-  m_EditorClassIdentifier: Assembly-CSharp::BoardBlockGoalMissionData
+  m_Script: {fileID: 11500000, guid: 372b8a60f8c2f62459f9d43d186d76e1, type: 3}
+  m_Name: Mission_CollectGem 11
+  m_EditorClassIdentifier: Assembly-CSharp::CollectGemMissionData
   _missionDescription: 
-  _goalType: 0
-  _targetCount: 0
+  _isHard: 1
+  _gemTargets:
+  - gemType: 0
+    count: 2
+  - gemType: 2
+    count: 5

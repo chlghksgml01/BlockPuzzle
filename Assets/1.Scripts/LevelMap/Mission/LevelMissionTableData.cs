@@ -13,11 +13,11 @@ public class LevelMissionTableData : ScriptableObject
     public int LevelCount => _missions != null ? _missions.Length : 0;
 
     /// <summary>레벨 인덱스(0-base)에 해당하는 미션을 반환. 범위를 벗어나면 null.</summary>
-    public LevelMissionData GetMission(int levelIndex)
+    public T GetMission<T>(int levelIndex) where T : LevelMissionData
     {
         if (_missions == null || levelIndex < 0 || levelIndex >= _missions.Length)
             return null;
 
-        return _missions[levelIndex];
+        return _missions[levelIndex] as T;
     }
 }
