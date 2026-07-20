@@ -35,6 +35,9 @@ public class LevelMapManager : MonoBehaviour
     [Tooltip("노드/도로 간격을 정의하는 패턴 데이터 에셋")]
     [SerializeField] private LevelMapPatternData _patternData;
 
+    [Tooltip("레벨별 클리어 미션 테이블. 배열 길이는 총 레벨 수와 일치해야 함")]
+    [SerializeField] private LevelMissionTableData _missionTable;
+
     [Header("Virtualization Settings")]
     [Tooltip("전체 레벨 수. 0 이하로 두면 스크롤이 끝에 가까워질 때마다 Content가 절차적으로 늘어남")]
     [SerializeField] private int _totalLevelCount = 0;
@@ -50,6 +53,22 @@ public class LevelMapManager : MonoBehaviour
 
     private LevelMapLayout _layout;
     private LevelMapVirtualizer _virtualizer;
+
+    /// <summary>레벨 인덱스(0-base)에 해당하는 클리어 미션을 반환.</summary>
+    public LevelMissionData GetMission(int levelIndex)
+    {
+        return _missionTable?.GetMission(levelIndex);
+    }
+
+    private void OnValidate()
+    {
+        if (_missionTable != null && _totalLevelCount > 0 && _missionTable.LevelCount != _totalLevelCount)
+        {
+            Debug.LogWarning(
+                $"[LevelMapManager] MissionTable 길이({_missionTable.LevelCount})가 총 레벨 수({_totalLevelCount})와 다릅니다.",
+                this);
+        }
+    }
 
     private void Awake()
     {

@@ -65,6 +65,7 @@ classDiagram
     }
 
     class LevelNodeView {
+        -TMP_Text _levelText
         +RectTransform RectTransform
         +int NodeIndex
         +Bind(nodeIndex, anchoredPosition)
@@ -84,6 +85,52 @@ classDiagram
     LevelMapVirtualizer --> LevelRoadView : pools
     LevelMapLayout --> LevelMapPatternData : reads
 ```
+
+## 레벨 클리어 미션 데이터
+
+레벨마다 클리어 조건이 다르므로, 미션 타입별로 데이터 형태가 다른 부분만 하위 클래스로 확장한다(OCP).
+ICE/GRASS 제거와 보석 수집은 "대상 종류 + 목표 개수"로 데이터 형태가 동일해 `BoardBlockGoalMissionData`
+하나로 표현하고, 점수+시간 조합인 목표 점수 미션만 별도 클래스로 분리했다.
+
+```mermaid
+classDiagram
+    class LevelMissionData {
+        <<abstract>>
+        -string _missionDescription
+        -Sprite _missionIcon
+        +string MissionDescription
+        +Sprite MissionIcon
+    }
+
+    class ScoreGoalMissionData {
+        -int _targetScore
+        -float _timeLimitSeconds
+        +int TargetScore
+        +float TimeLimitSeconds
+    }
+
+    class BoardBlockGoalMissionData {
+        -BlockGoalType _goalType
+        -int _targetCount
+        +BlockGoalType GoalType
+        +int TargetCount
+    }
+
+    class BlockGoalType {
+        <<enumeration>>
+        ClearIce
+        ClearGrass
+        CollectGem
+    }
+
+    LevelMissionData <|-- ScoreGoalMissionData
+    LevelMissionData <|-- BoardBlockGoalMissionData
+    BoardBlockGoalMissionData --> BlockGoalType : uses
+```
+
+> 현재는 레벨별 클리어 조건을 정의하는 데이터 단계이며, 보드에 ICE/GRASS/GEM 블록 타입과
+> 클리어 판정 로직(예: `MissionEvaluator`)은 아직 구현되어 있지 않다. 해당 블록 시스템을
+> 추가할 때 이 미션 데이터를 참조해 클리어 여부를 판정하도록 연동해야 한다.
 
 ## 배치 규칙 (기존 씬 실측값 기반)
 
