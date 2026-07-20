@@ -35,7 +35,8 @@ public sealed class LevelMapVirtualizer
         float viewportPadding,
         float contentGrowthChunk,
         float topPadding,
-        int totalLevelCount)
+        int totalLevelCount,
+        System.Action<int> onNodeClicked)
     {
         _content = content;
         _viewport = viewport;
@@ -46,7 +47,12 @@ public sealed class LevelMapVirtualizer
         _totalLevelCount = totalLevelCount;
 
         _nodePool = new ObjectPool<LevelNodeView>(
-            createFunc: () => Object.Instantiate(nodePrefab, nodeContainer),
+            createFunc: () =>
+            {
+                LevelNodeView view = Object.Instantiate(nodePrefab, nodeContainer);
+                view.OnClicked += onNodeClicked;
+                return view;
+            },
             actionOnGet: view => view.gameObject.SetActive(true),
             actionOnRelease: view => view.gameObject.SetActive(false),
             actionOnDestroy: view => Object.Destroy(view.gameObject),

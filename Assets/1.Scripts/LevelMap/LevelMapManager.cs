@@ -1,3 +1,4 @@
+using UnityEditor.EditorTools;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,12 +18,18 @@ public class LevelMapManager : MonoBehaviour
     [Tooltip("노드/도로가 배치되는 Content. Pivot(0.5, 0) / AnchorMin,Max(0~1, 0)으로 하단 고정되어 있어야 함")]
     [SerializeField] private RectTransform _content;
 
+
     [Header("Containers")]
     [Tooltip("생성된 LevelNode들이 자식으로 들어갈 Content 하위 트랜스폼")]
     [SerializeField] private RectTransform _nodeContainer;
 
     [Tooltip("생성된 Road들이 자식으로 들어갈 Content 하위 트랜스폼")]
     [SerializeField] private RectTransform _roadContainer;
+
+
+    [Header("Mission Popup")]
+    [SerializeField] private MissionPopupUI _missionPopup;
+
 
     [Header("Prefabs")]
     [Tooltip("레벨 노드 프리팹 (LevelNodeView 포함)")]
@@ -31,12 +38,14 @@ public class LevelMapManager : MonoBehaviour
     [Tooltip("노드 사이를 잇는 Road 프리팹 (LevelRoadView 포함)")]
     [SerializeField] private LevelRoadView _roadPrefab;
 
+
     [Header("Layout Data")]
     [Tooltip("노드/도로 간격을 정의하는 패턴 데이터 에셋")]
     [SerializeField] private LevelMapPatternData _patternData;
 
     [Tooltip("레벨별 클리어 미션 테이블. 배열 길이는 총 레벨 수와 일치해야 함")]
     [SerializeField] private LevelMissionTableData _missionTable;
+
 
     [Header("Virtualization Settings")]
     [Tooltip("전체 레벨 수. 0 이하로 두면 스크롤이 끝에 가까워질 때마다 Content가 절차적으로 늘어남")]
@@ -84,7 +93,8 @@ public class LevelMapManager : MonoBehaviour
             _viewportPadding,
             _contentGrowthChunk,
             _topPadding,
-            _totalLevelCount);
+            _totalLevelCount,
+            OpenMissionPopup);
 
         _scrollRect.verticalNormalizedPosition = 0f;
     }
@@ -103,5 +113,11 @@ public class LevelMapManager : MonoBehaviour
     private void OnScrollChanged(Vector2 _)
     {
         _virtualizer.Refresh();
+    }
+
+    public void OpenMissionPopup(int levelIndex)
+    {
+        _missionPopup.Open();
+        SoundManager.Instance.PlayUISFX();
     }
 }

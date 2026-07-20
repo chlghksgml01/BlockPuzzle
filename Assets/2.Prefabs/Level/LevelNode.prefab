@@ -168,6 +168,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LevelNodeView
   _levelText: {fileID: 6102975834165533848}
   _hardIcon: {fileID: 2065061815836546569}
+  _nodeButton: {fileID: 6811834252440084320}
 --- !u!114 &6811834252440084320
 MonoBehaviour:
   m_ObjectHideFlags: 0
