@@ -138,30 +138,30 @@ public sealed class LevelMapVirtualizer
         if (_clearRoadPool == null)
             return;
 
-        int lastClearedLevelIndex = _missionTable != null
-            ? _missionTable.GetLastClearedLevelIndex()
+        int lastCompletedLevelIndex = _missionTable != null
+            ? _missionTable.GetLastCompletedLevelIndex()
             : -1;
 
-        if (lastClearedLevelIndex < 0)
+        if (lastCompletedLevelIndex < 0)
         {
             SyncActive(_activeClearRoads, _clearRoadPool, 0, -1, (index, view) => BindClearRoad(index, view));
             return;
         }
 
-        int maxClearPairIndex = lastClearedLevelIndex / 2;
+        int maxClearPairIndex = lastCompletedLevelIndex / 2;
         int minClearPairIndex = Mathf.Max(minPairIndex, 0);
         int maxClearPairIndexInView = Mathf.Min(maxPairIndex, maxClearPairIndex);
 
         SyncActive(_activeClearRoads, _clearRoadPool, minClearPairIndex, maxClearPairIndexInView,
-            (index, view) => BindClearRoad(index, view, lastClearedLevelIndex));
+            (index, view) => BindClearRoad(index, view, lastCompletedLevelIndex));
     }
 
-    private void BindClearRoad(int roadPairIndex, LevelRoadView view, int lastClearedLevelIndex = -1)
+    private void BindClearRoad(int roadPairIndex, LevelRoadView view, int lastCompletedLevelIndex = -1)
     {
         Vector2 position = _layout.GetRoadPosition(roadPairIndex, out bool mirrored);
-        bool forceHalfFill = lastClearedLevelIndex >= 0
-            && roadPairIndex == lastClearedLevelIndex / 2
-            && lastClearedLevelIndex % 2 == 0;
+        bool forceHalfFill = lastCompletedLevelIndex >= 0
+            && roadPairIndex == lastCompletedLevelIndex / 2
+            && lastCompletedLevelIndex % 2 == 0;
         view.Bind(roadPairIndex, position, mirrored, forceHalfFill);
     }
 
