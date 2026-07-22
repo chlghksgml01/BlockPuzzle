@@ -13,8 +13,8 @@ public class LevelUIButtonController : MonoBehaviour
     [Tooltip("레벨별 클리어 상태를 조회하는 미션 테이블")]
     [SerializeField] private LevelMissionTableData _missionTable;
 
-    [Tooltip("노드 클릭으로 선택된 레벨 번호 (1-base). Start 시 사용")]
     private int _selectedLevel = 1;
+    private int _nextLevel = 1;
 
     private void OnEnable()
     {
@@ -38,14 +38,15 @@ public class LevelUIButtonController : MonoBehaviour
         if (_currentLevelText == null)
             return;
 
-        int currentLevelNumber = _missionTable != null
-            ? _missionTable.GetLastConsecutiveClearLevel()
+        int nextLevel = _missionTable != null
+            ? _missionTable.GetLastConsecutiveClearLevel() + 1
             : 0;
 
-        int displayLevel = currentLevelNumber > 0 ? currentLevelNumber : 1;
+        int displayLevel = nextLevel > 0 ? nextLevel : 1;
 
-        _currentLevelText.text = FormatLevelText(displayLevel);
+        _currentLevelText.text = $"Level {displayLevel}";
         _selectedLevel = displayLevel;
+        _nextLevel = displayLevel;
     }
 
     /// <summary>레벨 노드 선택 시 호출. levelIndex는 0-base. LevelButton 텍스트는 변경하지 않는다.</summary>
@@ -54,21 +55,13 @@ public class LevelUIButtonController : MonoBehaviour
         _selectedLevel = levelIndex + 1;
     }
 
-    private static string FormatLevelText(int level)
-    {
-        return $"Level {level}";
-    }
-
     private void MissionPopup()
     {
         if (_missionTable == null || _missionPopupUI == null)
             return;
 
-        int currentLevelNumber = _missionTable.GetLastConsecutiveClearLevel();
-        if (currentLevelNumber <= 0)
-            return;
-
-        int missionIndex = currentLevelNumber - 1;
+        _selectedLevel = _nextLevel;
+        int missionIndex = _nextLevel - 1;
 
         LevelMissionData mission = _missionTable.GetMission<LevelMissionData>(missionIndex);
         if (mission == null)
