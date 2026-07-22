@@ -94,10 +94,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6015a3deb696d44daab6c5b05a87110, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BoardManager
-  _width: 9
-  _height: 9
+  _boardSize: 9
+  _gridLayoutPresets:
+  - _boardSize: 8
+    _boardImg: {fileID: 21300000, guid: bb6cbe020085df7489f7dc98ab43bd9b, type: 3}
+    _paddingLeft: 12
+    _paddingRight: 0
+    _paddingTop: 9
+    _paddingBottom: 2
+    _cellSize: {x: 119, y: 119}
+    _spacing: {x: 3.3, y: 1.5}
+  - _boardSize: 9
+    _boardImg: {fileID: 21300000, guid: a48def326194d0e43bdac66b360a5822, type: 3}
+    _paddingLeft: 19
+    _paddingRight: 0
+    _paddingTop: 23
+    _paddingBottom: 2
+    _cellSize: {x: 106, y: 106}
+    _spacing: {x: 3.3, y: 1.5}
+  - _boardSize: 10
+    _boardImg: {fileID: 21300000, guid: e1a0eefbcee004a4398be67c06775ade, type: 3}
+    _paddingLeft: 7
+    _paddingRight: 0
+    _paddingTop: 5
+    _paddingBottom: 2
+    _cellSize: {x: 97, y: 97}
+    _spacing: {x: 1.8, y: 0.3}
   _boardRoot: {fileID: 0}
   _hintBoardRoot: {fileID: 0}
+  _boardBackgroundImage: {fileID: 0}
   _cellPrefab: {fileID: 7066565143273184599, guid: 264adafa540dba74aa345563c1dcc8ca, type: 3}
   _hintCellPrefab: {fileID: 7066565143273184599, guid: 32318d4053e1784429ad964970ac84f7, type: 3}
   _previewColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 1}

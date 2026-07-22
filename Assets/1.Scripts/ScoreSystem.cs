@@ -16,7 +16,6 @@ public class ScoreSystem : ScriptableObject
     private int _boardWidth;
 
     public event Action<int, int> OnScoreChanged;
-    public event Action OnResetScore;
     public event Action<bool, int, int> OnBonusScore;
     public event Action<int> OnHighScoreUpdated;
 

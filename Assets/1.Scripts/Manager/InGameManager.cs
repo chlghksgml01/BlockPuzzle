@@ -324,6 +324,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
             return;
 
         InGameSaveData data = new InGameSaveData();
+        data.boardSize = board.BoardSize;
 
         _scoreSystem.ExportState(out data.score, out data.currentPlaceCount, out data.currentComboCount);
 
@@ -364,6 +365,13 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         BoardManager board = _boardManger;
         if (board == null || _scoreSystem == null)
             return false;
+
+        if (data.boardSize > 0 && data.boardSize != board.BoardSize)
+        {
+            Debug.LogWarning($"저장된 보드 크기({data.boardSize})와 현재 설정({board.BoardSize})이 달라 저장 데이터를 무시합니다.");
+            InGameSaveStorage.Clear();
+            return false;
+        }
 
         ClearAllSlots();
         board.RestoreFilledCells(data.filledCells, ResolveSprite);

@@ -5,6 +5,7 @@ using UnityEngine;
 [Serializable]
 public class InGameSaveData
 {
+    public int boardSize;
     public int score;
     public int currentPlaceCount;
     public int currentComboCount;
