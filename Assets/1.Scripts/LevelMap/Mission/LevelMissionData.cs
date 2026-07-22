@@ -7,10 +7,10 @@ using UnityEngine;
 public abstract class LevelMissionData : ScriptableObject
 {
     [Header("Mission Info")]
-    [Tooltip("미션 UI에 표시할 설명 문구 (예: '점수 5000 달성', 'ICE 블록 모두 제거')")]
-    [SerializeField] private string _missionDescription;
     [SerializeField] private bool _isHard = false;
+    [SerializeField] private bool _isClear = false;
+    [SerializeField] private BoardLayoutData _boardLayoutData;
 
-    public string MissionDescription => _missionDescription;
     public bool IsHard => _isHard;
+    public bool IsClear => _isClear;
 }

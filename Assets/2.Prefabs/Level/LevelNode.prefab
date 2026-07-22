@@ -169,6 +169,9 @@ MonoBehaviour:
   _levelText: {fileID: 6102975834165533848}
   _hardIcon: {fileID: 2065061815836546569}
   _nodeButton: {fileID: 6811834252440084320}
+  _nodeImg: {fileID: 7513998718474293070}
+  _defaultSprite: {fileID: 21300000, guid: a9e6f00d4e20f504eadf6aeb07767038, type: 3}
+  _clearSprite: {fileID: 21300000, guid: 7513c800d5bb95246a61540de76031d1, type: 3}
 --- !u!114 &6811834252440084320
 MonoBehaviour:
   m_ObjectHideFlags: 0

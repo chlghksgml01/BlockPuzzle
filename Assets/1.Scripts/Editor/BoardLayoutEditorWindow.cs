@@ -392,6 +392,9 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         EditorGUIUtility.PingObject(_layoutAsset);
+
+        _layoutAsset = null;
+        Repaint();
     }
 
     private List<FilledCellData> ExportFilledCells()

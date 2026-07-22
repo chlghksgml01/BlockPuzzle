@@ -25,6 +25,9 @@ public class LevelMapManager : MonoBehaviour
     [Tooltip("생성된 Road들이 자식으로 들어갈 Content 하위 트랜스폼")]
     [SerializeField] private RectTransform _roadContainer;
 
+    [Tooltip("클리어 구간 Road들이 자식으로 들어갈 Content 하위 트랜스폼")]
+    [SerializeField] private RectTransform _clearRoadContainer;
+
 
     [Header("Mission Popup")]
     [SerializeField] private MissionPopupUI _missionPopup;
@@ -36,6 +39,9 @@ public class LevelMapManager : MonoBehaviour
 
     [Tooltip("노드 사이를 잇는 Road 프리팹 (LevelRoadView 포함)")]
     [SerializeField] private LevelRoadView _roadPrefab;
+
+    [Tooltip("클리어한 구간에 표시할 Road 프리팹 (LevelRoadView 포함)")]
+    [SerializeField] private LevelRoadView _clearRoadPrefab;
 
 
     [Header("Layout Data")]
@@ -80,13 +86,16 @@ public class LevelMapManager : MonoBehaviour
             _viewport,
             _nodePrefab,
             _roadPrefab,
+            _clearRoadPrefab,
             _nodeContainer,
             _roadContainer,
+            _clearRoadContainer,
             _layout,
             _viewportPadding,
             _contentGrowthChunk,
             _topPadding,
             _totalLevelCount,
+            _missionTable,
             OpenMissionPopup);
 
         _scrollRect.verticalNormalizedPosition = 0f;

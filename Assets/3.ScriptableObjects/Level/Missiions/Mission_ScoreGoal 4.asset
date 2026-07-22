@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69529f1e428b82b4ea6357d411820627, type: 3}
   m_Name: Mission_ScoreGoal 4
   m_EditorClassIdentifier: Assembly-CSharp::ScoreGoalMissionData
-  _missionDescription: Time Attack
   _isHard: 0
+  _isClear: 1
+  _boardLayoutData: {fileID: 0}
   _targetScore: 10000
   _timeLimitSeconds: 60

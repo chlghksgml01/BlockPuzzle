@@ -1,6 +1,5 @@
 using System;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +14,10 @@ public sealed class LevelNodeView : MonoBehaviour
     [SerializeField] private TMP_Text _levelText;
     [SerializeField] private GameObject _hardIcon;
     [SerializeField] private Button _nodeButton;
+    [SerializeField] private Image _nodeImg;
+    [SerializeField] private Sprite _defaultSprite;
+    [SerializeField] private Sprite _clearSprite;
+
 
     /// <summary>노드 버튼 클릭 시 자신의 NodeIndex를 담아 알리는 이벤트. 풀링 재사용을 고려해 생성 시 1회만 구독할 것.</summary>
     public event Action<int> OnClicked;
@@ -36,7 +39,7 @@ public sealed class LevelNodeView : MonoBehaviour
         OnClicked?.Invoke(NodeIndex);
     }
 
-    public void Bind(int nodeIndex, Vector2 anchoredPosition)
+    public void Bind(int nodeIndex, Vector2 anchoredPosition, LevelMissionData missionData)
     {
         NodeIndex = nodeIndex;
         RectTransform.anchoredPosition = anchoredPosition;
@@ -44,5 +47,21 @@ public sealed class LevelNodeView : MonoBehaviour
 
         if (_levelText != null)
             _levelText.text = (nodeIndex + 1).ToString();
+
+        ApplyNodeVisual(missionData);
+    }
+
+    private void ApplyNodeVisual(LevelMissionData missionData)
+    {
+        if (_hardIcon != null)
+            _hardIcon.SetActive(missionData != null && missionData.IsHard);
+
+        if (_nodeImg == null)
+            return;
+
+        bool isClear = missionData != null && missionData.IsClear;
+        Sprite sprite = isClear ? _clearSprite : _defaultSprite;
+        if (sprite != null)
+            _nodeImg.sprite = sprite;
     }
 }

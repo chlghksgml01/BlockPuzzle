@@ -1291,6 +1291,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1032733915}
+  - {fileID: 2133626890}
   - {fileID: 39185476}
   m_Father: {fileID: 1403343592}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1333,9 +1334,11 @@ MonoBehaviour:
   _content: {fileID: 808244940}
   _nodeContainer: {fileID: 39185476}
   _roadContainer: {fileID: 1032733915}
+  _clearRoadContainer: {fileID: 2133626890}
   _missionPopup: {fileID: 194774327}
   _nodePrefab: {fileID: 4638401638516334236, guid: 3008aebcc0c930d4dabfe39e0c5df396, type: 3}
   _roadPrefab: {fileID: 1464315426212334532, guid: 46c90c9fabf0cdd428910419c62bb87f, type: 3}
+  _clearRoadPrefab: {fileID: 1464315426212334532, guid: 0b4c09377d9e06e48a6c36ea9b9bfe56, type: 3}
   _patternData: {fileID: 11400000, guid: 8f3a319af01127e498d6668b20ba099f, type: 2}
   _missionTable: {fileID: 11400000, guid: 1cb540a03a6096544a8a940baa28e69a, type: 2}
   _totalLevelCount: 12
@@ -3513,9 +3516,9 @@ RectTransform:
   - {fileID: 638173703}
   - {fileID: 373787821}
   - {fileID: 2129610565}
-  - {fileID: 1584679891}
   - {fileID: 1582739198}
   - {fileID: 194774325}
+  - {fileID: 1584679891}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -3964,6 +3967,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2129610564}
   m_CullTransparentMesh: 1
+--- !u!1 &2133626889
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2133626890}
+  m_Layer: 5
+  m_Name: ClearRoad
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2133626890
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133626889}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 808244940}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &457151737458736200
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4074,6 +4112,9 @@ MonoBehaviour:
   _levelText: {fileID: 0}
   _hardIcon: {fileID: 0}
   _nodeButton: {fileID: 0}
+  _nodeImg: {fileID: 0}
+  _defaultSprite: {fileID: 0}
+  _clearSprite: {fileID: 0}
 --- !u!1 &3618664708740291360
 GameObject:
   m_ObjectHideFlags: 0

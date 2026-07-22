@@ -16,10 +16,14 @@ public sealed class LevelMapVirtualizer
     private readonly float _topPadding;
     private readonly int _totalLevelCount;
 
+    private readonly LevelMissionTableData _missionTable;
+
     private readonly ObjectPool<LevelNodeView> _nodePool;
     private readonly ObjectPool<LevelRoadView> _roadPool;
+    private readonly ObjectPool<LevelRoadView> _clearRoadPool;
     private readonly Dictionary<int, LevelNodeView> _activeNodes = new Dictionary<int, LevelNodeView>();
     private readonly Dictionary<int, LevelRoadView> _activeRoads = new Dictionary<int, LevelRoadView>();
+    private readonly Dictionary<int, LevelRoadView> _activeClearRoads = new Dictionary<int, LevelRoadView>();
     private readonly List<int> _releaseBuffer = new List<int>();
 
     private readonly Vector3[] _cornerBuffer = new Vector3[4];
@@ -29,13 +33,16 @@ public sealed class LevelMapVirtualizer
         RectTransform viewport,
         LevelNodeView nodePrefab,
         LevelRoadView roadPrefab,
+        LevelRoadView clearRoadPrefab,
         Transform nodeContainer,
         Transform roadContainer,
+        Transform clearRoadContainer,
         LevelMapLayout layout,
         float viewportPadding,
         float contentGrowthChunk,
         float topPadding,
         int totalLevelCount,
+        LevelMissionTableData missionTable,
         System.Action<int> onNodeClicked)
     {
         _content = content;
@@ -45,6 +52,7 @@ public sealed class LevelMapVirtualizer
         _contentGrowthChunk = contentGrowthChunk;
         _topPadding = topPadding;
         _totalLevelCount = totalLevelCount;
+        _missionTable = missionTable;
 
         _nodePool = new ObjectPool<LevelNodeView>(
             createFunc: () =>
@@ -68,6 +76,18 @@ public sealed class LevelMapVirtualizer
             collectionCheck: false,
             defaultCapacity: 6,
             maxSize: 32);
+
+        if (clearRoadPrefab != null && clearRoadContainer != null)
+        {
+            _clearRoadPool = new ObjectPool<LevelRoadView>(
+                createFunc: () => Object.Instantiate(clearRoadPrefab, clearRoadContainer),
+                actionOnGet: view => view.gameObject.SetActive(true),
+                actionOnRelease: view => view.gameObject.SetActive(false),
+                actionOnDestroy: view => Object.Destroy(view.gameObject),
+                collectionCheck: false,
+                defaultCapacity: 6,
+                maxSize: 32);
+        }
 
         if (_totalLevelCount > 0)
         {
@@ -94,7 +114,13 @@ public sealed class LevelMapVirtualizer
         bool lastRoadIsHalfFilled = _totalLevelCount > 0 && _totalLevelCount % 2 == 0;
 
         SyncActive(_activeNodes, _nodePool, minNodeIndex, maxNodeIndex,
-            (index, view) => view.Bind(index, _layout.GetNodePosition(index)));
+            (index, view) =>
+            {
+                LevelMissionData mission = _missionTable != null
+                    ? _missionTable.GetMission<LevelMissionData>(index)
+                    : null;
+                view.Bind(index, _layout.GetNodePosition(index), mission);
+            });
 
         SyncActive(_activeRoads, _roadPool, minPairIndex, maxPairIndex,
             (index, view) =>
@@ -103,6 +129,40 @@ public sealed class LevelMapVirtualizer
                 bool forceHalfFill = lastRoadIsHalfFilled && index == lastRoadPairIndex;
                 view.Bind(index, position, mirrored, forceHalfFill);
             });
+
+        RefreshClearRoads(minPairIndex, maxPairIndex);
+    }
+
+    private void RefreshClearRoads(int minPairIndex, int maxPairIndex)
+    {
+        if (_clearRoadPool == null)
+            return;
+
+        int lastClearedLevelIndex = _missionTable != null
+            ? _missionTable.GetLastClearedLevelIndex()
+            : -1;
+
+        if (lastClearedLevelIndex < 0)
+        {
+            SyncActive(_activeClearRoads, _clearRoadPool, 0, -1, (index, view) => BindClearRoad(index, view));
+            return;
+        }
+
+        int maxClearPairIndex = lastClearedLevelIndex / 2;
+        int minClearPairIndex = Mathf.Max(minPairIndex, 0);
+        int maxClearPairIndexInView = Mathf.Min(maxPairIndex, maxClearPairIndex);
+
+        SyncActive(_activeClearRoads, _clearRoadPool, minClearPairIndex, maxClearPairIndexInView,
+            (index, view) => BindClearRoad(index, view, lastClearedLevelIndex));
+    }
+
+    private void BindClearRoad(int roadPairIndex, LevelRoadView view, int lastClearedLevelIndex = -1)
+    {
+        Vector2 position = _layout.GetRoadPosition(roadPairIndex, out bool mirrored);
+        bool forceHalfFill = lastClearedLevelIndex >= 0
+            && roadPairIndex == lastClearedLevelIndex / 2
+            && lastClearedLevelIndex % 2 == 0;
+        view.Bind(roadPairIndex, position, mirrored, forceHalfFill);
     }
 
     private void SyncActive<T>(Dictionary<int, T> active, ObjectPool<T> pool, int minIndex, int maxIndex, System.Action<int, T> bind)
@@ -124,12 +184,13 @@ public sealed class LevelMapVirtualizer
 
         for (int i = minIndex; i <= maxIndex; i++)
         {
-            if (active.ContainsKey(i))
-                continue;
+            if (!active.TryGetValue(i, out T view))
+            {
+                view = pool.Get();
+                active[i] = view;
+            }
 
-            T view = pool.Get();
             bind(i, view);
-            active[i] = view;
         }
     }
 

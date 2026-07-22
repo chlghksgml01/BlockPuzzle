@@ -20,4 +20,21 @@ public class LevelMissionTableData : ScriptableObject
 
         return _missions[levelIndex] as T;
     }
+
+    /// <summary>IsClear가 true인 마지막 레벨 인덱스(0-base). 없으면 -1.</summary>
+    public int GetLastClearedLevelIndex()
+    {
+        if (_missions == null)
+            return -1;
+
+        int lastClearedIndex = -1;
+        for (int i = 0; i < _missions.Length; i++)
+        {
+            LevelMissionData mission = _missions[i];
+            if (mission != null && mission.IsClear)
+                lastClearedIndex = i;
+        }
+
+        return lastClearedIndex;
+    }
 }

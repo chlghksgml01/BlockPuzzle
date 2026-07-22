@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5902b797504e02c418f4831a013d11f1, type: 3}
   m_Name: Mission_BoardBlockGoal 6
   m_EditorClassIdentifier: Assembly-CSharp::BoardBlockGoalMissionData
-  _missionDescription: 
   _isHard: 1
-  _goalType: 0
+  _isClear: 0
+  _boardLayoutData: {fileID: 11400000, guid: 43267daf8692e44438133ccb182447f1, type: 2}
+  _targetBlockType: 0
   _targetCount: 0
