@@ -32,6 +32,9 @@ public class LevelMapManager : MonoBehaviour
     [Header("Mission Popup")]
     [SerializeField] private MissionPopupUI _missionPopup;
 
+    [Tooltip("노드 선택 시 현재 레벨을 갱신할 UI 컨트롤러")]
+    [SerializeField] private LevelUIButtonController _levelUIButtonController;
+
 
     [Header("Prefabs")]
     [Tooltip("레벨 노드 프리팹 (LevelNodeView 포함)")]
@@ -122,6 +125,9 @@ public class LevelMapManager : MonoBehaviour
         LevelMissionData mission = _missionTable.GetMission<LevelMissionData>(levelIndex);
         if (mission == null)
             return;
+
+        if (_levelUIButtonController != null)
+            _levelUIButtonController.SelectLevel(levelIndex);
 
         _missionPopup.Open(levelIndex, mission);
         SoundManager.Instance.PlayUISFX();

@@ -62,6 +62,24 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
         _scoreSystem = context.ScoreSystem;
     }
 
+    /// <summary>BoardLayoutData의 크기로 보드 생성 전 _boardSize를 맞춘다. BoardManager.Awake 이전에 호출해야 한다.</summary>
+    public void PrepareBoardSizeFromLayout(BoardLayoutData layoutData)
+    {
+        if (layoutData == null)
+            return;
+
+        _boardSize = Mathf.Clamp(layoutData.boardSize, MinBoardSize, MaxBoardSize);
+    }
+
+    /// <summary>BoardLayoutData에 정의된 초기 채움 상태를 보드에 적용한다.</summary>
+    public void ApplyBoardLayout(BoardLayoutData layoutData, Func<string, Sprite> spriteResolver)
+    {
+        if (layoutData == null)
+            return;
+
+        RestoreFilledCells(layoutData.filledCells, spriteResolver);
+    }
+
     private void Awake()
     {
         GenerateBoard();

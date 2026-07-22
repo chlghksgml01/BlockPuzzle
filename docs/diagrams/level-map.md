@@ -200,3 +200,25 @@ classDiagram
    그 범위(+여유값) 밖의 노드/도로는 `ObjectPool`로 반환, 범위 안에 없는 것은 새로 스폰한다.
 4. 전체 레벨 수가 정해지지 않은 경우(`_totalLevelCount <= 0`), 스크롤이 상단 여유값에 가까워질 때마다
    Content의 `sizeDelta.y`를 `_contentGrowthChunk`만큼 늘려 계속 위로 스크롤할 수 있게 한다.
+
+## 레벨 인게임 진입 / 보드 초기화
+
+```mermaid
+sequenceDiagram
+    participant UI as LevelUIButtonController
+    participant Ctx as LevelSessionContext
+    participant Init as InGameInitializer
+    participant IGM as InGameManager
+    participant BM as BoardManager
+
+    UI->>Ctx: BeginLevel(levelIndex, missionTable)
+    UI->>UI: LoadScene(LevelInGame)
+    Init->>IGM: Initialize(context)
+    IGM->>BM: PrepareBoardSizeFromLayout(layout)
+    BM->>BM: GenerateBoard()
+    IGM->>BM: ApplyBoardLayout(layout, spriteResolver)
+    IGM->>IGM: SpawnBlocksInSlots()
+```
+
+- `LevelMissionData.BoardLayoutData`가 보드 크기와 초기 채움 칸을 정의한다.
+- 레벨 모드에서는 Classic 저장(`InGameSaveStorage`)을 사용하지 않는다.

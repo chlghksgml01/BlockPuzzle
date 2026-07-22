@@ -12,5 +12,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3f9dac9d381cc44ebaa1aa936da85eb, type: 3}
   m_Name: Level1
   m_EditorClassIdentifier: Assembly-CSharp::BoardLayoutData
-  boardSize: 9
-  filledCells: []
+  boardSize: 8
+  filledCells:
+  - x: 2
+    y: 3
+    spriteName: stone03
+  - x: 2
+    y: 4
+    spriteName: stone03
+  - x: 2
+    y: 5
+    spriteName: stone03
+  - x: 5
+    y: 3
+    spriteName: stone03
+  - x: 5
+    y: 4
+    spriteName: stone03
+  - x: 5
+    y: 5
+    spriteName: stone03

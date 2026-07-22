@@ -13,18 +13,12 @@ public class LevelUIButtonController : MonoBehaviour
     [Tooltip("레벨별 클리어 상태를 조회하는 미션 테이블")]
     [SerializeField] private LevelMissionTableData _missionTable;
 
-    [Tooltip("현재 표시 중인 최고 클리어 레벨 번호 (1-base)")]
-    private int _currentLevel = 1;
+    [Tooltip("노드 클릭으로 선택된 레벨 번호 (1-base). Start 시 사용")]
+    private int _selectedLevel = 1;
 
     private void OnEnable()
     {
-        TMPro_EventManager.TEXT_CHANGED_EVENT.Add(OnCurrentLevelTextChanged);
         RefreshHighestClearedLevelDisplay();
-    }
-
-    private void OnDisable()
-    {
-        TMPro_EventManager.TEXT_CHANGED_EVENT.Remove(OnCurrentLevelTextChanged);
     }
 
     private void OnValidate()
@@ -35,18 +29,10 @@ public class LevelUIButtonController : MonoBehaviour
     private void Start()
     {
         _levelButton.onClick.AddListener(MissionPopup);
-        //_startButton.onClick.AddListener(() => SceneLoadManager.LoadScene(SceneName.Classic));
+        _startButton.onClick.AddListener(LoadScene);
     }
 
-    private void OnCurrentLevelTextChanged(Object changedObject)
-    {
-        if (changedObject != _currentLevelText)
-            return;
-
-        SyncCurrentLevelFromText();
-    }
-
-    /// <summary>클리어한 가장 높은 레벨을 텍스트에 반영한다.</summary>
+    /// <summary>LevelButton에 클리어 진행 레벨을 표시한다.</summary>
     private void RefreshHighestClearedLevelDisplay()
     {
         if (_currentLevelText == null)
@@ -59,48 +45,18 @@ public class LevelUIButtonController : MonoBehaviour
         int displayLevel = currentLevelNumber > 0 ? currentLevelNumber : 1;
 
         _currentLevelText.text = FormatLevelText(displayLevel);
-        _currentLevel = displayLevel;
+        _selectedLevel = displayLevel;
+    }
+
+    /// <summary>레벨 노드 선택 시 호출. levelIndex는 0-base. LevelButton 텍스트는 변경하지 않는다.</summary>
+    public void SelectLevel(int levelIndex)
+    {
+        _selectedLevel = levelIndex + 1;
     }
 
     private static string FormatLevelText(int level)
     {
-        return $"Level  {level}";
-    }
-
-    /// <summary>_currentLevelText 내용을 파싱해 _currentLevel에 반영한다.</summary>
-    private void SyncCurrentLevelFromText()
-    {
-        if (_currentLevelText == null)
-            return;
-
-        if (TryParseLevelFromText(_currentLevelText.text, out int level))
-            _currentLevel = level;
-    }
-
-    private static bool TryParseLevelFromText(string text, out int level)
-    {
-        level = 0;
-        if (string.IsNullOrWhiteSpace(text))
-            return false;
-
-        if (int.TryParse(text.Trim(), out level))
-            return true;
-
-        int lastStart = -1;
-        int lastEnd = -1;
-        for (int i = 0; i < text.Length; i++)
-        {
-            if (!char.IsDigit(text[i]))
-                continue;
-
-            if (lastStart == -1 || i > lastEnd + 1)
-                lastStart = i;
-
-            lastEnd = i;
-        }
-
-        return lastStart >= 0
-            && int.TryParse(text.Substring(lastStart, lastEnd - lastStart + 1), out level);
+        return $"Level {level}";
     }
 
     private void MissionPopup()
@@ -120,5 +76,26 @@ public class LevelUIButtonController : MonoBehaviour
 
         _missionPopupUI.Open(missionIndex, mission);
         SoundManager.Instance.PlayUISFX();
+    }
+
+    private void LoadScene()
+    {
+        if (_missionTable == null)
+        {
+            Debug.LogWarning("[LevelUIButtonController] MissionTable이 없어 레벨 인게임을 시작할 수 없습니다.");
+            return;
+        }
+
+        int levelIndex = ResolveSelectedLevelIndex();
+        LevelSessionContext.BeginLevel(levelIndex, _missionTable);
+        SceneLoadManager.LoadScene(SceneName.LevelInGame);
+    }
+
+    /// <summary>UI에 선택된 레벨의 0-base 인덱스를 반환한다.</summary>
+    private int ResolveSelectedLevelIndex()
+    {
+        int maxIndex = Mathf.Max(0, _missionTable.LevelCount - 1);
+        int selectedLevel = Mathf.Max(1, _selectedLevel);
+        return Mathf.Clamp(selectedLevel - 1, 0, maxIndex);
     }
 }

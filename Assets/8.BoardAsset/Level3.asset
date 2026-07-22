@@ -12,32 +12,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3f9dac9d381cc44ebaa1aa936da85eb, type: 3}
   m_Name: Level3
   m_EditorClassIdentifier: Assembly-CSharp::BoardLayoutData
-  boardSize: 9
+  boardSize: 10
   filledCells:
-  - x: 3
+  - x: 7
     y: 3
-    spriteName: grss01
-  - x: 3
+    spriteName: stone03
+  - x: 7
+    y: 2
+    spriteName: stone03
+  - x: 7
     y: 4
-    spriteName: grss01
-  - x: 3
-    y: 5
-    spriteName: grss01
-  - x: 4
-    y: 5
-    spriteName: grss01
-  - x: 5
-    y: 5
-    spriteName: grss01
-  - x: 5
+    spriteName: stone03
+  - x: 2
     y: 4
-    spriteName: grss01
-  - x: 4
+    spriteName: stone03
+  - x: 2
     y: 3
-    spriteName: grss01
-  - x: 5
-    y: 3
-    spriteName: grss01
-  - x: 4
-    y: 4
-    spriteName: grss01
+    spriteName: stone03
+  - x: 2
+    y: 2
+    spriteName: stone03
+  - x: 7
+    y: 5
+    spriteName: stone03
+  - x: 2
+    y: 7
+    spriteName: stone03
+  - x: 2
+    y: 5
+    spriteName: stone03
+  - x: 2
+    y: 6
+    spriteName: stone03
+  - x: 7
+    y: 6
+    spriteName: stone03
+  - x: 7
+    y: 7
+    spriteName: stone03

@@ -46,6 +46,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     {
         _gameOverUI.gameObject.SetActive(false);
         BuildSpriteLookup();
+        PrepareLevelBoardSizeIfNeeded();
     }
 
     private void OnEnable()
@@ -76,6 +77,12 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     private void Start()
     {
         _isGameOverTriggered = false;
+
+        if (LevelSessionContext.IsActive)
+        {
+            StartLevelGame();
+            return;
+        }
 
         bool hasData = TryLoadGame(out bool isNewGame);
 
@@ -191,6 +198,8 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         SpawnBlocksInSlots();
 
         OnResetGame?.Invoke();
+        if (LevelSessionContext.IsActive)
+            ApplyLevelBoardLayout();
         _scoreSystem.ResetScore();
         SaveGame();
         ScheduleGameOverIfNeeded();
@@ -319,6 +328,9 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
     private void SaveGame()
     {
+        if (LevelSessionContext.IsActive)
+            return;
+
         BoardManager board = _boardManger;
         if (board == null || _scoreSystem == null)
             return;
@@ -410,5 +422,41 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     public void EnableInteraction(bool isEnable)
     {
         _slotsCanvasGroup.blocksRaycasts = isEnable;
+    }
+
+    private void PrepareLevelBoardSizeIfNeeded()
+    {
+        if (_boardManger == null || !LevelSessionContext.IsActive)
+            return;
+
+        BoardLayoutData layoutData = LevelSessionContext.GetSelectedMission()?.BoardLayoutData;
+        if (layoutData == null)
+            return;
+
+        _boardManger.PrepareBoardSizeFromLayout(layoutData);
+    }
+
+    private void StartLevelGame()
+    {
+        ApplyLevelBoardLayout();
+        SpawnBlocksInSlots();
+        _boardManger.PlayIntro();
+        EnableInteraction(false);
+        ScheduleGameOverIfNeeded();
+    }
+
+    private void ApplyLevelBoardLayout()
+    {
+        if (_boardManger == null)
+            return;
+
+        BoardLayoutData layoutData = LevelSessionContext.GetSelectedMission()?.BoardLayoutData;
+        if (layoutData == null)
+        {
+            Debug.LogWarning("[InGameManager] 선택된 레벨에 BoardLayoutData가 없습니다.");
+            return;
+        }
+
+        _boardManger.ApplyBoardLayout(layoutData, ResolveSprite);
     }
 }

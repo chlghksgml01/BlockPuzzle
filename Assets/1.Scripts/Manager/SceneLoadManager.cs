@@ -1,6 +1,6 @@
 using UnityEngine.SceneManagement;
 
-public enum SceneName { Loading = 0, Lobby = 1, Classic = 2, Level = 3, Level_InGame = 4 }
+public enum SceneName { Loading = 0, Lobby = 1, Classic = 2, Level = 3, LevelInGame = 4 }
 
 public static class SceneLoadManager
 {
