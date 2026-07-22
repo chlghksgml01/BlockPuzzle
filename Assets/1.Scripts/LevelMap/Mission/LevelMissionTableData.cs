@@ -21,8 +21,8 @@ public class LevelMissionTableData : ScriptableObject
         return _missions[levelIndex] as T;
     }
 
-    /// <summary>레벨 1부터 연속으로 IsClear인 마지막 레벨 인덱스(0-base). 없으면 -1.</summary>
-    public int GetLastConsecutiveClearLevelIndex()
+    /// <summary>레벨 1부터 연속으로 IsClear인 마지막 레벨 (1-base). 없으면 -1.</summary>
+    public int GetLastConsecutiveClearLevel()
     {
         if (_missions == null)
             return -1;
@@ -31,25 +31,28 @@ public class LevelMissionTableData : ScriptableObject
         {
             LevelMissionData mission = _missions[i];
             if (mission == null || !mission.IsClear)
-                return i - 1;
+                return i;
         }
 
-        return _missions.Length - 1;
+        return _missions.Length;
     }
 
     /// <summary>
-    /// 실제 클리어 완료된 마지막 레벨 인덱스(0-base).
+    /// 실제 클리어 완료된 마지막 레벨 (1-base).
     /// IsClear는 '플레이 가능'까지 포함하므로, 연속 구간 끝(현재 플레이 레벨)은 제외한다.
     /// </summary>
     public int GetLastCompletedLevelIndex()
     {
-        int lastConsecutiveClearIndex = GetLastConsecutiveClearLevelIndex();
-        if (lastConsecutiveClearIndex < 0)
+        int lastConsecutiveClearLevel = GetLastConsecutiveClearLevel();
+
+        if (lastConsecutiveClearLevel <= 0)
             return -1;
 
-        if (lastConsecutiveClearIndex >= _missions.Length - 1)
-            return lastConsecutiveClearIndex;
+        int consecutiveClearIndex = lastConsecutiveClearLevel - 1;
 
-        return lastConsecutiveClearIndex - 1;
+        if (consecutiveClearIndex >= _missions.Length - 1)
+            return consecutiveClearIndex;
+
+        return consecutiveClearIndex - 1;
     }
 }

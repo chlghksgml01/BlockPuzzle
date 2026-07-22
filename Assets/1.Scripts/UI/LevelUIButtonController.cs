@@ -52,11 +52,12 @@ public class LevelUIButtonController : MonoBehaviour
         if (_currentLevelText == null)
             return;
 
-        int highestClearedIndex = _missionTable != null
-            ? _missionTable.GetLastConsecutiveClearLevelIndex()
-            : -1;
+        int currentLevelNumber = _missionTable != null
+            ? _missionTable.GetLastConsecutiveClearLevel()
+            : 0;
 
-        int displayLevel = highestClearedIndex >= 0 ? highestClearedIndex + 1 : 1;
+        int displayLevel = currentLevelNumber > 0 ? currentLevelNumber : 1;
+
         _currentLevelText.text = FormatLevelText(displayLevel);
         _currentLevel = displayLevel;
     }
@@ -107,15 +108,17 @@ public class LevelUIButtonController : MonoBehaviour
         if (_missionTable == null || _missionPopupUI == null)
             return;
 
-        int highestClearedIndex = _missionTable.GetLastConsecutiveClearLevelIndex();
-        if (highestClearedIndex < 0)
+        int currentLevelNumber = _missionTable.GetLastConsecutiveClearLevel();
+        if (currentLevelNumber <= 0)
             return;
 
-        LevelMissionData mission = _missionTable.GetMission<LevelMissionData>(highestClearedIndex);
+        int missionIndex = currentLevelNumber - 1;
+
+        LevelMissionData mission = _missionTable.GetMission<LevelMissionData>(missionIndex);
         if (mission == null)
             return;
 
-        _missionPopupUI.Open(highestClearedIndex, mission);
+        _missionPopupUI.Open(missionIndex, mission);
         SoundManager.Instance.PlayUISFX();
     }
 }
