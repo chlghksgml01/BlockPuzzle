@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Mission_ScoreGoal 4
   m_EditorClassIdentifier: Assembly-CSharp::ScoreGoalMissionData
   _isHard: 0
-  _isClear: 0
+  _isClear: 1
   _boardLayoutData: {fileID: 0}
   _targetScore: 10000
   _timeLimitSeconds: 60

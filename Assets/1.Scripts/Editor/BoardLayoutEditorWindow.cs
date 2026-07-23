@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Text;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,7 +9,7 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
     private const float MinCellPixelSize = 24f;
     private const float MaxCellPixelSize = 72f;
     private const float BoardPadding = 12f;
-    private const string BlockSpritesPrefsKey = "BlockPuzzle.BoardLayoutEditor.BlockSprites";
+    private const string SpritePalettePrefsKey = "BlockPuzzle.BoardLayoutEditor.SpritePaletteGuid";
     private const string SelectedSpriteIndexPrefsKey = "BlockPuzzle.BoardLayoutEditor.SelectedSpriteIndex";
     private static readonly string[] CheckerboardPaths =
     {
@@ -20,7 +19,7 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
     };
 
     [SerializeField] private int _boardSize = 9;
-    [SerializeField] private Sprite[] _blockSprites = new Sprite[0];
+    [SerializeField] private BlockSpritePalette _spritePalette;
     [SerializeField] private int _selectedSpriteIndex;
     [SerializeField] private BoardLayoutData _layoutAsset;
     [SerializeField] private bool _eraseMode;
@@ -33,6 +32,8 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
     private bool _isErasing;
     private Vector2Int _lastPaintedCell = new Vector2Int(int.MinValue, int.MinValue);
 
+    private Sprite[] BlockSprites => _spritePalette != null ? _spritePalette.sprites : null;
+
     [MenuItem("BlockPuzzle/Board Layout Editor")]
     public static void Open()
     {
@@ -43,13 +44,14 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
 
     private void OnEnable()
     {
-        LoadBlockSpriteSettings();
+        LoadEditorSettings();
     }
 
     private void OnDisable()
     {
-        SaveBlockSpriteSettings();
+        SaveEditorSettings();
     }
+
     private void OnGUI()
     {
         DrawToolbar();
@@ -93,31 +95,51 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
     {
         EditorGUILayout.LabelField("Block Sprites", EditorStyles.boldLabel);
 
-        SerializedObject serializedWindow = new SerializedObject(this);
-        SerializedProperty spritesProperty = serializedWindow.FindProperty("_blockSprites");
+        EditorGUI.BeginChangeCheck();
+        _spritePalette = (BlockSpritePalette)EditorGUILayout.ObjectField(
+            "Sprite Palette",
+            _spritePalette,
+            typeof(BlockSpritePalette),
+            false);
+        if (EditorGUI.EndChangeCheck())
+            SaveEditorSettings();
+
+        if (_spritePalette == null)
+        {
+            EditorGUILayout.HelpBox(
+                "Block Sprite Palette 에셋을 지정하세요.\nCreate > BlockPuzzle > Block Sprite Palette",
+                MessageType.Info);
+            return;
+        }
+
+        SerializedObject paletteSerializedObject = new SerializedObject(_spritePalette);
+        paletteSerializedObject.Update();
+        SerializedProperty spritesProperty = paletteSerializedObject.FindProperty("sprites");
         EditorGUI.BeginChangeCheck();
         EditorGUILayout.PropertyField(spritesProperty, true);
         if (EditorGUI.EndChangeCheck())
         {
-            serializedWindow.ApplyModifiedProperties();
-            SaveBlockSpriteSettings();
+            paletteSerializedObject.ApplyModifiedProperties();
+            EditorUtility.SetDirty(_spritePalette);
         }
         else
         {
-            serializedWindow.ApplyModifiedProperties();
+            paletteSerializedObject.ApplyModifiedProperties();
         }
-        if (_blockSprites == null || _blockSprites.Length == 0)
+
+        Sprite[] blockSprites = BlockSprites;
+        if (blockSprites == null || blockSprites.Length == 0)
         {
-            EditorGUILayout.HelpBox("블록 스프라이트를 추가하세요.", MessageType.Info);
+            EditorGUILayout.HelpBox("팔레트에 블록 스프라이트를 추가하세요. (인스펙터에서도 편집 가능)", MessageType.Info);
             return;
         }
 
-        _selectedSpriteIndex = Mathf.Clamp(_selectedSpriteIndex, 0, _blockSprites.Length - 1);
+        _selectedSpriteIndex = Mathf.Clamp(_selectedSpriteIndex, 0, blockSprites.Length - 1);
 
         EditorGUILayout.BeginHorizontal();
-        for (int i = 0; i < _blockSprites.Length; i++)
+        for (int i = 0; i < blockSprites.Length; i++)
         {
-            Sprite sprite = _blockSprites[i];
+            Sprite sprite = blockSprites[i];
             Rect buttonRect = GUILayoutUtility.GetRect(44f, 44f, GUILayout.Width(44f), GUILayout.Height(44f));
 
             if (_selectedSpriteIndex == i)
@@ -126,14 +148,18 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
             if (GUI.Button(buttonRect, GUIContent.none, GUIStyle.none))
             {
                 _selectedSpriteIndex = i;
-                SaveBlockSpriteSettings();
+                SaveEditorSettings();
             }
+
             Rect spriteRect = InsetRect(buttonRect, 4f);
             DrawSprite(spriteRect, sprite);
 
             if (sprite != null)
             {
-                GUI.Label(new Rect(buttonRect.x, buttonRect.yMax - 14f, buttonRect.width, 14f), sprite.name, EditorStyles.centeredGreyMiniLabel);
+                GUI.Label(
+                    new Rect(buttonRect.x, buttonRect.yMax - 14f, buttonRect.width, 14f),
+                    sprite.name,
+                    EditorStyles.centeredGreyMiniLabel);
             }
         }
         EditorGUILayout.EndHorizontal();
@@ -168,7 +194,9 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
 
     private void DrawFooter()
     {
-        EditorGUILayout.HelpBox("좌클릭/드래그: 선택한 블록으로 칸 채우기\n우클릭/드래그: 칸 비우기\nErase Mode: 좌클릭으로 지우기", MessageType.None);
+        EditorGUILayout.HelpBox(
+            "좌클릭/드래그: 선택한 블록으로 칸 채우기\n우클릭/드래그: 칸 비우기\nErase Mode: 좌클릭으로 지우기",
+            MessageType.None);
 
         if (GUILayout.Button("Copy JSON To Clipboard"))
             CopyJsonToClipboard();
@@ -200,7 +228,9 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
     private void HandleBoardInput()
     {
         Event currentEvent = Event.current;
-        if (currentEvent.type != EventType.MouseDown && currentEvent.type != EventType.MouseDrag && currentEvent.type != EventType.MouseUp)
+        if (currentEvent.type != EventType.MouseDown &&
+            currentEvent.type != EventType.MouseDrag &&
+            currentEvent.type != EventType.MouseUp)
             return;
 
         if (currentEvent.button != 0 && currentEvent.button != 1)
@@ -290,22 +320,24 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
 
     private Sprite GetSelectedSprite()
     {
-        if (_blockSprites == null || _blockSprites.Length == 0)
+        Sprite[] blockSprites = BlockSprites;
+        if (blockSprites == null || blockSprites.Length == 0)
             return null;
 
-        _selectedSpriteIndex = Mathf.Clamp(_selectedSpriteIndex, 0, _blockSprites.Length - 1);
-        return _blockSprites[_selectedSpriteIndex];
+        _selectedSpriteIndex = Mathf.Clamp(_selectedSpriteIndex, 0, blockSprites.Length - 1);
+        return blockSprites[_selectedSpriteIndex];
     }
 
     private bool TryGetSpriteByName(string spriteName, out Sprite sprite)
     {
         sprite = null;
-        if (string.IsNullOrEmpty(spriteName) || _blockSprites == null)
+        Sprite[] blockSprites = BlockSprites;
+        if (string.IsNullOrEmpty(spriteName) || blockSprites == null)
             return false;
 
-        for (int i = 0; i < _blockSprites.Length; i++)
+        for (int i = 0; i < blockSprites.Length; i++)
         {
-            Sprite candidate = _blockSprites[i];
+            Sprite candidate = blockSprites[i];
             if (candidate != null && candidate.name == spriteName)
             {
                 sprite = candidate;
@@ -422,62 +454,40 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
         Debug.Log("Board layout JSON copied to clipboard.");
     }
 
-    private void LoadBlockSpriteSettings()
+    private void LoadEditorSettings()
     {
-        if (!EditorPrefs.HasKey(BlockSpritesPrefsKey))
-            return;
-
-        string raw = EditorPrefs.GetString(BlockSpritesPrefsKey, string.Empty);
-        if (string.IsNullOrEmpty(raw))
-            return;
-
-        string[] globalIds = raw.Split('|');
-        _blockSprites = new Sprite[globalIds.Length];
-
-        for (int i = 0; i < globalIds.Length; i++)
+        string paletteGuid = EditorPrefs.GetString(SpritePalettePrefsKey, string.Empty);
+        if (!string.IsNullOrEmpty(paletteGuid))
         {
-            if (string.IsNullOrEmpty(globalIds[i]))
-                continue;
-
-            if (!GlobalObjectId.TryParse(globalIds[i], out GlobalObjectId globalObjectId))
-                continue;
-
-            Object loadedObject = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(globalObjectId);
-            _blockSprites[i] = loadedObject as Sprite;
+            string assetPath = AssetDatabase.GUIDToAssetPath(paletteGuid);
+            if (!string.IsNullOrEmpty(assetPath))
+                _spritePalette = AssetDatabase.LoadAssetAtPath<BlockSpritePalette>(assetPath);
         }
 
         _selectedSpriteIndex = EditorPrefs.GetInt(SelectedSpriteIndexPrefsKey, 0);
-        if (_blockSprites.Length > 0)
-            _selectedSpriteIndex = Mathf.Clamp(_selectedSpriteIndex, 0, _blockSprites.Length - 1);
+        Sprite[] blockSprites = BlockSprites;
+        if (blockSprites != null && blockSprites.Length > 0)
+            _selectedSpriteIndex = Mathf.Clamp(_selectedSpriteIndex, 0, blockSprites.Length - 1);
     }
 
-    private void SaveBlockSpriteSettings()
+    private void SaveEditorSettings()
     {
-        if (_blockSprites == null || _blockSprites.Length == 0)
+        if (_spritePalette != null)
         {
-            EditorPrefs.DeleteKey(BlockSpritesPrefsKey);
-            EditorPrefs.DeleteKey(SelectedSpriteIndexPrefsKey);
-            return;
+            string assetPath = AssetDatabase.GetAssetPath(_spritePalette);
+            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+            EditorPrefs.SetString(SpritePalettePrefsKey, guid);
+        }
+        else
+        {
+            EditorPrefs.DeleteKey(SpritePalettePrefsKey);
         }
 
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < _blockSprites.Length; i++)
-        {
-            if (i > 0)
-                builder.Append('|');
-
-            Sprite sprite = _blockSprites[i];
-            if (sprite == null)
-                continue;
-
-            builder.Append(GlobalObjectId.GetGlobalObjectIdSlow(sprite));
-        }
-
-        EditorPrefs.SetString(BlockSpritesPrefsKey, builder.ToString());
         EditorPrefs.SetInt(SelectedSpriteIndexPrefsKey, _selectedSpriteIndex);
     }
 
-    private static Sprite LoadCheckerboardSprite(int boardSize)    {
+    private static Sprite LoadCheckerboardSprite(int boardSize)
+    {
         int index = Mathf.Clamp(boardSize - MinBoardSize, 0, CheckerboardPaths.Length - 1);
         return AssetDatabase.LoadAssetAtPath<Sprite>(CheckerboardPaths[index]);
     }
