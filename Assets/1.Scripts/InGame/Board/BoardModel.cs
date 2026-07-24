@@ -13,6 +13,16 @@ public sealed class BoardModel
     private readonly HashSet<int> _fullRowSet = new HashSet<int>();
     private readonly HashSet<int> _fullColSet = new HashSet<int>();
     private readonly HashSet<Vector2Int> _clearedCellKeys = new HashSet<Vector2Int>();
+    private readonly List<BoardCell> _grassCandidates = new List<BoardCell>();
+    private readonly List<BoardCell> _spreadTargets = new List<BoardCell>();
+
+    private static readonly Vector2Int[] OrthogonalOffsets =
+    {
+        new Vector2Int(0, -1),
+        new Vector2Int(0, 1),
+        new Vector2Int(-1, 0),
+        new Vector2Int(1, 0)
+    };
 
     public Vector2Int LastPlaceableBasePos { get; private set; }
 
@@ -47,10 +57,125 @@ public sealed class BoardModel
         }
     }
 
-    public void ProcessFullLines()
+    /// <returns>클리어된 줄에 grass가 하나라도 포함되었으면 true.</returns>
+    public bool ProcessFullLines()
     {
         UpdateFullLinesState();
+        bool containedGrass = ClearedLinesContainGrass();
         RemoveFullLines();
+        return containedGrass;
+    }
+
+    public bool HasAnyGrass()
+    {
+        for (int x = 0; x < _width; x++)
+        {
+            for (int y = 0; y < _height; y++)
+            {
+                if (_cells[x, y].IsGrass)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 보드의 grass 하나를 골라, 상하좌우 중 미션 블록이 아닌 칸을 grass01로 바꾼다.
+    /// </summary>
+    public bool TrySpreadGrass(float appearDuration)
+    {
+        if (_spriteResolver == null)
+            return false;
+
+        string grass01Name = BoardCell.GetStagedSpriteName("grass", 1);
+        Sprite grassSprite = _spriteResolver.Invoke(grass01Name);
+        if (grassSprite == null)
+        {
+            Debug.LogWarning($"[BoardModel] grass 전파 스프라이트를 찾지 못했습니다: {grass01Name}");
+            return false;
+        }
+
+        CollectGrassCellsWithSpreadTargets();
+        if (_grassCandidates.Count == 0)
+            return false;
+
+        BoardCell source = _grassCandidates[UnityEngine.Random.Range(0, _grassCandidates.Count)];
+        CollectSpreadTargetsAround(source);
+        if (_spreadTargets.Count == 0)
+            return false;
+
+        BoardCell target = _spreadTargets[UnityEngine.Random.Range(0, _spreadTargets.Count)];
+        target.SetStageSprite(grassSprite);
+        if (appearDuration > 0f)
+            target.PlayAppearTween(appearDuration);
+
+        return true;
+    }
+
+    private bool ClearedLinesContainGrass()
+    {
+        for (int i = 0; i < _fullRow.Count; i++)
+        {
+            int row = _fullRow[i];
+            for (int x = 0; x < _width; x++)
+            {
+                if (_cells[x, row].IsGrass)
+                    return true;
+            }
+        }
+
+        for (int i = 0; i < _fullCol.Count; i++)
+        {
+            int col = _fullCol[i];
+            for (int y = 0; y < _height; y++)
+            {
+                if (_cells[col, y].IsGrass)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void CollectGrassCellsWithSpreadTargets()
+    {
+        _grassCandidates.Clear();
+        for (int x = 0; x < _width; x++)
+        {
+            for (int y = 0; y < _height; y++)
+            {
+                BoardCell cell = _cells[x, y];
+                if (!cell.IsGrass)
+                    continue;
+
+                CollectSpreadTargetsAround(cell);
+                if (_spreadTargets.Count > 0)
+                    _grassCandidates.Add(cell);
+            }
+        }
+    }
+
+    private void CollectSpreadTargetsAround(BoardCell source)
+    {
+        _spreadTargets.Clear();
+        if (source == null)
+            return;
+
+        for (int i = 0; i < OrthogonalOffsets.Length; i++)
+        {
+            Vector2Int offset = OrthogonalOffsets[i];
+            int tx = source._x + offset.x;
+            int ty = source._y + offset.y;
+            if (tx < 0 || tx >= _width || ty < 0 || ty >= _height)
+                continue;
+
+            BoardCell neighbor = _cells[tx, ty];
+            if (neighbor.IsMissionBlock)
+                continue;
+
+            _spreadTargets.Add(neighbor);
+        }
     }
 
     public void PreviewLineClears(List<BoardCell> previewCells, Sprite blockSprite)

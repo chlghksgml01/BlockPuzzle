@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5902b797504e02c418f4831a013d11f1, type: 3}
-  m_Name: Mission_BoardBlockGoal 8
-  m_EditorClassIdentifier: Assembly-CSharp::BoardBlockGoalMissionData
-  _isHard: 1
-  _isClear: 0
-  _boardLayoutData: {fileID: 0}
+  m_Name: Mission_CollectBlockGoal
+  m_EditorClassIdentifier: Assembly-CSharp::CollectBlockGoalMissionData
+  _isHard: 0
+  _isClear: 1
+  _boardLayoutData: {fileID: 11400000, guid: ad4b5f7cb2d57f240bddb35339c1eb16, type: 2}
   _targetBlockType: 1
   _targetCount: 0

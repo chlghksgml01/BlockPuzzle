@@ -2264,6 +2264,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7912788501387897607, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2600909120691593441}
+    - targetCorrespondingSourceObject: {fileID: 7912788501387897607, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2600909120691593442}
   m_SourcePrefab: {fileID: 100100000, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
 --- !u!1 &2600909120691593440 stripped
 GameObject:
@@ -2283,6 +2286,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MissionBoardController
   _missionSpritePalette: {fileID: 11400000, guid: 6ce2c3939f083df41aa52808de79a21f, type: 2}
+  _appearDuration: 0.28
+--- !u!114 &2600909120691593442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2600909120691593440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1241378b2c03f424e94a11ea5babce36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GrassSpreadController
+  _missedClearsBeforeSpread: 3
+  _spreadAppearDuration: 0.28
 --- !u!1001 &3464612543862031900
 PrefabInstance:
   m_ObjectHideFlags: 0

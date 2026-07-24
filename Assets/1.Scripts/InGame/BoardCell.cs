@@ -28,6 +28,8 @@ public class BoardCell : MonoBehaviour
     public bool IsIce => IsIceSpriteName(FilledSprite != null ? FilledSprite.name : null);
     public bool IsGrass => IsGrassSpriteName(FilledSprite != null ? FilledSprite.name : null);
     public bool IsStagedMissionBlock => TryGetStagedBlockInfo(FilledSprite != null ? FilledSprite.name : null, out _, out _);
+    /// <summary>레이아웃/미션용 특수 블록 (stone, ice, grass).</summary>
+    public bool IsMissionBlock => IsBlocked || IsIce || IsGrass;
     public Sprite FilledSprite => _defaultSprite;
 
     private Sprite _defaultSprite;

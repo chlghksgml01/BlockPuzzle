@@ -15,5 +15,8 @@ public abstract class LevelMissionData : ScriptableObject
     public bool IsHard => _isHard;
     public bool IsClear => _isClear;
     public BoardLayoutData BoardLayoutData => _boardLayoutData;
+
+    /// <summary>이 미션의 종류 (ScoreGoal / Ice / Grass / Gem).</summary>
+    public abstract MissionType MissionType { get; }
 }
 

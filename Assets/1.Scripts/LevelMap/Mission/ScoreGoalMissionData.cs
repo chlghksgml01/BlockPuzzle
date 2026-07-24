@@ -13,6 +13,8 @@ public sealed class ScoreGoalMissionData : LevelMissionData
     [Tooltip("클리어 제한 시간 (초)")]
     [SerializeField] private float _timeLimitSeconds;
 
+    public override MissionType MissionType => MissionType.ScoreGoal;
+
     public int TargetScore => _targetScore;
     public float TimeLimitSeconds => _timeLimitSeconds;
 }

@@ -56,6 +56,9 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
 
     public event Action<IReadOnlyList<int>, IReadOnlyList<int>> OnLinesClearedDetailed;
 
+    /// <summary>직전 라인 클리어에 grass가 포함되었는지. ProcessFullLines 이후 유효.</summary>
+    public bool LastClearContainedGrass { get; private set; }
+
     private ScoreSystem _scoreSystem;
 
     public void Initialize(InitializeContext context)
@@ -327,7 +330,17 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
 
     private void ProcessFullLines(int blockShapeCount)
     {
-        _model.ProcessFullLines();
+        LastClearContainedGrass = _model.ProcessFullLines();
+    }
+
+    public bool HasAnyGrass() => _model != null && _model.HasAnyGrass();
+
+    public bool TrySpreadGrass(float appearDuration)
+    {
+        if (_model == null)
+            return false;
+
+        return _model.TrySpreadGrass(appearDuration);
     }
 
     private void ResetBoard()
@@ -335,6 +348,7 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
         ClearDragPreview();
         _hint.ClearAll();
         _model.ResetBoard();
+        LastClearContainedGrass = false;
     }
 
     public void ActivateGrayscale(bool useGrayScale, float effectDuration = 0f)

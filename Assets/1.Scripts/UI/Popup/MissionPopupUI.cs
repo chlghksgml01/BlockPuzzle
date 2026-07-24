@@ -83,7 +83,7 @@ public class MissionPopupUI : BasePopupUI
 
             case CollectBlockGoalMissionData collect:
                 _iceGrassMission.SetActive(true);
-                _blockIconImage.sprite = collect.TargetBlockType == BlockType.Ice ? _iceIcon : _grassIcon;
+                _blockIconImage.sprite = collect.MissionType == MissionType.Ice ? _iceIcon : _grassIcon;
                 _goalBlockCount.text = collect.TargetCount.ToString();
                 break;
 

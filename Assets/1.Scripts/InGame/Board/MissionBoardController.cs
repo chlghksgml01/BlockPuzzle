@@ -19,11 +19,18 @@ public sealed class MissionBoardController : MonoBehaviour
     private BoardManager _boardManager;
     private readonly Dictionary<string, Sprite> _spriteByName = new Dictionary<string, Sprite>();
 
+    /// <summary>현재 레벨 세션의 미션 종류. 비레벨이면 None.</summary>
+    public MissionType CurrentMissionType { get; private set; } = MissionType.None;
+
+    /// <summary>현재 미션 데이터 참조. 비레벨이면 null.</summary>
+    public LevelMissionData CurrentMission { get; private set; }
+
     private void Awake()
     {
         _boardManager = GetComponent<BoardManager>();
         BuildSpriteLookup();
         _boardManager.SetMissionSpriteResolver(ResolveSprite);
+        CacheCurrentMission();
 
         if (LevelSessionContext.IsActive)
             PrepareFromSelectedMission();
@@ -35,7 +42,9 @@ public sealed class MissionBoardController : MonoBehaviour
         if (_boardManager == null)
             return;
 
-        BoardLayoutData layoutData = LevelSessionContext.GetSelectedMission()?.BoardLayoutData;
+        CacheCurrentMission();
+
+        BoardLayoutData layoutData = CurrentMission != null ? CurrentMission.BoardLayoutData : null;
         if (layoutData == null)
             return;
 
@@ -48,7 +57,9 @@ public sealed class MissionBoardController : MonoBehaviour
         if (_boardManager == null)
             return;
 
-        BoardLayoutData layoutData = LevelSessionContext.GetSelectedMission()?.BoardLayoutData;
+        CacheCurrentMission();
+
+        BoardLayoutData layoutData = CurrentMission != null ? CurrentMission.BoardLayoutData : null;
         if (layoutData == null)
         {
             Debug.LogWarning("[MissionBoardController] 선택된 레벨에 BoardLayoutData가 없습니다.", this);
@@ -60,6 +71,16 @@ public sealed class MissionBoardController : MonoBehaviour
 
         _boardManager.ApplyBoardLayout(layoutData, ResolveSprite);
         _boardManager.PlayOccupiedCellsAppear(_appearDuration);
+
+        GrassSpreadController grassSpread = GetComponent<GrassSpreadController>();
+        if (grassSpread != null)
+            grassSpread.ResetMissCounter();
+    }
+
+    private void CacheCurrentMission()
+    {
+        CurrentMission = LevelSessionContext.GetSelectedMission();
+        CurrentMissionType = CurrentMission != null ? CurrentMission.MissionType : MissionType.None;
     }
 
     private void BuildSpriteLookup()
