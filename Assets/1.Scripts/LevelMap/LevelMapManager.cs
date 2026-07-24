@@ -122,7 +122,7 @@ public class LevelMapManager : MonoBehaviour
 
     public void OpenMissionPopup(int levelIndex)
     {
-        LevelMissionData mission = _missionTable.GetMission<LevelMissionData>(levelIndex);
+        MissionData mission = _missionTable.GetMission(levelIndex);
         if (mission == null)
             return;
 

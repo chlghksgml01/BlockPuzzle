@@ -7,6 +7,9 @@ public class BoardCell : MonoBehaviour
     private const string StoneSpriteNameKeyword = "stone";
     private const string IceSpriteNameKeyword = "ice";
     private const string GrassSpriteNameKeyword = "grass";
+    private const string PentagonSpriteNameKeyword = "pentagon";
+    private const string SquareSpriteNameKeyword = "square";
+    private const string StarSpriteNameKeyword = "star";
     private const string AppearTweenIdPrefix = "BoardCellAppear_";
     private const string StageTweenIdPrefix = "BoardCellStage_";
 
@@ -242,6 +245,16 @@ public class BoardCell : MonoBehaviour
     {
         return !string.IsNullOrEmpty(spriteName) &&
                spriteName.IndexOf(GrassSpriteNameKeyword, System.StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    public static bool IsGemSpriteName(string spriteName)
+    {
+        if (string.IsNullOrEmpty(spriteName))
+            return false;
+
+        return spriteName.IndexOf(PentagonSpriteNameKeyword, System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+               spriteName.IndexOf(SquareSpriteNameKeyword, System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+               spriteName.IndexOf(StarSpriteNameKeyword, System.StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     /// <summary>ice01 / ice01_0 / grass02 등에서 키워드와 단계를 파싱한다.</summary>

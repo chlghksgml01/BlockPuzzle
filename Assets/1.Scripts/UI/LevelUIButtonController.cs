@@ -63,7 +63,7 @@ public class LevelUIButtonController : MonoBehaviour
         _selectedLevel = _nextLevel;
         int missionIndex = _nextLevel - 1;
 
-        LevelMissionData mission = _missionTable.GetMission<LevelMissionData>(missionIndex);
+        MissionData mission = _missionTable.GetMission(missionIndex);
         if (mission == null)
             return;
 

@@ -9,12 +9,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a3f9dac9d381cc44ebaa1aa936da85eb, type: 3}
-  m_Name: Level3
-  m_EditorClassIdentifier: Assembly-CSharp::BoardLayoutData
-  boardSize: 10
-  spritePalette: {fileID: 11400000, guid: 6ce2c3939f083df41aa52808de79a21f, type: 2}
+  m_Script: {fileID: 11500000, guid: ba71b0134e7ecb049b6db5f04a391c86, type: 3}
+  m_Name: Mission_ice
+  m_EditorClassIdentifier: Assembly-CSharp::MissionData
+  boardSize: 9
   filledCells:
+  - x: 6
+    y: 4
+    spriteName: ice01
+  - x: 2
+    y: 7
+    spriteName: ice01
   - x: 2
     y: 6
     spriteName: ice01
@@ -24,30 +29,23 @@ MonoBehaviour:
   - x: 2
     y: 4
     spriteName: ice01
-  - x: 2
-    y: 3
-    spriteName: ice01
-  - x: 7
-    y: 3
-    spriteName: ice01
-  - x: 7
-    y: 4
-    spriteName: ice01
-  - x: 7
+  - x: 6
     y: 5
     spriteName: ice01
-  - x: 7
+  - x: 6
     y: 6
     spriteName: ice01
-  - x: 2
-    y: 2
-    spriteName: ice01
-  - x: 7
-    y: 2
-    spriteName: ice01
-  - x: 2
+  - x: 6
     y: 7
     spriteName: ice01
-  - x: 7
-    y: 7
+  - x: 2
+    y: 8
     spriteName: ice01
+  - x: 6
+    y: 8
+    spriteName: ice01
+  isHard: 1
+  isClear: 1
+  missionType: 2
+  targetScore: 0
+  timeLimitSeconds: 0

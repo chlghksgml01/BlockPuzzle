@@ -39,7 +39,7 @@ public sealed class LevelNodeView : MonoBehaviour
         OnClicked?.Invoke(NodeIndex);
     }
 
-    public void Bind(int nodeIndex, Vector2 anchoredPosition, LevelMissionData missionData)
+    public void Bind(int nodeIndex, Vector2 anchoredPosition, MissionData missionData)
     {
         NodeIndex = nodeIndex;
         RectTransform.anchoredPosition = anchoredPosition;
@@ -51,7 +51,7 @@ public sealed class LevelNodeView : MonoBehaviour
         ApplyNodeVisual(missionData);
     }
 
-    private void ApplyNodeVisual(LevelMissionData missionData)
+    private void ApplyNodeVisual(MissionData missionData)
     {
         if (_hardIcon != null)
             _hardIcon.SetActive(missionData != null && missionData.IsHard);

@@ -66,22 +66,22 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
         _scoreSystem = context.ScoreSystem;
     }
 
-    /// <summary>BoardLayoutData의 크기로 보드 생성 전 _boardSize를 맞춘다. BoardManager.Awake 이전에 호출해야 한다.</summary>
-    public void PrepareBoardSizeFromLayout(BoardLayoutData layoutData)
+    /// <summary>MissionData의 크기로 보드 생성 전 _boardSize를 맞춘다. BoardManager.Awake 이전에 호출해야 한다.</summary>
+    public void PrepareBoardSizeFromLayout(MissionData missionData)
     {
-        if (layoutData == null)
+        if (missionData == null)
             return;
 
-        _boardSize = Mathf.Clamp(layoutData.boardSize, MinBoardSize, MaxBoardSize);
+        _boardSize = Mathf.Clamp(missionData.boardSize, MinBoardSize, MaxBoardSize);
     }
 
-    /// <summary>BoardLayoutData에 정의된 초기 채움 상태를 보드에 적용한다.</summary>
-    public void ApplyBoardLayout(BoardLayoutData layoutData, Func<string, Sprite> spriteResolver)
+    /// <summary>MissionData에 정의된 초기 채움 상태를 보드에 적용한다.</summary>
+    public void ApplyBoardLayout(MissionData missionData, Func<string, Sprite> spriteResolver)
     {
-        if (layoutData == null)
+        if (missionData == null)
             return;
 
-        RestoreFilledCells(layoutData.filledCells, spriteResolver);
+        RestoreFilledCells(missionData.filledCells, spriteResolver);
     }
 
     /// <summary>점유된 미션 셀을 동시에 등장시킨다.</summary>

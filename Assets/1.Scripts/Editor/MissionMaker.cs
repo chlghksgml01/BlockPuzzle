@@ -2,15 +2,15 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-public sealed class BoardLayoutEditorWindow : EditorWindow
+public sealed class MissionMaker : EditorWindow
 {
     private const int MinBoardSize = 8;
     private const int MaxBoardSize = 10;
     private const float MinCellPixelSize = 24f;
     private const float MaxCellPixelSize = 72f;
     private const float BoardPadding = 12f;
-    private const string SpritePalettePrefsKey = "BlockPuzzle.BoardLayoutEditor.SpritePaletteGuid";
-    private const string SelectedSpriteIndexPrefsKey = "BlockPuzzle.BoardLayoutEditor.SelectedSpriteIndex";
+    private const string SpritePalettePrefsKey = "BlockPuzzle.MissionMaker.SpritePaletteGuid";
+    private const string SelectedSpriteIndexPrefsKey = "BlockPuzzle.MissionMaker.SelectedSpriteIndex";
     private static readonly string[] CheckerboardPaths =
     {
         "Assets/Chess Studio/Block Puzzle GUI Pack/png/Game/Checkerboard8x8.png",
@@ -21,8 +21,13 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
     [SerializeField] private int _boardSize = 9;
     [SerializeField] private BlockSpritePalette _spritePalette;
     [SerializeField] private int _selectedSpriteIndex;
-    [SerializeField] private BoardLayoutData _layoutAsset;
+    [SerializeField] private MissionData _missionAsset;
     [SerializeField] private bool _eraseMode;
+    [SerializeField] private bool _isHard;
+    [SerializeField] private bool _isClear;
+    [SerializeField] private MissionType _missionType = MissionType.ScoreGoal;
+    [SerializeField] private int _targetScore;
+    [SerializeField] private float _timeLimitSeconds;
 
     private readonly Dictionary<Vector2Int, string> _filledCells = new Dictionary<Vector2Int, string>();
     private Vector2 _scrollPosition;
@@ -34,10 +39,10 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
 
     private Sprite[] BlockSprites => _spritePalette != null ? _spritePalette.sprites : null;
 
-    [MenuItem("BlockPuzzle/Board Layout Editor")]
+    [MenuItem("BlockPuzzle/Mission Maker")]
     public static void Open()
     {
-        BoardLayoutEditorWindow window = GetWindow<BoardLayoutEditorWindow>("Board Layout");
+        MissionMaker window = GetWindow<MissionMaker>("Mission Maker");
         window.minSize = new Vector2(360f, 420f);
         window.Show();
     }
@@ -69,14 +74,33 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
 
     private void DrawToolbar()
     {
-        EditorGUILayout.LabelField("Board Layout Editor", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("Mission Maker", EditorStyles.boldLabel);
 
         EditorGUI.BeginChangeCheck();
         _boardSize = EditorGUILayout.IntSlider("Board Size", _boardSize, MinBoardSize, MaxBoardSize);
         if (EditorGUI.EndChangeCheck())
             RemoveOutOfBoundsCells();
 
-        _layoutAsset = (BoardLayoutData)EditorGUILayout.ObjectField("Layout Asset", _layoutAsset, typeof(BoardLayoutData), false);
+        _missionAsset = (MissionData)EditorGUILayout.ObjectField(
+            "Mission Asset",
+            _missionAsset,
+            typeof(MissionData),
+            false);
+
+        EditorGUILayout.BeginHorizontal();
+        _isHard = EditorGUILayout.ToggleLeft("Is Hard", _isHard, GUILayout.Width(80f));
+        _isClear = EditorGUILayout.ToggleLeft("Is Clear", _isClear, GUILayout.Width(80f));
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUI.BeginDisabledGroup(true);
+        EditorGUILayout.EnumPopup("Mission Type (Auto)", _missionType);
+        EditorGUI.EndDisabledGroup();
+
+        if (_missionType == MissionType.ScoreGoal)
+        {
+            _targetScore = EditorGUILayout.IntField("Target Score", _targetScore);
+            _timeLimitSeconds = EditorGUILayout.FloatField("Time Limit (sec)", _timeLimitSeconds);
+        }
 
         EditorGUILayout.BeginHorizontal();
         _eraseMode = GUILayout.Toggle(_eraseMode, "Erase Mode", EditorStyles.miniButtonLeft);
@@ -281,6 +305,7 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
         if (erase)
         {
             _filledCells.Remove(key);
+            RefreshMissionType();
             return;
         }
 
@@ -289,6 +314,43 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
             return;
 
         _filledCells[key] = selectedSprite.name;
+        RefreshMissionType();
+    }
+
+    private void RefreshMissionType()
+    {
+        _missionType = ResolveMissionTypeFromFilledCells();
+    }
+
+    /// <summary>
+    /// grass → Grass, ice → Ice, Pentagon/Square/Star → Gem,
+    /// 비어 있거나 stone만 있으면 ScoreGoal.
+    /// </summary>
+    private MissionType ResolveMissionTypeFromFilledCells()
+    {
+        bool hasGrass = false;
+        bool hasIce = false;
+        bool hasGem = false;
+
+        foreach (KeyValuePair<Vector2Int, string> pair in _filledCells)
+        {
+            string spriteName = pair.Value;
+            if (BoardCell.IsGrassSpriteName(spriteName))
+                hasGrass = true;
+            else if (BoardCell.IsIceSpriteName(spriteName))
+                hasIce = true;
+            else if (BoardCell.IsGemSpriteName(spriteName))
+                hasGem = true;
+        }
+
+        if (hasGrass)
+            return MissionType.Grass;
+        if (hasIce)
+            return MissionType.Ice;
+        if (hasGem)
+            return MissionType.Gem;
+
+        return MissionType.ScoreGoal;
     }
 
     private bool TryGetCellFromMouse(Rect boardRect, float cellSize, Vector2 mousePosition, out int x, out int y)
@@ -351,6 +413,7 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
     private void ClearAllCells()
     {
         _filledCells.Clear();
+        RefreshMissionType();
         Repaint();
     }
 
@@ -365,22 +428,29 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
 
         for (int i = 0; i < removeKeys.Count; i++)
             _filledCells.Remove(removeKeys[i]);
+
+        RefreshMissionType();
     }
 
     private void LoadFromAsset()
     {
-        if (_layoutAsset == null)
+        if (_missionAsset == null)
         {
-            EditorUtility.DisplayDialog("Board Layout Editor", "Layout Asset를 먼저 지정해 주세요.", "OK");
+            EditorUtility.DisplayDialog("Mission Maker", "Mission Asset를 먼저 지정해 주세요.", "OK");
             return;
         }
 
-        _boardSize = Mathf.Clamp(_layoutAsset.boardSize, MinBoardSize, MaxBoardSize);
+        _boardSize = Mathf.Clamp(_missionAsset.boardSize, MinBoardSize, MaxBoardSize);
+        _isHard = _missionAsset.isHard;
+        _isClear = _missionAsset.isClear;
+        _targetScore = _missionAsset.targetScore;
+        _timeLimitSeconds = _missionAsset.timeLimitSeconds;
         _filledCells.Clear();
 
-        List<FilledCellData> cells = _layoutAsset.filledCells;
+        List<FilledCellData> cells = _missionAsset.filledCells;
         if (cells == null)
         {
+            RefreshMissionType();
             Repaint();
             return;
         }
@@ -397,35 +467,41 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
             _filledCells[new Vector2Int(data.x, data.y)] = data.spriteName;
         }
 
+        RefreshMissionType();
         Repaint();
     }
 
     private void SaveToAsset()
     {
-        if (_layoutAsset == null)
+        if (_missionAsset == null)
         {
             string path = EditorUtility.SaveFilePanelInProject(
-                "Save Board Layout",
-                "BoardLayout",
+                "Save Mission Data",
+                "MissionData",
                 "asset",
-                "저장할 Board Layout Data 경로를 선택하세요.");
+                "저장할 Mission Data 경로를 선택하세요.");
 
             if (string.IsNullOrEmpty(path))
                 return;
 
-            _layoutAsset = CreateInstance<BoardLayoutData>();
-            AssetDatabase.CreateAsset(_layoutAsset, path);
+            _missionAsset = CreateInstance<MissionData>();
+            AssetDatabase.CreateAsset(_missionAsset, path);
         }
 
-        _layoutAsset.boardSize = _boardSize;
-        _layoutAsset.filledCells = ExportFilledCells();
+        _missionAsset.boardSize = _boardSize;
+        _missionAsset.filledCells = ExportFilledCells();
+        _missionAsset.isHard = _isHard;
+        _missionAsset.isClear = _isClear;
+        _missionAsset.missionType = _missionType;
+        _missionAsset.targetScore = _targetScore;
+        _missionAsset.timeLimitSeconds = _timeLimitSeconds;
 
-        EditorUtility.SetDirty(_layoutAsset);
+        EditorUtility.SetDirty(_missionAsset);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        EditorGUIUtility.PingObject(_layoutAsset);
+        EditorGUIUtility.PingObject(_missionAsset);
 
-        _layoutAsset = null;
+        _missionAsset = null;
         Repaint();
     }
 
@@ -447,11 +523,17 @@ public sealed class BoardLayoutEditorWindow : EditorWindow
 
     private void CopyJsonToClipboard()
     {
-        BoardLayoutData temp = CreateInstance<BoardLayoutData>();
+        MissionData temp = CreateInstance<MissionData>();
         temp.boardSize = _boardSize;
         temp.filledCells = ExportFilledCells();
+        temp.isHard = _isHard;
+        temp.isClear = _isClear;
+        temp.missionType = _missionType;
+        temp.targetScore = _targetScore;
+        temp.timeLimitSeconds = _timeLimitSeconds;
         EditorGUIUtility.systemCopyBuffer = JsonUtility.ToJson(temp, true);
-        Debug.Log("Board layout JSON copied to clipboard.");
+        Debug.Log("Board mission JSON copied to clipboard.");
+        DestroyImmediate(temp);
     }
 
     private void LoadEditorSettings()

@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// 레벨 클리어 미션을 안내하는 팝업.
-/// 미션 데이터 타입(점수 목표 / 블록 수집 / 보석 수집)에 따라 해당 UI 그룹만 활성화하고 내용을 채운다.
+/// MissionData의 missionType과 보드 셀 카운트에 따라 UI 그룹을 채운다.
 /// </summary>
 public class MissionPopupUI : BasePopupUI
 {
@@ -61,9 +61,15 @@ public class MissionPopupUI : BasePopupUI
     private readonly List<GameObject> _spawnedGemViews = new List<GameObject>();
 
     /// <summary>레벨 번호와 해당 레벨의 미션 데이터로 팝업을 연다.</summary>
-    public void Open(int levelIndex, LevelMissionData missionData)
+    public void Open(int levelIndex, MissionData missionData)
     {
         base.Open();
+
+        if (missionData == null)
+        {
+            Debug.LogWarning("[MissionPopupUI] missionData가 null입니다.", this);
+            return;
+        }
 
         if (_levelText != null)
             _levelText.text = $"Level  {levelIndex + 1}";
@@ -74,26 +80,32 @@ public class MissionPopupUI : BasePopupUI
         _iceGrassMission.SetActive(false);
         _collectGemMission.SetActive(false);
 
-        switch (missionData)
+        switch (missionData.MissionType)
         {
-            case ScoreGoalMissionData score:
+            case MissionType.ScoreGoal:
                 _scoreGoalMission.SetActive(true);
-                _scoreTimeText.text = FormatTime(score.TimeLimitSeconds);
+                _scoreTimeText.text = FormatTime(missionData.TimeLimitSeconds);
                 break;
 
-            case CollectBlockGoalMissionData collect:
+            case MissionType.Ice:
                 _iceGrassMission.SetActive(true);
-                _blockIconImage.sprite = collect.MissionType == MissionType.Ice ? _iceIcon : _grassIcon;
-                _goalBlockCount.text = collect.TargetCount.ToString();
+                _blockIconImage.sprite = _iceIcon;
+                _goalBlockCount.text = missionData.CountIceCells().ToString();
                 break;
 
-            case CollectGemMissionData gem:
+            case MissionType.Grass:
+                _iceGrassMission.SetActive(true);
+                _blockIconImage.sprite = _grassIcon;
+                _goalBlockCount.text = missionData.CountGrassCells().ToString();
+                break;
+
+            case MissionType.Gem:
                 _collectGemMission.SetActive(true);
-                SpawnGemTargets(gem.GemTargets);
+                SpawnGemTargets(missionData.BuildGemTargets());
                 break;
 
             default:
-                Debug.LogWarning($"[MissionPopupUI] Unknown mission data type: {missionData.GetType().Name}", this);
+                Debug.LogWarning($"[MissionPopupUI] Unsupported mission type: {missionData.MissionType}", this);
                 break;
         }
     }
@@ -107,6 +119,9 @@ public class MissionPopupUI : BasePopupUI
     private void SpawnGemTargets(IReadOnlyList<GemTargetInfo> gemTargets)
     {
         ClearGemTargets();
+
+        if (gemTargets == null)
+            return;
 
         for (int i = 0; i < gemTargets.Count; i++)
         {

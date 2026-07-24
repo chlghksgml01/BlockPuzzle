@@ -9,7 +9,7 @@ using UnityEngine;
 public sealed class MissionBoardController : MonoBehaviour
 {
     [Header("Mission Sprites")]
-    [Tooltip("미션 레이아웃/stone 등용 스프라이트 팔레트. Board Layout Editor와 동일한 에셋을 연결.")]
+    [Tooltip("미션 레이아웃/stone 등용 스프라이트 팔레트. Mission Maker와 동일한 에셋을 연결.")]
     [SerializeField] private BlockSpritePalette _missionSpritePalette;
 
     [Header("Appear Tween")]
@@ -23,7 +23,7 @@ public sealed class MissionBoardController : MonoBehaviour
     public MissionType CurrentMissionType { get; private set; } = MissionType.None;
 
     /// <summary>현재 미션 데이터 참조. 비레벨이면 null.</summary>
-    public LevelMissionData CurrentMission { get; private set; }
+    public MissionData CurrentMission { get; private set; }
 
     private void Awake()
     {
@@ -44,14 +44,13 @@ public sealed class MissionBoardController : MonoBehaviour
 
         CacheCurrentMission();
 
-        BoardLayoutData layoutData = CurrentMission != null ? CurrentMission.BoardLayoutData : null;
-        if (layoutData == null)
+        if (CurrentMission == null)
             return;
 
-        _boardManager.PrepareBoardSizeFromLayout(layoutData);
+        _boardManager.PrepareBoardSizeFromLayout(CurrentMission);
     }
 
-    /// <summary>선택된 미션의 BoardLayoutData를 보드에 적용하고 DoTween 등장 연출을 재생한다.</summary>
+    /// <summary>선택된 미션의 MissionData를 보드에 적용하고 DoTween 등장 연출을 재생한다.</summary>
     public void ApplyMissionLayout()
     {
         if (_boardManager == null)
@@ -59,17 +58,16 @@ public sealed class MissionBoardController : MonoBehaviour
 
         CacheCurrentMission();
 
-        BoardLayoutData layoutData = CurrentMission != null ? CurrentMission.BoardLayoutData : null;
-        if (layoutData == null)
+        if (CurrentMission == null)
         {
-            Debug.LogWarning("[MissionBoardController] 선택된 레벨에 BoardLayoutData가 없습니다.", this);
+            Debug.LogWarning("[MissionBoardController] 선택된 레벨에 MissionData가 없습니다.", this);
             return;
         }
 
         if (_missionSpritePalette == null)
             Debug.LogWarning("[MissionBoardController] Mission Sprite Palette가 없습니다. 레이아웃 스프라이트를 찾지 못할 수 있습니다.", this);
 
-        _boardManager.ApplyBoardLayout(layoutData, ResolveSprite);
+        _boardManager.ApplyBoardLayout(CurrentMission, ResolveSprite);
         _boardManager.PlayOccupiedCellsAppear(_appearDuration);
 
         GrassSpreadController grassSpread = GetComponent<GrassSpreadController>();

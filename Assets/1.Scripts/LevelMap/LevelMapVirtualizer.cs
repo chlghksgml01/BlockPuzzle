@@ -116,8 +116,8 @@ public sealed class LevelMapVirtualizer
         SyncActive(_activeNodes, _nodePool, minNodeIndex, maxNodeIndex,
             (index, view) =>
             {
-                LevelMissionData mission = _missionTable != null
-                    ? _missionTable.GetMission<LevelMissionData>(index)
+                MissionData mission = _missionTable != null
+                    ? _missionTable.GetMission(index)
                     : null;
                 view.Bind(index, _layout.GetNodePosition(index), mission);
             });

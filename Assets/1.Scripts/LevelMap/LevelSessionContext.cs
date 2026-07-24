@@ -16,12 +16,12 @@ public static class LevelSessionContext
         _missionTable = missionTable;
     }
 
-    public static LevelMissionData GetSelectedMission()
+    public static MissionData GetSelectedMission()
     {
         if (!IsActive)
             return null;
 
-        return _missionTable.GetMission<LevelMissionData>(_selectedLevelIndex);
+        return _missionTable.GetMission(_selectedLevelIndex);
     }
 
     public static void Clear()
