@@ -253,8 +253,8 @@ MonoBehaviour:
   m_StartAxis: 0
   m_CellSize: {x: 106, y: 106}
   m_Spacing: {x: 3.3, y: 1.5}
-  m_Constraint: 0
-  m_ConstraintCount: 2
+  m_Constraint: 1
+  m_ConstraintCount: 9
 --- !u!222 &27546569
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -557,7 +557,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
   m_PrefabInstance: {fileID: 2600909120691593439}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 2600909120691593440}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c6015a3deb696d44daab6c5b05a87110, type: 3}
@@ -1448,8 +1448,8 @@ MonoBehaviour:
   m_StartAxis: 0
   m_CellSize: {x: 106, y: 106}
   m_Spacing: {x: 3.3, y: 1.5}
-  m_Constraint: 0
-  m_ConstraintCount: 2
+  m_Constraint: 1
+  m_ConstraintCount: 9
 --- !u!222 &1510317874
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2260,8 +2260,29 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7912788501387897607, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2600909120691593441}
   m_SourcePrefab: {fileID: 100100000, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
+--- !u!1 &2600909120691593440 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7912788501387897607, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
+  m_PrefabInstance: {fileID: 2600909120691593439}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2600909120691593441
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2600909120691593440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3c8e2f1b94d4e6a9f0c1d2e3b4a5c6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MissionBoardController
+  _missionSpritePalette: {fileID: 11400000, guid: 6ce2c3939f083df41aa52808de79a21f, type: 2}
 --- !u!1001 &3464612543862031900
 PrefabInstance:
   m_ObjectHideFlags: 0

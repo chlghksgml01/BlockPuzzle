@@ -80,6 +80,25 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
         RestoreFilledCells(layoutData.filledCells, spriteResolver);
     }
 
+    /// <summary>점유된 미션 셀을 동시에 등장시킨다.</summary>
+    public void PlayOccupiedCellsAppear(float duration)
+    {
+        if (_cells == null)
+            return;
+
+        for (int y = 0; y < _boardSize; y++)
+        {
+            for (int x = 0; x < _boardSize; x++)
+            {
+                BoardCell cell = _cells[x, y];
+                if (!cell.IsOccupied)
+                    continue;
+
+                cell.PlayAppearTween(duration);
+            }
+        }
+    }
+
     private void Awake()
     {
         GenerateBoard();
@@ -312,9 +331,9 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
     }
 
     #region InGameManager
-    public void PlayIntro()
+    public void PlayIntro(Action onComplete = null)
     {
-        _boardEffect.PlayIntro(_cells, _boardSize, _boardSize);
+        _boardEffect.PlayIntro(_cells, _boardSize, _boardSize, onComplete);
     }
 
     public void ShowHint(bool showHint, DraggableBlock block, bool isPlaced = false)
@@ -340,7 +359,10 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
                 continue;
 
             Sprite sprite = spriteResolver != null ? spriteResolver(data.spriteName) : null;
-            _cells[data.x, data.y].RestoreFilledState(sprite);
+            if (BoardCell.IsStoneSpriteName(data.spriteName))
+                _cells[data.x, data.y].SetBlocked(sprite);
+            else
+                _cells[data.x, data.y].RestoreFilledState(sprite);
         }
     }
 
@@ -352,7 +374,7 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
             for (int y = 0; y < _boardSize; y++)
             {
                 BoardCell cell = _cells[x, y];
-                if (!cell.IsFilled)
+                if (!cell.IsOccupied)
                     continue;
 
                 result.Add(new FilledCellData

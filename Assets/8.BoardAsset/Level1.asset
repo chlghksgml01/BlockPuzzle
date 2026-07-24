@@ -13,7 +13,11 @@ MonoBehaviour:
   m_Name: Level1
   m_EditorClassIdentifier: Assembly-CSharp::BoardLayoutData
   boardSize: 8
+  spritePalette: {fileID: 11400000, guid: 6ce2c3939f083df41aa52808de79a21f, type: 2}
   filledCells:
+  - x: 2
+    y: 2
+    spriteName: stone03
   - x: 2
     y: 3
     spriteName: stone03
@@ -22,6 +26,9 @@ MonoBehaviour:
     spriteName: stone03
   - x: 2
     y: 5
+    spriteName: stone03
+  - x: 5
+    y: 2
     spriteName: stone03
   - x: 5
     y: 3

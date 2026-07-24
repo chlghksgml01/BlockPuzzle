@@ -9,9 +9,11 @@ public abstract class LevelMissionData : ScriptableObject
     [Header("Mission Info")]
     [SerializeField] private bool _isHard = false;
     [SerializeField] private bool _isClear = false;
+    [Tooltip("보드 초기 배치 데이터")]
     [SerializeField] private BoardLayoutData _boardLayoutData;
 
     public bool IsHard => _isHard;
     public bool IsClear => _isClear;
     public BoardLayoutData BoardLayoutData => _boardLayoutData;
 }
+

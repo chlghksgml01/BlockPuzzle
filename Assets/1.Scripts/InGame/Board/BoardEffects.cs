@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 
 public class BoardEffect : MonoBehaviour
@@ -30,17 +31,22 @@ public class BoardEffect : MonoBehaviour
         }
     }
 
-    public void PlayIntro(BoardCell[,] cells, int width, int height)
+    public void PlayIntro(BoardCell[,] cells, int width, int height, Action onComplete = null)
     {
         if (_playIntroDominoEffect)
-            StartCoroutine(PlayIntroDominoEffect(cells, width, height));
+            StartCoroutine(PlayIntroDominoEffect(cells, width, height, onComplete));
+        else
+            onComplete?.Invoke();
     }
 
-    private IEnumerator PlayIntroDominoEffect(BoardCell[,] cells, int width, int height)
+    private IEnumerator PlayIntroDominoEffect(BoardCell[,] cells, int width, int height, Action onComplete)
     {
         SoundManager.Instance.PlaySFX(SFXType.Intro);
         if (_introEffectSprite == null || cells == null)
+        {
+            onComplete?.Invoke();
             yield break;
+        }
 
         int maxSum = (width - 1) + (height - 1);
 
@@ -77,6 +83,6 @@ public class BoardEffect : MonoBehaviour
                 yield return new WaitForSeconds(_introLineInterval);
         }
 
-        InGameManager.Instance.EnableInteraction(true);
+        onComplete?.Invoke();
     }
 }

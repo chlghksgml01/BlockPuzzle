@@ -27,16 +27,14 @@ public sealed class BoardModel
     public BoardCell[,] Cells => _cells;
 
     public bool IsFilled(int x, int y) => _cells[x, y].IsFilled;
+    public bool IsOccupied(int x, int y) => _cells[x, y].IsOccupied;
 
     public void ResetBoard()
     {
         for (int x = 0; x < _width; x++)
         {
             for (int y = 0; y < _height; y++)
-            {
-                _cells[x, y].SetFilled(false);
-                _cells[x, y].UpdateCellVisual(false);
-            }
+                _cells[x, y].ClearAllState();
         }
     }
 
@@ -64,40 +62,20 @@ public sealed class BoardModel
 
         foreach (int y in rowsToCheck)
         {
-            bool isFull = true;
-            for (int x = 0; x < _width; x++)
-            {
-                if (!_cells[x, y].IsFilled && !_cells[x, y].IsPreviewFilled)
-                {
-                    isFull = false;
-                    break;
-                }
-            }
+            if (!IsLineClearableRow(y, includePreview: true))
+                continue;
 
-            if (isFull)
-            {
-                for (int x = 0; x < _width; x++)
-                    _cells[x, y].SetLinePreview(true, blockSprite);
-            }
+            for (int x = 0; x < _width; x++)
+                _cells[x, y].SetLinePreview(true, blockSprite);
         }
 
         foreach (int x in colsToCheck)
         {
-            bool isFull = true;
-            for (int y = 0; y < _height; y++)
-            {
-                if (!_cells[x, y].IsFilled && !_cells[x, y].IsPreviewFilled)
-                {
-                    isFull = false;
-                    break;
-                }
-            }
+            if (!IsLineClearableCol(x, includePreview: true))
+                continue;
 
-            if (isFull)
-            {
-                for (int y = 0; y < _height; y++)
-                    _cells[x, y].SetLinePreview(true, blockSprite);
-            }
+            for (int y = 0; y < _height; y++)
+                _cells[x, y].SetLinePreview(true, blockSprite);
         }
     }
 
@@ -119,33 +97,13 @@ public sealed class BoardModel
 
         for (int y = 0; y < _height; y++)
         {
-            bool isFull = true;
-            for (int x = 0; x < _width; x++)
-            {
-                if (!_cells[x, y].IsFilled)
-                {
-                    isFull = false;
-                    break;
-                }
-            }
-
-            if (isFull)
+            if (IsLineClearableRow(y, includePreview: false))
                 _fullRow.Add(y);
         }
 
         for (int x = 0; x < _width; x++)
         {
-            bool isFull = true;
-            for (int y = 0; y < _height; y++)
-            {
-                if (!_cells[x, y].IsFilled)
-                {
-                    isFull = false;
-                    break;
-                }
-            }
-
-            if (isFull)
+            if (IsLineClearableCol(x, includePreview: false))
                 _fullCol.Add(x);
         }
 
@@ -160,6 +118,9 @@ public sealed class BoardModel
         {
             for (int x = 0; x < _width; x++)
             {
+                if (_cells[x, row].IsBlocked)
+                    continue;
+
                 _cells[x, row].SetFilled(false);
                 _cells[x, row].UpdateCellVisual(false);
             }
@@ -169,10 +130,50 @@ public sealed class BoardModel
         {
             for (int y = 0; y < _height; y++)
             {
+                if (_cells[col, y].IsBlocked)
+                    continue;
+
                 _cells[col, y].SetFilled(false);
                 _cells[col, y].UpdateCellVisual(false);
             }
         }
+    }
+
+    /// <summary>
+    /// 라인이 가득 차고, 지울 수 있는(비-stone) 블록이 하나 이상 있을 때만 클리어 대상.
+    /// </summary>
+    private bool IsLineClearableRow(int y, bool includePreview)
+    {
+        bool hasClearable = false;
+        for (int x = 0; x < _width; x++)
+        {
+            BoardCell cell = _cells[x, y];
+            bool occupied = cell.IsOccupied || (includePreview && cell.IsPreviewFilled);
+            if (!occupied)
+                return false;
+
+            if (!cell.IsBlocked)
+                hasClearable = true;
+        }
+
+        return hasClearable;
+    }
+
+    private bool IsLineClearableCol(int x, bool includePreview)
+    {
+        bool hasClearable = false;
+        for (int y = 0; y < _height; y++)
+        {
+            BoardCell cell = _cells[x, y];
+            bool occupied = cell.IsOccupied || (includePreview && cell.IsPreviewFilled);
+            if (!occupied)
+                return false;
+
+            if (!cell.IsBlocked)
+                hasClearable = true;
+        }
+
+        return hasClearable;
     }
 
     public bool CanPlaceShape(Vector2Int[] shapeOffset)
@@ -184,7 +185,7 @@ public sealed class BoardModel
         {
             for (int x = 0; x < _width; x++)
             {
-                if (!_cells[x, y].IsFilled && CanPlaceAt(x, y, shapeOffset))
+                if (!_cells[x, y].IsOccupied && CanPlaceAt(x, y, shapeOffset))
                     return true;
             }
         }
@@ -206,7 +207,7 @@ public sealed class BoardModel
             if (tx < 0 || tx >= _width || ty < 0 || ty >= _height)
                 return false;
 
-            if (_cells[tx, ty].IsFilled)
+            if (_cells[tx, ty].IsOccupied)
                 return false;
         }
 
@@ -235,7 +236,7 @@ public sealed class BoardModel
             if (tx < 0 || tx >= _width || ty < 0 || ty >= _height)
                 return false;
 
-            if (_cells[tx, ty].IsFilled)
+            if (_cells[tx, ty].IsOccupied)
                 return false;
 
             cells.Add(_cells[tx, ty]);

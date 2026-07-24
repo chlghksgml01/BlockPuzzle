@@ -1,0 +1,92 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+/// <summary>
+/// 미션 레이아웃/팔레트 적용 전담. 보드 코어(배치·프리뷰·클리어)는 BoardManager가 담당한다.
+/// </summary>
+[DefaultExecutionOrder(-95)]
+[RequireComponent(typeof(BoardManager))]
+public sealed class MissionBoardController : MonoBehaviour
+{
+    [Header("Mission Sprites")]
+    [Tooltip("미션 레이아웃/stone 등용 스프라이트 팔레트. Board Layout Editor와 동일한 에셋을 연결.")]
+    [SerializeField] private BlockSpritePalette _missionSpritePalette;
+
+    [Header("Appear Tween")]
+    [Tooltip("미션 블록 등장 애니메이션 시간")]
+    [SerializeField, Min(0f)] private float _appearDuration = 0.28f;
+
+    private BoardManager _boardManager;
+    private readonly Dictionary<string, Sprite> _spriteByName = new Dictionary<string, Sprite>();
+
+    private void Awake()
+    {
+        _boardManager = GetComponent<BoardManager>();
+        BuildSpriteLookup();
+
+        if (LevelSessionContext.IsActive)
+            PrepareFromSelectedMission();
+    }
+
+    /// <summary>BoardManager.GenerateBoard 전에 호출되어 보드 크기를 레이아웃에 맞춘다.</summary>
+    public void PrepareFromSelectedMission()
+    {
+        if (_boardManager == null)
+            return;
+
+        BoardLayoutData layoutData = LevelSessionContext.GetSelectedMission()?.BoardLayoutData;
+        if (layoutData == null)
+            return;
+
+        _boardManager.PrepareBoardSizeFromLayout(layoutData);
+    }
+
+    /// <summary>선택된 미션의 BoardLayoutData를 보드에 적용하고 DoTween 등장 연출을 재생한다.</summary>
+    public void ApplyMissionLayout()
+    {
+        if (_boardManager == null)
+            return;
+
+        BoardLayoutData layoutData = LevelSessionContext.GetSelectedMission()?.BoardLayoutData;
+        if (layoutData == null)
+        {
+            Debug.LogWarning("[MissionBoardController] 선택된 레벨에 BoardLayoutData가 없습니다.", this);
+            return;
+        }
+
+        if (_missionSpritePalette == null)
+            Debug.LogWarning("[MissionBoardController] Mission Sprite Palette가 없습니다. 레이아웃 스프라이트를 찾지 못할 수 있습니다.", this);
+
+        _boardManager.ApplyBoardLayout(layoutData, ResolveSprite);
+        _boardManager.PlayOccupiedCellsAppear(_appearDuration);
+    }
+
+    private void BuildSpriteLookup()
+    {
+        _spriteByName.Clear();
+        if (_missionSpritePalette == null || _missionSpritePalette.sprites == null)
+            return;
+
+        Sprite[] sprites = _missionSpritePalette.sprites;
+        for (int i = 0; i < sprites.Length; i++)
+        {
+            Sprite sprite = sprites[i];
+            if (sprite == null)
+                continue;
+
+            if (!_spriteByName.ContainsKey(sprite.name))
+                _spriteByName.Add(sprite.name, sprite);
+        }
+    }
+
+    private Sprite ResolveSprite(string spriteName)
+    {
+        if (string.IsNullOrEmpty(spriteName))
+            return null;
+
+        if (_spriteByName.TryGetValue(spriteName, out Sprite sprite))
+            return sprite;
+
+        return null;
+    }
+}

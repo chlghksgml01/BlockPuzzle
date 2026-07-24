@@ -21,9 +21,10 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     [SerializeField, Min(0f)] private float _grayEffectDuration = 1f;
 
     [Header("Block")]
+    [Tooltip("플레이어가 슬롯에서 놓고 배치하는 블록 스프라이트")]
     [SerializeField] private Sprite[] _blockSprites;
     [SerializeField, Range(0f, 1f)] private float _largeShapeSpawnReduceStartFillRatio = 0.5f;
-    private Dictionary<string, Sprite> _spriteByName = new Dictionary<string, Sprite>();
+    private readonly Dictionary<string, Sprite> _playerSpriteByName = new Dictionary<string, Sprite>();
 
     public static event Action<int> OnBlockSettled;
     public static event Action OnResetGame;
@@ -35,18 +36,21 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     private int _previousBestScore;
 
     private BoardManager _boardManger;
+    private MissionBoardController _missionBoardController;
 
     public void Initialize(InitializeContext context)
     {
         _scoreSystem = context.ScoreSystem;
         _boardManger = context.BoardManager;
+        _missionBoardController = _boardManger != null
+            ? _boardManger.GetComponent<MissionBoardController>()
+            : null;
     }
 
     override protected void OnAwake()
     {
         _gameOverUI.gameObject.SetActive(false);
-        BuildSpriteLookup();
-        PrepareLevelBoardSizeIfNeeded();
+        BuildPlayerSpriteLookup();
     }
 
     private void OnEnable()
@@ -91,8 +95,8 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
             if (!hasData)
                 SpawnBlocksInSlots();
 
-            _boardManger.PlayIntro();
             EnableInteraction(false);
+            _boardManger.PlayIntro(HandleIntroCompleted);
         }
         else
             EnableInteraction(true);
@@ -292,9 +296,9 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         SaveGame();
     }
 
-    private void BuildSpriteLookup()
+    private void BuildPlayerSpriteLookup()
     {
-        _spriteByName.Clear();
+        _playerSpriteByName.Clear();
         if (_blockSprites == null)
             return;
 
@@ -304,17 +308,18 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
             if (sprite == null)
                 continue;
 
-            if (!_spriteByName.ContainsKey(sprite.name))
-                _spriteByName.Add(sprite.name, sprite);
+            if (!_playerSpriteByName.ContainsKey(sprite.name))
+                _playerSpriteByName.Add(sprite.name, sprite);
         }
     }
 
-    private Sprite ResolveSprite(string spriteName)
+    /// <summary>슬롯/보드 저장 복원용. 플레이어 스폰 스프라이트만 사용.</summary>
+    private Sprite ResolvePlayerSprite(string spriteName)
     {
         if (string.IsNullOrEmpty(spriteName))
             return null;
 
-        if (_spriteByName.TryGetValue(spriteName, out Sprite sprite))
+        if (_playerSpriteByName.TryGetValue(spriteName, out Sprite sprite))
             return sprite;
 
         return null;
@@ -386,7 +391,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         }
 
         ClearAllSlots();
-        board.RestoreFilledCells(data.filledCells, ResolveSprite);
+        board.RestoreFilledCells(data.filledCells, ResolvePlayerSprite);
 
         if (data.slots != null && data.slots.Count > 0)
         {
@@ -397,7 +402,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
                 if (sd == null || !sd.hasBlock)
                     continue;
 
-                Sprite sprite = ResolveSprite(sd.spriteName);
+                Sprite sprite = ResolvePlayerSprite(sd.spriteName);
                 if (sprite == null)
                     continue;
 
@@ -424,39 +429,31 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         _slotsCanvasGroup.blocksRaycasts = isEnable;
     }
 
-    private void PrepareLevelBoardSizeIfNeeded()
-    {
-        if (_boardManger == null || !LevelSessionContext.IsActive)
-            return;
-
-        BoardLayoutData layoutData = LevelSessionContext.GetSelectedMission()?.BoardLayoutData;
-        if (layoutData == null)
-            return;
-
-        _boardManger.PrepareBoardSizeFromLayout(layoutData);
-    }
-
     private void StartLevelGame()
     {
-        ApplyLevelBoardLayout();
         SpawnBlocksInSlots();
-        _boardManger.PlayIntro();
         EnableInteraction(false);
+        _boardManger.PlayIntro(HandleIntroCompleted);
+        ScheduleGameOverIfNeeded();
+    }
+
+    private void HandleIntroCompleted()
+    {
+        if (LevelSessionContext.IsActive)
+            ApplyLevelBoardLayout();
+
+        EnableInteraction(true);
         ScheduleGameOverIfNeeded();
     }
 
     private void ApplyLevelBoardLayout()
     {
-        if (_boardManger == null)
-            return;
-
-        BoardLayoutData layoutData = LevelSessionContext.GetSelectedMission()?.BoardLayoutData;
-        if (layoutData == null)
+        if (_missionBoardController == null)
         {
-            Debug.LogWarning("[InGameManager] 선택된 레벨에 BoardLayoutData가 없습니다.");
+            Debug.LogWarning("[InGameManager] MissionBoardController가 없습니다. BoardManager에 컴포넌트를 추가하세요.");
             return;
         }
 
-        _boardManger.ApplyBoardLayout(layoutData, ResolveSprite);
+        _missionBoardController.ApplyMissionLayout();
     }
 }
