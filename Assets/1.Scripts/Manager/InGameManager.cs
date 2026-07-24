@@ -46,6 +46,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     {
         _gameOverUI.gameObject.SetActive(false);
         BuildSpriteLookup();
+        PrepareLevelBoardSizeIfNeeded();
     }
 
     private void OnEnable()
@@ -76,6 +77,12 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     private void Start()
     {
         _isGameOverTriggered = false;
+
+        if (LevelSessionContext.IsActive)
+        {
+            StartLevelGame();
+            return;
+        }
 
         bool hasData = TryLoadGame(out bool isNewGame);
 
@@ -191,6 +198,8 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         SpawnBlocksInSlots();
 
         OnResetGame?.Invoke();
+        if (LevelSessionContext.IsActive)
+            ApplyLevelBoardLayout();
         _scoreSystem.ResetScore();
         SaveGame();
         ScheduleGameOverIfNeeded();
@@ -319,11 +328,15 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
     private void SaveGame()
     {
+        if (LevelSessionContext.IsActive)
+            return;
+
         BoardManager board = _boardManger;
         if (board == null || _scoreSystem == null)
             return;
 
         InGameSaveData data = new InGameSaveData();
+        data.boardSize = board.BoardSize;
 
         _scoreSystem.ExportState(out data.score, out data.currentPlaceCount, out data.currentComboCount);
 
@@ -365,6 +378,13 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         if (board == null || _scoreSystem == null)
             return false;
 
+        if (data.boardSize > 0 && data.boardSize != board.BoardSize)
+        {
+            Debug.LogWarning($"저장된 보드 크기({data.boardSize})와 현재 설정({board.BoardSize})이 달라 저장 데이터를 무시합니다.");
+            InGameSaveStorage.Clear();
+            return false;
+        }
+
         ClearAllSlots();
         board.RestoreFilledCells(data.filledCells, ResolveSprite);
 
@@ -402,5 +422,41 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     public void EnableInteraction(bool isEnable)
     {
         _slotsCanvasGroup.blocksRaycasts = isEnable;
+    }
+
+    private void PrepareLevelBoardSizeIfNeeded()
+    {
+        if (_boardManger == null || !LevelSessionContext.IsActive)
+            return;
+
+        BoardLayoutData layoutData = LevelSessionContext.GetSelectedMission()?.BoardLayoutData;
+        if (layoutData == null)
+            return;
+
+        _boardManger.PrepareBoardSizeFromLayout(layoutData);
+    }
+
+    private void StartLevelGame()
+    {
+        ApplyLevelBoardLayout();
+        SpawnBlocksInSlots();
+        _boardManger.PlayIntro();
+        EnableInteraction(false);
+        ScheduleGameOverIfNeeded();
+    }
+
+    private void ApplyLevelBoardLayout()
+    {
+        if (_boardManger == null)
+            return;
+
+        BoardLayoutData layoutData = LevelSessionContext.GetSelectedMission()?.BoardLayoutData;
+        if (layoutData == null)
+        {
+            Debug.LogWarning("[InGameManager] 선택된 레벨에 BoardLayoutData가 없습니다.");
+            return;
+        }
+
+        _boardManger.ApplyBoardLayout(layoutData, ResolveSprite);
     }
 }

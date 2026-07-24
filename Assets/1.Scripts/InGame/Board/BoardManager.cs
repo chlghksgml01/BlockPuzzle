@@ -1,20 +1,34 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 [DefaultExecutionOrder(-90)]
 public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoardQuery, IBoardInfo
 {
+    private const int MinBoardSize = 8;
+    private const int MaxBoardSize = 10;
+
     [Header("Board Configurations")]
-    [SerializeField] private int _width = 9;
-    [SerializeField] private int _height = 9;
-    public int Width => _width;
-    public int Height => _height;
+    [Tooltip("보드 한 변의 칸 수 (정사각형). 예: 8 → 8x8, 9 → 9x9, 10 → 10x10")]
+    [SerializeField, Range(MinBoardSize, MaxBoardSize)]
+    [FormerlySerializedAs("_width")]
+    private int _boardSize = 9;
+
+    public int Width => _boardSize;
+    public int Height => _boardSize;
+    public int BoardSize => _boardSize;
+
+    [Header("Grid Layout Presets")]
+    [Tooltip("보드 크기별 GridLayoutGroup 설정. Board Size와 boardSize가 일치하는 프리셋이 Board에 적용됩니다.")]
+    [SerializeField] private List<BoardGridLayoutPreset> _gridLayoutPresets = new List<BoardGridLayoutPreset>();
 
     [Header("References (UI & Prefabs)")]
     [SerializeField] private RectTransform _boardRoot;
     [SerializeField] private RectTransform _hintBoardRoot;
+    [Tooltip("보드 배경 체커보드 Image (Board_Img)")]
+    [SerializeField] private Image _boardBackgroundImage;
     [SerializeField] private GameObject _cellPrefab;
     [SerializeField] private GameObject _hintCellPrefab;
 
@@ -48,11 +62,41 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
         _scoreSystem = context.ScoreSystem;
     }
 
+    /// <summary>BoardLayoutData의 크기로 보드 생성 전 _boardSize를 맞춘다. BoardManager.Awake 이전에 호출해야 한다.</summary>
+    public void PrepareBoardSizeFromLayout(BoardLayoutData layoutData)
+    {
+        if (layoutData == null)
+            return;
+
+        _boardSize = Mathf.Clamp(layoutData.boardSize, MinBoardSize, MaxBoardSize);
+    }
+
+    /// <summary>BoardLayoutData에 정의된 초기 채움 상태를 보드에 적용한다.</summary>
+    public void ApplyBoardLayout(BoardLayoutData layoutData, Func<string, Sprite> spriteResolver)
+    {
+        if (layoutData == null)
+            return;
+
+        RestoreFilledCells(layoutData.filledCells, spriteResolver);
+    }
+
     private void Awake()
     {
         GenerateBoard();
         _boardEffect = GetComponentInChildren<BoardEffect>();
         ActivateGrayscale(false);
+    }
+
+    private void Reset()
+    {
+        _gridLayoutPresets = CreateDefaultPresets();
+    }
+
+    private void OnValidate()
+    {
+        _boardSize = Mathf.Clamp(_boardSize, MinBoardSize, MaxBoardSize);
+        EnsureDefaultPresetsIfEmpty();
+        ApplyGridLayoutSettings();
     }
 
     private void OnEnable()
@@ -69,15 +113,20 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
 
     private void GenerateBoard()
     {
-        _cells = new BoardCell[_width, _height];
-        _hintCells = new HintBoardCell[_width, _height];
+        ClearBoardChildren(_boardRoot);
+        ClearBoardChildren(_hintBoardRoot);
+        EnsureDefaultPresetsIfEmpty();
+        ApplyGridLayoutSettings();
+
+        _cells = new BoardCell[_boardSize, _boardSize];
+        _hintCells = new HintBoardCell[_boardSize, _boardSize];
 
         _boardGrid = _boardRoot.GetComponent<GridLayoutGroup>();
         BoardCellSize = _boardGrid.cellSize.x;
 
-        for (int y = 0; y < _height; y++)
+        for (int y = 0; y < _boardSize; y++)
         {
-            for (int x = 0; x < _width; x++)
+            for (int x = 0; x < _boardSize; x++)
             {
                 GameObject cell = Instantiate(_cellPrefab, _boardRoot);
                 _cells[x, y] = cell.GetComponent<BoardCell>();
@@ -93,22 +142,119 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
 
     private void InitializeBoardCore()
     {
-        _mapper = new BoardGridMapper(_boardRoot, _boardGrid, _width, _height);
-        _model = new BoardModel(_width, _height, _cells, (cleared, rows, cols) =>
+        _mapper = new BoardGridMapper(_boardRoot, _boardGrid, _boardSize, _boardSize);
+        _model = new BoardModel(_boardSize, _boardSize, _cells, (cleared, rows, cols) =>
         {
             if (_scoreSystem != null)
                 _scoreSystem.CalculateLineScore(cleared);
             OnLinesClearedDetailed?.Invoke(rows, cols);
         });
         _preview = new BoardPreviewController(_model, _mapper, _keepPreviewMaxDistancePx);
-        _hint = new BoardHintController(_width, _height, _hintCells, _model);
+        _hint = new BoardHintController(_boardSize, _boardSize, _hintCells, _model);
+    }
+
+    private void ApplyGridLayoutSettings()
+    {
+        BoardGridLayoutPreset preset = FindLayoutPreset(_boardSize);
+        if (preset != null)
+        {
+            ApplyLayoutPreset(_boardRoot, preset);
+            ApplyLayoutPreset(_hintBoardRoot, preset);
+            ApplyBoardBackgroundImage(preset);
+            return;
+        }
+
+        Debug.LogWarning($"BoardManager: boardSize {_boardSize}에 해당하는 Grid Layout 프리셋이 없습니다.", this);
+        ApplyGridConstraintOnly(_boardRoot);
+        ApplyGridConstraintOnly(_hintBoardRoot);
+    }
+
+    private BoardGridLayoutPreset FindLayoutPreset(int boardSize)
+    {
+        if (_gridLayoutPresets == null)
+            return null;
+
+        for (int i = 0; i < _gridLayoutPresets.Count; i++)
+        {
+            BoardGridLayoutPreset preset = _gridLayoutPresets[i];
+            if (preset != null && preset.BoardSize == boardSize)
+                return preset;
+        }
+
+        return null;
+    }
+
+    private void ApplyLayoutPreset(RectTransform root, BoardGridLayoutPreset preset)
+    {
+        if (root == null || preset == null)
+            return;
+
+        GridLayoutGroup grid = root.GetComponent<GridLayoutGroup>();
+        if (grid == null)
+            return;
+
+        preset.ApplyTo(grid);
+    }
+
+    private void ApplyBoardBackgroundImage(BoardGridLayoutPreset preset)
+    {
+        if (_boardBackgroundImage == null || preset == null)
+            return;
+
+        preset.ApplyBoardImage(_boardBackgroundImage);
+    }
+
+    private void ApplyGridConstraintOnly(RectTransform root)
+    {
+        if (root == null)
+            return;
+
+        GridLayoutGroup grid = root.GetComponent<GridLayoutGroup>();
+        if (grid == null)
+            return;
+
+        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = _boardSize;
+    }
+
+    private void EnsureDefaultPresetsIfEmpty()
+    {
+        if (_gridLayoutPresets != null && _gridLayoutPresets.Count > 0)
+            return;
+
+        _gridLayoutPresets = CreateDefaultPresets();
+    }
+
+    private static List<BoardGridLayoutPreset> CreateDefaultPresets()
+    {
+        return new List<BoardGridLayoutPreset>
+        {
+            BoardGridLayoutPreset.CreateDefault(8),
+            BoardGridLayoutPreset.CreateDefault(9),
+            BoardGridLayoutPreset.CreateDefault(10)
+        };
+    }
+
+    private void ClearBoardChildren(RectTransform root)
+    {
+        if (root == null)
+            return;
+
+        for (int i = root.childCount - 1; i >= 0; i--)
+        {
+            Transform child = root.GetChild(i);
+            if (Application.isPlaying)
+                Destroy(child.gameObject);
+            else
+                DestroyImmediate(child.gameObject);
+        }
     }
 
     public bool TryGetCellWorldPosition(int x, int y, out Vector3 worldPos)
     {
         worldPos = default;
 
-        if (_cells == null || x < 0 || x >= _width || y < 0 || y >= _height)
+        if (_cells == null || x < 0 || x >= _boardSize || y < 0 || y >= _boardSize)
             return false;
 
         BoardCell cell = _cells[x, y];
@@ -168,7 +314,7 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
     #region InGameManager
     public void PlayIntro()
     {
-        _boardEffect.PlayIntro(_cells, _width, _height);
+        _boardEffect.PlayIntro(_cells, _boardSize, _boardSize);
     }
 
     public void ShowHint(bool showHint, DraggableBlock block, bool isPlaced = false)
@@ -190,7 +336,7 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
             if (data == null)
                 continue;
 
-            if (data.x < 0 || data.x >= _width || data.y < 0 || data.y >= _height)
+            if (data.x < 0 || data.x >= _boardSize || data.y < 0 || data.y >= _boardSize)
                 continue;
 
             Sprite sprite = spriteResolver != null ? spriteResolver(data.spriteName) : null;
@@ -201,9 +347,9 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
     public List<FilledCellData> ExportFilledCells()
     {
         List<FilledCellData> result = new List<FilledCellData>();
-        for (int x = 0; x < _width; x++)
+        for (int x = 0; x < _boardSize; x++)
         {
-            for (int y = 0; y < _height; y++)
+            for (int y = 0; y < _boardSize; y++)
             {
                 BoardCell cell = _cells[x, y];
                 if (!cell.IsFilled)

@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 372b8a60f8c2f62459f9d43d186d76e1, type: 3}
+  m_Name: Mission_CollectGem 11
+  m_EditorClassIdentifier: Assembly-CSharp::CollectGemMissionData
+  _missionDescription: 
+  _isHard: 1
+  _gemTargets:
+  - gemType: 0
+    count: 2
+  - gemType: 2
+    count: 5

@@ -244,17 +244,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GridLayoutGroup
   m_Padding:
-    m_Left: 19
+    m_Left: 12
     m_Right: 0
-    m_Top: 23
+    m_Top: 9
     m_Bottom: 2
   m_ChildAlignment: 0
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 106, y: 106}
+  m_CellSize: {x: 119, y: 119}
   m_Spacing: {x: 3.3, y: 1.5}
-  m_Constraint: 0
-  m_ConstraintCount: 2
+  m_Constraint: 1
+  m_ConstraintCount: 8
 --- !u!222 &27546569
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1363,17 +1363,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GridLayoutGroup
   m_Padding:
-    m_Left: 19
+    m_Left: 12
     m_Right: 0
-    m_Top: 23
+    m_Top: 9
     m_Bottom: 2
   m_ChildAlignment: 0
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 106, y: 106}
+  m_CellSize: {x: 119, y: 119}
   m_Spacing: {x: 3.3, y: 1.5}
-  m_Constraint: 0
-  m_ConstraintCount: 2
+  m_Constraint: 1
+  m_ConstraintCount: 8
 --- !u!222 &1510317874
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1444,7 +1444,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: a48def326194d0e43bdac66b360a5822, type: 3}
+  m_Sprite: {fileID: 21300000, guid: bb6cbe020085df7489f7dc98ab43bd9b, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1973,9 +1973,17 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 27546566}
     - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
+      propertyPath: _boardSize
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
       propertyPath: _hintBoardRoot
       value: 
       objectReference: {fileID: 1510317872}
+    - target: {fileID: 1871761609566701615, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
+      propertyPath: _boardBackgroundImage
+      value: 
+      objectReference: {fileID: 1777352763}
     - target: {fileID: 7912788501387897607, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
       propertyPath: m_Name
       value: BaordManager
