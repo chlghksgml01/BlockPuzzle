@@ -10,10 +10,14 @@ public sealed class BoardModel
 
     private readonly List<int> _fullRow = new List<int>();
     private readonly List<int> _fullCol = new List<int>();
+    private readonly HashSet<int> _fullRowSet = new HashSet<int>();
+    private readonly HashSet<int> _fullColSet = new HashSet<int>();
+    private readonly HashSet<Vector2Int> _clearedCellKeys = new HashSet<Vector2Int>();
 
     public Vector2Int LastPlaceableBasePos { get; private set; }
 
     private readonly Action<int, IReadOnlyList<int>, IReadOnlyList<int>> _onLinesCleared;
+    private Func<string, Sprite> _spriteResolver;
 
     public BoardModel(int width, int height, BoardCell[,] cells, Action<int, IReadOnlyList<int>, IReadOnlyList<int>> onLinesCleared)
     {
@@ -22,6 +26,11 @@ public sealed class BoardModel
         _cells = cells;
         _onLinesCleared = onLinesCleared;
         LastPlaceableBasePos = new Vector2Int(-1, -1);
+    }
+
+    public void SetSpriteResolver(Func<string, Sprite> spriteResolver)
+    {
+        _spriteResolver = spriteResolver;
     }
 
     public BoardCell[,] Cells => _cells;
@@ -114,21 +123,61 @@ public sealed class BoardModel
 
     private void RemoveFullLines()
     {
+        _fullRowSet.Clear();
+        _fullColSet.Clear();
+        _clearedCellKeys.Clear();
+
+        for (int i = 0; i < _fullRow.Count; i++)
+            _fullRowSet.Add(_fullRow[i]);
+        for (int i = 0; i < _fullCol.Count; i++)
+            _fullColSet.Add(_fullCol[i]);
+
         foreach (int row in _fullRow)
         {
             for (int x = 0; x < _width; x++)
-                _cells[x, row].ClearAllState();
+                ProcessClearedCell(x, row);
         }
 
         foreach (int col in _fullCol)
         {
             for (int y = 0; y < _height; y++)
-                _cells[col, y].ClearAllState();
+                ProcessClearedCell(col, y);
         }
     }
 
     /// <summary>
-    /// 라인이 가득 차면 클리어 대상 (stone 포함).
+    /// 클리어된 행/열에 속한 셀을 한 번만 처리한다.
+    /// ice/grass는 속한 줄 수만큼 단계가 오르고(행+열이면 +2), 그 외는 즉시 제거.
+    /// </summary>
+    private void ProcessClearedCell(int x, int y)
+    {
+        Vector2Int key = new Vector2Int(x, y);
+        if (!_clearedCellKeys.Add(key))
+            return;
+
+        BoardCell cell = _cells[x, y];
+        int damage = 0;
+        if (_fullRowSet.Contains(y))
+            damage++;
+        if (_fullColSet.Contains(x))
+            damage++;
+
+        if (damage <= 0)
+            return;
+
+        string spriteName = cell.FilledSprite != null ? cell.FilledSprite.name : null;
+        if (BoardCell.TryGetStagedBlockInfo(spriteName, out _, out _))
+        {
+            if (_spriteResolver == null || !cell.TryPlayStagedDamage(damage, _spriteResolver))
+                cell.ClearAllState();
+            return;
+        }
+
+        cell.ClearAllState();
+    }
+
+    /// <summary>
+    /// 라인이 가득 차면 클리어 대상 (stone 포함). ice/grass는 제거 대신 단계 상승.
     /// </summary>
     private bool IsLineClearableRow(int y, bool includePreview)
     {

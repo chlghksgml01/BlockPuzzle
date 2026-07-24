@@ -546,7 +546,7 @@
     "m_Hidden": false,
     "m_ShaderOutputName": "AlphaClipThreshold",
     "m_StageCapability": 2,
-    "m_Value": 0.5,
+    "m_Value": 0.0,
     "m_DefaultValue": 0.5,
     "m_Labels": [],
     "m_LiteralMode": false
@@ -1477,8 +1477,8 @@
     "m_ObjectId": "6fd89c6cd055438bb6439d0880926568",
     "m_Title": "Grayscale Animation",
     "m_Position": {
-        "x": -1427.0,
-        "y": -530.9999389648438
+        "x": -1427.0001220703125,
+        "y": -531.0000610351563
     }
 }
 
@@ -2466,8 +2466,8 @@
     "m_ObjectId": "c1b363ccc73c44589b16e6cdc9d26e55",
     "m_Title": "Gray",
     "m_Position": {
-        "x": -1060.9998779296875,
-        "y": 182.0
+        "x": -1061.0001220703125,
+        "y": 182.00001525878907
     }
 }
 

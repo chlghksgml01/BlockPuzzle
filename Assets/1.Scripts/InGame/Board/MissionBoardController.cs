@@ -23,6 +23,7 @@ public sealed class MissionBoardController : MonoBehaviour
     {
         _boardManager = GetComponent<BoardManager>();
         BuildSpriteLookup();
+        _boardManager.SetMissionSpriteResolver(ResolveSprite);
 
         if (LevelSessionContext.IsActive)
             PrepareFromSelectedMission();
@@ -86,6 +87,13 @@ public sealed class MissionBoardController : MonoBehaviour
 
         if (_spriteByName.TryGetValue(spriteName, out Sprite sprite))
             return sprite;
+
+        // ice02 → ice02_0 처럼 접두어가 같은 스프라이트 허용
+        foreach (KeyValuePair<string, Sprite> pair in _spriteByName)
+        {
+            if (pair.Key.StartsWith(spriteName, System.StringComparison.OrdinalIgnoreCase))
+                return pair.Value;
+        }
 
         return null;
     }

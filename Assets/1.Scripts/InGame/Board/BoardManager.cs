@@ -52,6 +52,7 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
     private BoardModel _model;
     private BoardPreviewController _preview;
     private BoardHintController _hint;
+    private Func<string, Sprite> _missionSpriteResolver;
 
     public event Action<IReadOnlyList<int>, IReadOnlyList<int>> OnLinesClearedDetailed;
 
@@ -97,6 +98,14 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
                 cell.PlayAppearTween(duration);
             }
         }
+    }
+
+    /// <summary>미션 팔레트 스프라이트 해석기. ice 단계 전환(ice01→ice02 등)에 사용.</summary>
+    public void SetMissionSpriteResolver(Func<string, Sprite> spriteResolver)
+    {
+        _missionSpriteResolver = spriteResolver;
+        if (_model != null)
+            _model.SetSpriteResolver(_missionSpriteResolver);
     }
 
     private void Awake()
@@ -170,6 +179,9 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
         });
         _preview = new BoardPreviewController(_model, _mapper, _keepPreviewMaxDistancePx);
         _hint = new BoardHintController(_boardSize, _boardSize, _hintCells, _model);
+
+        if (_missionSpriteResolver != null)
+            _model.SetSpriteResolver(_missionSpriteResolver);
     }
 
     private void ApplyGridLayoutSettings()
