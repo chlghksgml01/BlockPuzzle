@@ -88,7 +88,7 @@ public class BoardCell : MonoBehaviour
         _image.color = new Color(1f, 1f, 1f, 1f);
     }
 
-    /// <summary>레이아웃의 stone 스프라이트 칸. 블록 배치 불가, 라인 클리어에도 유지.</summary>
+    /// <summary>레이아웃의 stone 스프라이트 칸. 블록 배치는 불가하지만, 라인 클리어 시 함께 제거된다.</summary>
     public void SetBlocked(Sprite blockSprite)
     {
         IsBlocked = true;
@@ -137,9 +137,6 @@ public class BoardCell : MonoBehaviour
 
     public void SetLinePreview(bool active, Sprite lineSprite = null, bool isIntroEffect = false)
     {
-        if (IsBlocked)
-            return;
-
         if (IsPreviewFilled)
             return;
 

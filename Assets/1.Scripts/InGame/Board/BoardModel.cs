@@ -117,63 +117,43 @@ public sealed class BoardModel
         foreach (int row in _fullRow)
         {
             for (int x = 0; x < _width; x++)
-            {
-                if (_cells[x, row].IsBlocked)
-                    continue;
-
-                _cells[x, row].SetFilled(false);
-                _cells[x, row].UpdateCellVisual(false);
-            }
+                _cells[x, row].ClearAllState();
         }
 
         foreach (int col in _fullCol)
         {
             for (int y = 0; y < _height; y++)
-            {
-                if (_cells[col, y].IsBlocked)
-                    continue;
-
-                _cells[col, y].SetFilled(false);
-                _cells[col, y].UpdateCellVisual(false);
-            }
+                _cells[col, y].ClearAllState();
         }
     }
 
     /// <summary>
-    /// 라인이 가득 차고, 지울 수 있는(비-stone) 블록이 하나 이상 있을 때만 클리어 대상.
+    /// 라인이 가득 차면 클리어 대상 (stone 포함).
     /// </summary>
     private bool IsLineClearableRow(int y, bool includePreview)
     {
-        bool hasClearable = false;
         for (int x = 0; x < _width; x++)
         {
             BoardCell cell = _cells[x, y];
             bool occupied = cell.IsOccupied || (includePreview && cell.IsPreviewFilled);
             if (!occupied)
                 return false;
-
-            if (!cell.IsBlocked)
-                hasClearable = true;
         }
 
-        return hasClearable;
+        return true;
     }
 
     private bool IsLineClearableCol(int x, bool includePreview)
     {
-        bool hasClearable = false;
         for (int y = 0; y < _height; y++)
         {
             BoardCell cell = _cells[x, y];
             bool occupied = cell.IsOccupied || (includePreview && cell.IsPreviewFilled);
             if (!occupied)
                 return false;
-
-            if (!cell.IsBlocked)
-                hasClearable = true;
         }
 
-        return hasClearable;
+        return true;
     }
 
     public bool CanPlaceShape(Vector2Int[] shapeOffset)
