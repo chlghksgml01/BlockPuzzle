@@ -27,6 +27,9 @@ public class ResultPopupUI : BasePopupUI
     [Tooltip("같은 레벨을 다시 플레이")]
     [SerializeField] private Button _retryButton;
 
+    [Tooltip("다음 레벨로 이동")]
+    [SerializeField] private Button _nextButton;
+
     [Tooltip("레벨맵으로 나가기")]
     [SerializeField] private Button _quitButton;
 
@@ -92,12 +95,23 @@ public class ResultPopupUI : BasePopupUI
         if (_levelText != null)
             _levelText.text = $"Level  {levelNumber}";
 
+        SetResultButtonVisibility(success);
+
         // 비활성 상태에서 호출되면 Open 전에 활성화되어 OnEnable에서 버튼을 연결한다.
         if (!gameObject.activeSelf)
             gameObject.SetActive(true);
 
         WireButtons();
         Open();
+    }
+
+    private void SetResultButtonVisibility(bool success)
+    {
+        if (_nextButton != null)
+            _nextButton.gameObject.SetActive(success);
+
+        if (_retryButton != null)
+            _retryButton.gameObject.SetActive(!success);
     }
 
     /// <summary>같은 레벨을 다시 시작한다.</summary>
