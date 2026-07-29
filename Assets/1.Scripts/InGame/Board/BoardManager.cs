@@ -312,14 +312,14 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
         CanPlaceBlock = canPlace;
     }
 
-    public bool PlaceLastPreview(DraggableBlock block, Sprite blockSprite, out int placedCount)
+    public bool PlaceLastPreview(DraggableBlock block, out int placedCount)
     {
         placedCount = 0;
 
         if (!CanPlaceBlock)
             return false;
 
-        bool canPlaceBlock = _preview.PlaceLastPreview(block, blockSprite, out placedCount);
+        bool canPlaceBlock = _preview.PlaceLastPreview(block, out placedCount);
         if (canPlaceBlock)
             CanPlaceBlock = false;
 
@@ -395,6 +395,9 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
                 continue;
 
             if (data.x < 0 || data.x >= _boardSize || data.y < 0 || data.y >= _boardSize)
+                continue;
+
+            if (BoardCell.IsGemSpriteName(data.spriteName))
                 continue;
 
             Sprite sprite = spriteResolver != null ? spriteResolver(data.spriteName) : null;

@@ -131,4 +131,26 @@ public sealed class MissionBoardController : MonoBehaviour
 
         return null;
     }
+
+    /// <summary>Gem 미션용 DraggableBlock Gem 스프라이트.</summary>
+    public bool TryResolveGemSprite(GemType gemType, out Sprite sprite)
+    {
+        sprite = ResolveSprite(GetGemSpriteName(gemType));
+        return sprite != null;
+    }
+
+    private static string GetGemSpriteName(GemType gemType)
+    {
+        switch (gemType)
+        {
+            case GemType.Pentagon:
+                return "bluePentagon";
+            case GemType.Square:
+                return "yellowSquare";
+            case GemType.Star:
+                return "redStar";
+            default:
+                return string.Empty;
+        }
+    }
 }

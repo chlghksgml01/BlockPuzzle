@@ -29,6 +29,11 @@ public sealed class MissionMaker : EditorWindow
     [SerializeField] private int _targetScore;
     [SerializeField] private float _timeLimitSeconds;
 
+    [Header("Gem Targets")]
+    [SerializeField] private int _gemPentagonCount;
+    [SerializeField] private int _gemSquareCount;
+    [SerializeField] private int _gemStarCount;
+
     private readonly Dictionary<Vector2Int, string> _filledCells = new Dictionary<Vector2Int, string>();
     private Vector2 _scrollPosition;
     private Rect _boardRect;
@@ -100,6 +105,21 @@ public sealed class MissionMaker : EditorWindow
         {
             _targetScore = EditorGUILayout.IntField("Target Score", _targetScore);
             _timeLimitSeconds = EditorGUILayout.FloatField("Time Limit (sec)", _timeLimitSeconds);
+        }
+
+        if (_missionType == MissionType.Gem)
+        {
+            EditorGUILayout.LabelField("Gem Targets (Slot Spawn)", EditorStyles.boldLabel);
+            EditorGUI.BeginChangeCheck();
+            _gemPentagonCount = EditorGUILayout.IntField("Pentagon", _gemPentagonCount);
+            _gemSquareCount = EditorGUILayout.IntField("Square", _gemSquareCount);
+            _gemStarCount = EditorGUILayout.IntField("Star", _gemStarCount);
+            if (EditorGUI.EndChangeCheck())
+                RefreshMissionType();
+
+            EditorGUILayout.HelpBox(
+                "Gem은 보드가 아닌 DraggableBlock 슬롯에 스폰됩니다.\n보드에는 stone/ice/grass만 배치하세요.",
+                MessageType.Info);
         }
 
         EditorGUILayout.BeginHorizontal();
@@ -313,6 +333,9 @@ public sealed class MissionMaker : EditorWindow
         if (selectedSprite == null)
             return;
 
+        if (BoardCell.IsGemSpriteName(selectedSprite.name))
+            return;
+
         _filledCells[key] = selectedSprite.name;
         RefreshMissionType();
     }
@@ -323,14 +346,16 @@ public sealed class MissionMaker : EditorWindow
     }
 
     /// <summary>
-    /// grass → Grass, ice → Ice, Pentagon/Square/Star → Gem,
+    /// gemTargets → Gem, grass → Grass, ice → Ice,
     /// 비어 있거나 stone만 있으면 ScoreGoal.
     /// </summary>
     private MissionType ResolveMissionTypeFromFilledCells()
     {
+        if (_gemPentagonCount > 0 || _gemSquareCount > 0 || _gemStarCount > 0)
+            return MissionType.Gem;
+
         bool hasGrass = false;
         bool hasIce = false;
-        bool hasGem = false;
 
         foreach (KeyValuePair<Vector2Int, string> pair in _filledCells)
         {
@@ -339,16 +364,12 @@ public sealed class MissionMaker : EditorWindow
                 hasGrass = true;
             else if (BoardCell.IsIceSpriteName(spriteName))
                 hasIce = true;
-            else if (BoardCell.IsGemSpriteName(spriteName))
-                hasGem = true;
         }
 
         if (hasGrass)
             return MissionType.Grass;
         if (hasIce)
             return MissionType.Ice;
-        if (hasGem)
-            return MissionType.Gem;
 
         return MissionType.ScoreGoal;
     }
@@ -445,6 +466,7 @@ public sealed class MissionMaker : EditorWindow
         _isClear = _missionAsset.isClear;
         _targetScore = _missionAsset.targetScore;
         _timeLimitSeconds = _missionAsset.timeLimitSeconds;
+        LoadGemTargetsFromAsset(_missionAsset);
         _filledCells.Clear();
 
         List<FilledCellData> cells = _missionAsset.filledCells;
@@ -464,11 +486,54 @@ public sealed class MissionMaker : EditorWindow
             if (data.x < 0 || data.x >= _boardSize || data.y < 0 || data.y >= _boardSize)
                 continue;
 
+            if (BoardCell.IsGemSpriteName(data.spriteName))
+                continue;
+
             _filledCells[new Vector2Int(data.x, data.y)] = data.spriteName;
         }
 
         RefreshMissionType();
         Repaint();
+    }
+
+    private void LoadGemTargetsFromAsset(MissionData missionAsset)
+    {
+        _gemPentagonCount = 0;
+        _gemSquareCount = 0;
+        _gemStarCount = 0;
+
+        if (missionAsset == null)
+            return;
+
+        List<GemTargetInfo> targets = missionAsset.BuildGemTargets();
+        for (int i = 0; i < targets.Count; i++)
+        {
+            GemTargetInfo target = targets[i];
+            switch (target.gemType)
+            {
+                case GemType.Pentagon:
+                    _gemPentagonCount = target.count;
+                    break;
+                case GemType.Square:
+                    _gemSquareCount = target.count;
+                    break;
+                case GemType.Star:
+                    _gemStarCount = target.count;
+                    break;
+            }
+        }
+    }
+
+    private List<GemTargetInfo> ExportGemTargets()
+    {
+        List<GemTargetInfo> result = new List<GemTargetInfo>(3);
+        if (_gemPentagonCount > 0)
+            result.Add(new GemTargetInfo { gemType = GemType.Pentagon, count = _gemPentagonCount });
+        if (_gemSquareCount > 0)
+            result.Add(new GemTargetInfo { gemType = GemType.Square, count = _gemSquareCount });
+        if (_gemStarCount > 0)
+            result.Add(new GemTargetInfo { gemType = GemType.Star, count = _gemStarCount });
+        return result;
     }
 
     private void SaveToAsset()
@@ -495,6 +560,7 @@ public sealed class MissionMaker : EditorWindow
         _missionAsset.missionType = _missionType;
         _missionAsset.targetScore = _targetScore;
         _missionAsset.timeLimitSeconds = _timeLimitSeconds;
+        _missionAsset.gemTargets = ExportGemTargets();
 
         EditorUtility.SetDirty(_missionAsset);
         AssetDatabase.SaveAssets();

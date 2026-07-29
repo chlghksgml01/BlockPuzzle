@@ -21,6 +21,10 @@ public class MissionData : ScriptableObject
     [Tooltip("미션 종류")]
     public MissionType missionType;
 
+    [Header("Gem Mission")]
+    [Tooltip("수집할 Gem 종류별 목표 개수 (슬롯 DraggableBlock에 스폰됨)")]
+    public List<GemTargetInfo> gemTargets = new List<GemTargetInfo>();
+
     [Header("Score Goal")]
     [Tooltip("클리어에 필요한 목표 점수 (ScoreGoal 미션용)")]
     public int targetScore;
@@ -46,8 +50,30 @@ public class MissionData : ScriptableObject
         return CountCellsByPredicate(BoardCell.IsGrassSpriteName);
     }
 
-    /// <summary>보드의 Pentagon/Square/Star 개수로 Gem 목표 목록을 만든다. 0개인 종류는 제외.</summary>
+    /// <summary>Gem 미션 목표 목록. gemTargets 우선, 없으면 레거시 filledCells에서 집계.</summary>
     public List<GemTargetInfo> BuildGemTargets()
+    {
+        List<GemTargetInfo> result = new List<GemTargetInfo>(3);
+        if (gemTargets != null)
+        {
+            for (int i = 0; i < gemTargets.Count; i++)
+            {
+                GemTargetInfo target = gemTargets[i];
+                if (target.count <= 0)
+                    continue;
+
+                result.Add(target);
+            }
+        }
+
+        if (result.Count > 0)
+            return result;
+
+        return BuildGemTargetsFromFilledCellsLegacy();
+    }
+
+    /// <summary>레거시: 보드 filledCells에 배치된 Gem 개수로 목표를 만든다.</summary>
+    private List<GemTargetInfo> BuildGemTargetsFromFilledCellsLegacy()
     {
         int pentagon = 0;
         int square = 0;

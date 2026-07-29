@@ -13,12 +13,16 @@ MonoBehaviour:
   m_Name: Mission_Gem
   m_EditorClassIdentifier: Assembly-CSharp::MissionData
   boardSize: 9
-  filledCells:
-  - x: 3
-    y: 6
-    spriteName: Pentagon
+  filledCells: []
   isHard: 0
   isClear: 1
   missionType: 4
+  gemTargets:
+  - gemType: 0
+    count: 2
+  - gemType: 1
+    count: 1
+  - gemType: 2
+    count: 3
   targetScore: 0
   timeLimitSeconds: 0

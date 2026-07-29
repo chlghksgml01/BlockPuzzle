@@ -380,9 +380,9 @@ MonoBehaviour:
   _iceIcon: {fileID: 21300000, guid: c430f75636aca6442ae7ced8622eea48, type: 3}
   _grassIcon: {fileID: 21300000, guid: c4d20930be0b20748abf650e044c7c67, type: 3}
   _collectGemMission: {fileID: 1715949517}
-  _pentagonImage: {fileID: 21300000, guid: bea4ce718374bf849aa50d3230bf42f7, type: 3}
-  _squareImage: {fileID: 21300000, guid: f37acec232a676d448efcfdced2ced79, type: 3}
-  _starImage: {fileID: 21300000, guid: bbb210388f6e29c409346f5d605c9873, type: 3}
+  _pentagonImage: {fileID: 21300000, guid: 98f62a6ded2e03244aaf856e3cb20aa7, type: 3}
+  _squareImage: {fileID: 21300000, guid: 36554cceaa82dc64b8bc4e0789c6eac0, type: 3}
+  _starImage: {fileID: 21300000, guid: e8f874713ba3ef243ad650ba6489c018, type: 3}
   _countPrefab: {fileID: 3455681298515922384, guid: 198d083f853031c468bf3d8ee0e2dbdd, type: 3}
   _iconPrefab: {fileID: 572571230506433693, guid: 449521ad0f33930448c829c19d7a7e53, type: 3}
 --- !u!1 &216531716
@@ -1316,7 +1316,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Level  3
+  m_text: Level 5
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 10247029dae368345b52f90975544dce, type: 2}
   m_sharedMaterial: {fileID: -8401363481842351713, guid: 10247029dae368345b52f90975544dce, type: 2}

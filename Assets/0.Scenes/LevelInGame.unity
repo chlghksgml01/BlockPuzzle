@@ -992,9 +992,9 @@ MonoBehaviour:
   _iceIcon: {fileID: 21300000, guid: fc6a857d10b3b434db0e2ec19b35df32, type: 3}
   _grassIcon: {fileID: 21300000, guid: 29cab4b5a4f864c4bbbe0ada9d31fe0d, type: 3}
   _timeIcon: {fileID: 21300000, guid: 1fa452f854e7d6d498bc6ebd8fc69cc6, type: 3}
-  _pentagonIcon: {fileID: 21300000, guid: 0d85da407493918489effabe5dd4b207, type: 3}
-  _squareIcon: {fileID: 21300000, guid: c879da5d35f45ab4fa208f6d6a5cfa34, type: 3}
-  _starIcon: {fileID: 21300000, guid: 9bd53e607b00a514abf244f5bbca3359, type: 3}
+  _pentagonIcon: {fileID: 21300000, guid: f1e2620893075c74b9c151ece7ccb1a8, type: 3}
+  _squareIcon: {fileID: 21300000, guid: 57538f379e33e5445b2f6170c98d154e, type: 3}
+  _starIcon: {fileID: 21300000, guid: 57f10cbbe20f0644f984ced6f7d0903e, type: 3}
 --- !u!4 &660974394
 Transform:
   m_ObjectHideFlags: 0

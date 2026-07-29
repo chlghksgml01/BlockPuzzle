@@ -10,16 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f7b409080d394d14ca8bb0abe7b241ca, type: 3}
-  m_Name: BlockSpritePalette
+  m_Name: MissionMakerPalette
   m_EditorClassIdentifier: Assembly-CSharp::BlockSpritePalette
   sprites:
   - {fileID: 21300000, guid: 76d34a99d52b4864cae43532cb49084e, type: 3}
   - {fileID: 21300000, guid: 29cab4b5a4f864c4bbbe0ada9d31fe0d, type: 3}
-  - {fileID: 21300000, guid: 9e528127fafafc14bacd9e86318a2765, type: 3}
-  - {fileID: 21300000, guid: 18b7f1c859c29b840ac91384072fd584, type: 3}
   - {fileID: 21300000, guid: fc6a857d10b3b434db0e2ec19b35df32, type: 3}
-  - {fileID: 21300000, guid: b6dcfdf47cdea8f4cb5df27557c41201, type: 3}
-  - {fileID: 21300000, guid: fdf967664c7e302439ca4a080356c7ba, type: 3}
-  - {fileID: 21300000, guid: 57538f379e33e5445b2f6170c98d154e, type: 3}
-  - {fileID: 21300000, guid: f1e2620893075c74b9c151ece7ccb1a8, type: 3}
-  - {fileID: 21300000, guid: 57f10cbbe20f0644f984ced6f7d0903e, type: 3}

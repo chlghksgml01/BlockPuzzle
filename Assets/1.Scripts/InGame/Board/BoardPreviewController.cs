@@ -85,10 +85,13 @@ public sealed class BoardPreviewController
         // 프리뷰 갱신
         ClearAllPreviewOnly();
 
-        foreach (BoardCell cell in _lastPreviewCells)
+        Vector2Int[] offsets = block.CurrentOffsets;
+        for (int i = 0; i < _lastPreviewCells.Count; i++)
         {
-            cell.UpdateCellVisual(true, block.BlockSprite);
-            cell.SetPreviewFilled(true);
+            Vector2Int offset = i < offsets.Length ? offsets[i] : Vector2Int.zero;
+            Sprite sprite = block.GetPlacementSpriteForOffset(offset);
+            _lastPreviewCells[i].UpdateCellVisual(true, sprite);
+            _lastPreviewCells[i].SetPreviewFilled(true);
         }
 
         _lastPreviewBasePos = new Vector2Int(baseX, baseY);
@@ -100,7 +103,7 @@ public sealed class BoardPreviewController
         return isPosChanged;
     }
 
-    public bool PlaceLastPreview(DraggableBlock block, Sprite blockSprite, out int placedCount)
+    public bool PlaceLastPreview(DraggableBlock block, out int placedCount)
     {
         placedCount = 0;
 
@@ -119,8 +122,12 @@ public sealed class BoardPreviewController
         if (!_model.CanPlaceAt(_lastPreviewBasePos.x, _lastPreviewBasePos.y, block.CurrentOffsets, _lastPreviewCells))
             return false;
 
-        foreach (BoardCell cell in _lastPreviewCells)
-            cell.PlaceBlock(blockSprite);
+        Vector2Int[] offsets = block.CurrentOffsets;
+        for (int i = 0; i < _lastPreviewCells.Count; i++)
+        {
+            Vector2Int offset = i < offsets.Length ? offsets[i] : Vector2Int.zero;
+            _lastPreviewCells[i].PlaceBlock(block.GetPlacementSpriteForOffset(offset));
+        }
 
         placedCount = _lastPreviewCells.Count;
         ClearAllPreviewOnly();

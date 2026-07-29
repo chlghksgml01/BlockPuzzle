@@ -60,6 +60,8 @@ public class MissionManager : MonoBehaviour, IInitializable
 
     private int _remainingCollectCount;
     private readonly List<GemTargetInfo> _remainingGems = new List<GemTargetInfo>(3);
+    private readonly List<GemTargetInfo> _gemTargetSnapshot = new List<GemTargetInfo>(3);
+    private readonly Dictionary<GemType, int> _collectedGemCounts = new Dictionary<GemType, int>();
     private float _remainingTimeSeconds;
     private bool _isTracking;
     private bool _objectiveCompleted;
@@ -101,6 +103,78 @@ public class MissionManager : MonoBehaviour, IInitializable
 
     /// <summary>Gem 미션의 종류별 남은 개수 (비행 중인 것 포함 표시값).</summary>
     public IReadOnlyList<GemTargetInfo> RemainingGems => _remainingGems;
+
+    /// <summary>슬롯 스폰 시 Gem 부여 계획을 만든다. Gem 미션이 아니거나 더 이상 필요 없으면 false.</summary>
+    public bool TryBuildGemSlotSpawns(int slotCount, GemSlotSpawnInfo[] results, Dictionary<GemType, int> inSlotCounts)
+    {
+        if (results == null || results.Length < slotCount)
+            return false;
+
+        for (int i = 0; i < slotCount; i++)
+            results[i] = default;
+
+        if (!IsActive || CurrentMissionType != MissionType.Gem || slotCount <= 0)
+            return false;
+
+        List<GemType> neededTypes = new List<GemType>(3);
+        int totalOutstanding = 0;
+        for (int i = 0; i < _gemTargetSnapshot.Count; i++)
+        {
+            GemType gemType = _gemTargetSnapshot[i].gemType;
+            int outstanding = GetOutstandingGemCount(gemType, inSlotCounts);
+            if (outstanding <= 0)
+                continue;
+
+            neededTypes.Add(gemType);
+            totalOutstanding += outstanding;
+        }
+
+        if (neededTypes.Count == 0 || totalOutstanding <= 0)
+            return false;
+
+        int maxGemCount = Mathf.Min(2, slotCount, totalOutstanding);
+        int gemCount = UnityEngine.Random.Range(1, maxGemCount + 1);
+        List<int> slotIndices = new List<int>(slotCount);
+        for (int i = 0; i < slotCount; i++)
+            slotIndices.Add(i);
+
+        for (int i = 0; i < gemCount; i++)
+        {
+            int pickIndex = UnityEngine.Random.Range(0, slotIndices.Count);
+            int slotIndex = slotIndices[pickIndex];
+            slotIndices.RemoveAt(pickIndex);
+
+            GemType gemType = neededTypes[UnityEngine.Random.Range(0, neededTypes.Count)];
+            results[slotIndex] = new GemSlotSpawnInfo
+            {
+                HasGem = true,
+                GemType = gemType
+            };
+        }
+
+        return true;
+    }
+
+    /// <summary>아직 수집·배치·비행·슬롯 보유 중인 Gem 개수를 제외한 outstanding.</summary>
+    public int GetOutstandingGemCount(GemType gemType, Dictionary<GemType, int> inSlotCounts = null)
+    {
+        int target = GetGemTargetCount(gemType);
+        if (target <= 0)
+            return 0;
+
+        int collected = 0;
+        _collectedGemCounts.TryGetValue(gemType, out collected);
+
+        int onBoard = _boardManager != null ? _boardManager.CountGemCells(gemType) : 0;
+        int pending = 0;
+        _pendingGemFlyCounts.TryGetValue(gemType, out pending);
+
+        int inSlot = 0;
+        if (inSlotCounts != null)
+            inSlotCounts.TryGetValue(gemType, out inSlot);
+
+        return Mathf.Max(0, target - collected - onBoard - pending - inSlot);
+    }
 
     /// <summary>ScoreGoal 미션의 남은 시간(초).</summary>
     public float RemainingTimeSeconds => _remainingTimeSeconds;
@@ -262,6 +336,8 @@ public class MissionManager : MonoBehaviour, IInitializable
     {
         _remainingCollectCount = 0;
         _remainingGems.Clear();
+        _gemTargetSnapshot.Clear();
+        _collectedGemCounts.Clear();
         _remainingTimeSeconds = 0f;
         _objectiveCompleted = false;
         _timeExpired = false;
@@ -278,7 +354,10 @@ public class MissionManager : MonoBehaviour, IInitializable
                 _remainingCollectCount = _currentMission.CountGrassCells();
                 break;
             case MissionType.Gem:
-                _remainingGems.AddRange(_currentMission.BuildGemTargets());
+                _gemTargetSnapshot.Clear();
+                _gemTargetSnapshot.AddRange(_currentMission.BuildGemTargets());
+                _remainingGems.AddRange(_gemTargetSnapshot);
+                _collectedGemCounts.Clear();
                 break;
             case MissionType.ScoreGoal:
                 _remainingTimeSeconds = Mathf.Max(0f, _currentMission.TimeLimitSeconds);
@@ -309,20 +388,31 @@ public class MissionManager : MonoBehaviour, IInitializable
     private void RefreshGemDisplayedRemaining()
     {
         _remainingGems.Clear();
-        List<GemTargetInfo> targets = _currentMission.BuildGemTargets();
-        for (int i = 0; i < targets.Count; i++)
+        for (int i = 0; i < _gemTargetSnapshot.Count; i++)
         {
-            GemTargetInfo target = targets[i];
-            int boardCount = _boardManager.CountGemCells(target.gemType);
+            GemTargetInfo target = _gemTargetSnapshot[i];
+            int collected = 0;
+            _collectedGemCounts.TryGetValue(target.gemType, out collected);
             int pending = 0;
             _pendingGemFlyCounts.TryGetValue(target.gemType, out pending);
 
             _remainingGems.Add(new GemTargetInfo
             {
                 gemType = target.gemType,
-                count = boardCount + pending
+                count = Mathf.Max(0, target.count - collected - pending)
             });
         }
+    }
+
+    private int GetGemTargetCount(GemType gemType)
+    {
+        for (int i = 0; i < _gemTargetSnapshot.Count; i++)
+        {
+            if (_gemTargetSnapshot[i].gemType == gemType)
+                return _gemTargetSnapshot[i].count;
+        }
+
+        return 0;
     }
 
     private void TryBindSubscriptions()
@@ -460,6 +550,14 @@ public class MissionManager : MonoBehaviour, IInitializable
             return;
 
         RemovePendingFly(info);
+
+        if (info.CollectType == MissionType.Gem)
+        {
+            int collected = 0;
+            _collectedGemCounts.TryGetValue(info.GemType, out collected);
+            _collectedGemCounts[info.GemType] = collected + 1;
+        }
+
         RefreshDisplayedRemaining();
         RaiseProgressChanged();
 
@@ -646,6 +744,8 @@ public class MissionManager : MonoBehaviour, IInitializable
         _usingTestMission = false;
         _remainingCollectCount = 0;
         _remainingGems.Clear();
+        _gemTargetSnapshot.Clear();
+        _collectedGemCounts.Clear();
         _remainingTimeSeconds = 0f;
         _objectiveCompleted = false;
         _timeExpired = false;

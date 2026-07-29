@@ -273,13 +273,96 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
             spriteList[randomIndex] = temp;
         }
 
+        GemSlotSpawnInfo[] gemSpawns = new GemSlotSpawnInfo[_slots.Count];
+        bool hasGemSpawns = TryBuildGemSlotSpawns(_slots.Count, gemSpawns);
+
         for (int i = 0; i < _slots.Count; i++)
         {
             if (i < spriteList.Count)
             {
                 _slots[i].SpawnNewBlock(spriteList[i], reduceLargeShapeSpawnRate);
+
+                if (hasGemSpawns && gemSpawns[i].HasGem &&
+                    _slots[i].Block != null &&
+                    TryResolveGemSprite(gemSpawns[i].GemType, out Sprite gemSprite))
+                {
+                    Sprite gemBodySprite = ResolveGemBodySprite(gemSpawns[i].GemType);
+                    _slots[i].Block.AssignGemTile(gemSpawns[i].GemType, gemSprite, gemBodySprite);
+                }
             }
         }
+    }
+
+    private bool TryBuildGemSlotSpawns(int slotCount, GemSlotSpawnInfo[] results)
+    {
+        if (MissionManager.Instance == null || !MissionManager.Instance.IsActive)
+            return false;
+
+        Dictionary<GemType, int> inSlotCounts = CountInSlotGems();
+        return MissionManager.Instance.TryBuildGemSlotSpawns(slotCount, results, inSlotCounts);
+    }
+
+    private Dictionary<GemType, int> CountInSlotGems()
+    {
+        Dictionary<GemType, int> counts = new Dictionary<GemType, int>();
+        for (int i = 0; i < _slots.Count; i++)
+        {
+            BlockSlot slot = _slots[i];
+            if (!slot.HasBlock || slot.Block == null || !slot.Block.HasGemTile)
+                continue;
+
+            GemType gemType = slot.Block.GemTileType;
+            int existing = 0;
+            counts.TryGetValue(gemType, out existing);
+            counts[gemType] = existing + 1;
+        }
+
+        return counts;
+    }
+
+    private bool TryResolveGemSprite(GemType gemType, out Sprite gemSprite)
+    {
+        gemSprite = null;
+        if (_missionBoardController != null &&
+            _missionBoardController.TryResolveGemSprite(gemType, out gemSprite))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private Sprite ResolveGemBodySprite(GemType gemType)
+    {
+        switch (gemType)
+        {
+            case GemType.Pentagon:
+                return ResolvePlayerSpriteByPrefix("Blue");
+            case GemType.Star:
+                return ResolvePlayerSpriteByPrefix("Red");
+            case GemType.Square:
+                return ResolvePlayerSpriteByPrefix("Yellow");
+            default:
+                return null;
+        }
+    }
+
+    private Sprite ResolvePlayerSpriteByPrefix(string spriteNamePrefix)
+    {
+        if (string.IsNullOrEmpty(spriteNamePrefix) || _blockSprites == null)
+            return null;
+
+        for (int i = 0; i < _blockSprites.Length; i++)
+        {
+            Sprite sprite = _blockSprites[i];
+            if (sprite == null || string.IsNullOrEmpty(sprite.name))
+                continue;
+
+            if (sprite.name.StartsWith(spriteNamePrefix, StringComparison.OrdinalIgnoreCase))
+                return sprite;
+        }
+
+        return null;
     }
 
     private bool ShouldReduceLargeShapeSpawnRate()

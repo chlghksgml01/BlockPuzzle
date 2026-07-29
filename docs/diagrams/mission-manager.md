@@ -27,7 +27,8 @@ flowchart LR
   MAP -->|"BeginLevel"| CTX
   CTX -->|"BindFromSession"| MM
   IGM -->|"BeginProgressTracking"| MM
-  BM -->|"CountIce/Grass/Gem"| MM
+  BM -->|"CountIce/Grass"| MM
+  IGM -->|"GemSlotSpawn"| MM
   SS -->|"OnScoreChanged"| MM
   MM -->|"OnProgressChanged / OnTimeChanged"| HUD
 ```
@@ -38,7 +39,7 @@ flowchart LR
 |-------------|-----------|-----------|
 | Ice | 보드 ice 셀 수 | 블록 배치 후 (스테이지 제거 연출 포함) |
 | Grass | 보드 grass 셀 수 (전파 반영) | 동일 |
-| Gem | 종류별 보드 gem 셀 수 | 동일 |
+| Gem | 종류별 목표 개수 (`gemTargets`) | 줄 제거 시 수집 (슬롯 DraggableBlock에서 스폰) |
 | ScoreGoal | `RemainingTimeSeconds` + `CurrentScore`/`TargetScore` | 타이머 코루틴 / 점수 이벤트 |
 
 인트로·레이아웃 적용이 끝난 뒤 `BeginProgressTracking()`을 호출해야 타이머가 시작한다.
@@ -78,7 +79,7 @@ classDiagram
 
 ## 수집 비행 연출
 
-미션 블록(Ice/Grass/Gem) 제거 시 HUD 아이콘으로 날아간 뒤에만 Count가 줄고,
+미션 블록(Ice/Grass) 또는 슬롯 Gem 블록이 줄 제거로 사라지면 HUD 아이콘으로 날아간 뒤에만 Count가 줄고,
 모든 비행이 끝난 뒤 목표가 0이면 ResultPopup이 열린다.
 
 ```mermaid
