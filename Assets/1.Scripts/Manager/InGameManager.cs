@@ -82,7 +82,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     {
         _isGameOverTriggered = false;
 
-        if (LevelSessionContext.IsActive)
+        if (IsLevelMissionActive())
         {
             StartLevelGame();
             return;
@@ -202,8 +202,11 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         SpawnBlocksInSlots();
 
         OnResetGame?.Invoke();
-        if (LevelSessionContext.IsActive)
+        if (IsLevelMissionActive())
+        {
             ApplyLevelBoardLayout();
+            BeginMissionProgressTracking();
+        }
         _scoreSystem.ResetScore();
         SaveGame();
         ScheduleGameOverIfNeeded();
@@ -333,7 +336,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
     private void SaveGame()
     {
-        if (LevelSessionContext.IsActive)
+        if (IsLevelMissionActive())
             return;
 
         BoardManager board = _boardManger;
@@ -439,8 +442,11 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
     private void HandleIntroCompleted()
     {
-        if (LevelSessionContext.IsActive)
+        if (IsLevelMissionActive())
+        {
             ApplyLevelBoardLayout();
+            BeginMissionProgressTracking();
+        }
 
         EnableInteraction(true);
         ScheduleGameOverIfNeeded();
@@ -455,5 +461,21 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         }
 
         _missionBoardController.ApplyMissionLayout();
+    }
+
+    private static void BeginMissionProgressTracking()
+    {
+        if (MissionManager.Instance == null)
+            return;
+
+        MissionManager.Instance.BeginProgressTracking();
+    }
+
+    private static bool IsLevelMissionActive()
+    {
+        if (MissionManager.Instance != null)
+            return MissionManager.Instance.IsActive;
+
+        return LevelSessionContext.IsActive;
     }
 }

@@ -68,16 +68,62 @@ public sealed class BoardModel
 
     public bool HasAnyGrass()
     {
+        return CountIceOrGrass(grass: true) > 0;
+    }
+
+    /// <summary>보드에 남은 ice 셀 수.</summary>
+    public int CountIceCells()
+    {
+        return CountIceOrGrass(grass: false);
+    }
+
+    /// <summary>보드에 남은 grass 셀 수.</summary>
+    public int CountGrassCells()
+    {
+        return CountIceOrGrass(grass: true);
+    }
+
+    /// <summary>보드에 남은 특정 Gem 셀 수.</summary>
+    public int CountGemCells(GemType gemType)
+    {
+        int count = 0;
         for (int x = 0; x < _width; x++)
         {
             for (int y = 0; y < _height; y++)
             {
-                if (_cells[x, y].IsGrass)
-                    return true;
+                BoardCell cell = _cells[x, y];
+                if (!cell.IsOccupied || cell.FilledSprite == null)
+                    continue;
+
+                if (BoardCell.TryGetGemType(cell.FilledSprite.name, out GemType type) && type == gemType)
+                    count++;
             }
         }
 
-        return false;
+        return count;
+    }
+
+    private int CountIceOrGrass(bool grass)
+    {
+        int count = 0;
+        for (int x = 0; x < _width; x++)
+        {
+            for (int y = 0; y < _height; y++)
+            {
+                BoardCell cell = _cells[x, y];
+                if (grass)
+                {
+                    if (cell.IsGrass)
+                        count++;
+                }
+                else if (cell.IsIce)
+                {
+                    count++;
+                }
+            }
+        }
+
+        return count;
     }
 
     /// <summary>

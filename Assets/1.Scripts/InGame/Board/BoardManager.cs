@@ -335,6 +335,15 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
 
     public bool HasAnyGrass() => _model != null && _model.HasAnyGrass();
 
+    /// <summary>보드에 남은 ice 셀 수.</summary>
+    public int CountIceCells() => _model != null ? _model.CountIceCells() : 0;
+
+    /// <summary>보드에 남은 grass 셀 수.</summary>
+    public int CountGrassCells() => _model != null ? _model.CountGrassCells() : 0;
+
+    /// <summary>보드에 남은 특정 Gem 셀 수.</summary>
+    public int CountGemCells(GemType gemType) => _model != null ? _model.CountGemCells(gemType) : 0;
+
     public bool TrySpreadGrass(float appearDuration)
     {
         if (_model == null)

@@ -249,12 +249,35 @@ public class BoardCell : MonoBehaviour
 
     public static bool IsGemSpriteName(string spriteName)
     {
+        return TryGetGemType(spriteName, out _);
+    }
+
+    /// <summary>스프라이트 이름으로 GemType을 판별한다.</summary>
+    public static bool TryGetGemType(string spriteName, out GemType gemType)
+    {
+        gemType = default;
         if (string.IsNullOrEmpty(spriteName))
             return false;
 
-        return spriteName.IndexOf(PentagonSpriteNameKeyword, System.StringComparison.OrdinalIgnoreCase) >= 0 ||
-               spriteName.IndexOf(SquareSpriteNameKeyword, System.StringComparison.OrdinalIgnoreCase) >= 0 ||
-               spriteName.IndexOf(StarSpriteNameKeyword, System.StringComparison.OrdinalIgnoreCase) >= 0;
+        if (spriteName.IndexOf(PentagonSpriteNameKeyword, System.StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            gemType = GemType.Pentagon;
+            return true;
+        }
+
+        if (spriteName.IndexOf(SquareSpriteNameKeyword, System.StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            gemType = GemType.Square;
+            return true;
+        }
+
+        if (spriteName.IndexOf(StarSpriteNameKeyword, System.StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            gemType = GemType.Star;
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>ice01 / ice01_0 / grass02 등에서 키워드와 단계를 파싱한다.</summary>

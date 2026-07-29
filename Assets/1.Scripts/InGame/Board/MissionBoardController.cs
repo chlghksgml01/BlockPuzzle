@@ -32,7 +32,7 @@ public sealed class MissionBoardController : MonoBehaviour
         _boardManager.SetMissionSpriteResolver(ResolveSprite);
         CacheCurrentMission();
 
-        if (LevelSessionContext.IsActive)
+        if (IsLevelMissionActive())
             PrepareFromSelectedMission();
     }
 
@@ -77,8 +77,23 @@ public sealed class MissionBoardController : MonoBehaviour
 
     private void CacheCurrentMission()
     {
+        if (MissionManager.Instance != null && MissionManager.Instance.IsActive)
+        {
+            CurrentMission = MissionManager.Instance.CurrentMission;
+            CurrentMissionType = MissionManager.Instance.CurrentMissionType;
+            return;
+        }
+
         CurrentMission = LevelSessionContext.GetSelectedMission();
         CurrentMissionType = CurrentMission != null ? CurrentMission.MissionType : MissionType.None;
+    }
+
+    private static bool IsLevelMissionActive()
+    {
+        if (MissionManager.Instance != null)
+            return MissionManager.Instance.IsActive;
+
+        return LevelSessionContext.IsActive;
     }
 
     private void BuildSpriteLookup()
