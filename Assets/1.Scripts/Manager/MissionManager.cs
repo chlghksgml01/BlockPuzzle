@@ -13,6 +13,10 @@ public class MissionManager : MonoBehaviour, IInitializable
 {
     private const float StageClearSyncDelaySeconds = 0.45f;
 
+    [Header("UI")]
+    [Tooltip("미션 성공/실패 결과 팝업")]
+    [SerializeField] private ResultPopupUI _resultPopup;
+
     /// <summary>씬 내 단일 인스턴스. 없으면 null.</summary>
     public static MissionManager Instance { get; private set; }
 
@@ -34,6 +38,9 @@ public class MissionManager : MonoBehaviour, IInitializable
     /// <summary>제한 시간 소진 시.</summary>
     public static event Action OnTimeExpired;
 
+    /// <summary>미션 실패(시간 초과·게임오버 등) 시.</summary>
+    public static event Action OnMissionFailed;
+
     private int _currentLevelIndex = -1;
     private LevelMissionTableData _missionTable;
     private MissionData _currentMission;
@@ -47,6 +54,7 @@ public class MissionManager : MonoBehaviour, IInitializable
     private bool _isTracking;
     private bool _objectiveCompleted;
     private bool _timeExpired;
+    private bool _resultResolved;
 
     private Coroutine _timerCoroutine;
     private Coroutine _boardSyncCoroutine;
@@ -91,6 +99,9 @@ public class MissionManager : MonoBehaviour, IInitializable
 
     /// <summary>목표를 달성했으면 true.</summary>
     public bool IsObjectiveCompleted => _objectiveCompleted;
+
+    /// <summary>결과(성공/실패)가 이미 확정되었으면 true.</summary>
+    public bool IsResultResolved => _resultResolved;
 
     public void Initialize(InitializeContext context)
     {
@@ -173,6 +184,7 @@ public class MissionManager : MonoBehaviour, IInitializable
         StopProgressTracking();
         _objectiveCompleted = false;
         _timeExpired = false;
+        _resultResolved = false;
         _isTracking = true;
 
         SyncProgressFromBoard();
@@ -366,6 +378,7 @@ public class MissionManager : MonoBehaviour, IInitializable
             if (_remainingTimeSeconds <= 0f)
             {
                 _timeExpired = true;
+                FailMission();
                 OnTimeExpired?.Invoke();
                 break;
             }
@@ -397,19 +410,70 @@ public class MissionManager : MonoBehaviour, IInitializable
         if (!completed)
             return;
 
+        ResolveSuccess();
+    }
+
+    private void ResolveSuccess()
+    {
+        if (_resultResolved || _objectiveCompleted)
+            return;
+
         _objectiveCompleted = true;
+        _resultResolved = true;
+        UnlockNextLevel();
+        StopProgressTracking();
         OnObjectiveCompleted?.Invoke();
+        TryShowResultPopup(success: true);
+    }
+
+    /// <summary>블록을 더 이상 배치할 수 없을 때 등 외부에서 미션 실패를 알린다.</summary>
+    public void FailMission()
+    {
+        if (!IsActive || _resultResolved)
+            return;
+
+        _resultResolved = true;
+        StopProgressTracking();
+        OnMissionFailed?.Invoke();
+        TryShowResultPopup(success: false);
+    }
+
+    private void TryShowResultPopup(bool success)
+    {
+        if (_resultPopup == null)
+        {
+            Debug.LogWarning("[MissionManager] ResultPopupUI가 연결되지 않았습니다.", this);
+            return;
+        }
+
+        _resultPopup.ShowResult(success);
+    }
+
+    /// <summary>클리어 시 다음 레벨을 플레이 가능(IsClear)으로 연다.</summary>
+    private void UnlockNextLevel()
+    {
+        if (_missionTable == null || _currentLevelIndex < 0)
+            return;
+
+        MissionData nextMission = _missionTable.GetMission(_currentLevelIndex + 1);
+        if (nextMission == null)
+            return;
+
+        nextMission.isClear = true;
     }
 
     private bool AreAllGemsCleared()
     {
+        if (_remainingGems.Count == 0)
+            return false;
+
         for (int i = 0; i < _remainingGems.Count; i++)
         {
             if (_remainingGems[i].count > 0)
                 return false;
         }
 
-        return _remainingGems.Count > 0;
+        return true;
     }
 
     private void RaiseProgressChanged()
@@ -432,5 +496,6 @@ public class MissionManager : MonoBehaviour, IInitializable
         _remainingTimeSeconds = 0f;
         _objectiveCompleted = false;
         _timeExpired = false;
+        _resultResolved = false;
     }
 }

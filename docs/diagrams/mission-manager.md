@@ -76,26 +76,24 @@ classDiagram
   MissionManager --> ScoreSystem : score / target
 ```
 
-## 인스펙터 설정 (MissionHUD)
+## 결과 팝업
 
-1. LevelInGame의 `Mission` UI에 `MissionHUD` 추가
-2. `_root` → Mission 오브젝트
-3. `_contentRoot` → `LayoutGroup` (HorizontalLayoutGroup)
-4. `_iconPrefab` → `Assets/2.Prefabs/Level/Mission/GemIcon.prefab` (또는 Image 프리팹)
-5. `_countPrefab` → `Assets/2.Prefabs/Mission/Count1.prefab` (또는 Count10)
-6. `_timePrefab` → `Assets/2.Prefabs/Mission/Time.prefab`
-7. 아이콘 스프라이트 연결
-   - Ice/Grass: `Assets/10.Resources/Mission/ice01`, `grass01`
-   - Time: `TimeIcon`
-   - Gem: `Pentagon` / `Square` / `Star`
-8. (선택) `_levelText`에 레벨 TMP 연결
+`MissionManager` 인스펙터의 `_resultPopup`에 `ResultPopupUI`를 연결한다.
+ResultPopup은 씬에서 **비활성**으로 둬도 된다.
 
-## 실행 순서
+| 결과 | ResultText | Level | 트리거 |
+|------|------------|-------|--------|
+| 성공 | SUCCESS | Level  N | 목표 달성 |
+| 실패 | FAIL | Level  N | 시간 초과 / 배치 불가 게임오버 |
 
-| 클래스 | DefaultExecutionOrder |
-|--------|----------------------|
-| InGameInitializer | -200 |
-| MissionManager | -110 |
-| InGameManager | -100 |
-| MissionBoardController | -95 |
-| BoardManager | -90 |
+- Retry → 같은 레벨 `ResetGame`
+- Quit → `ClearSession` 후 Level 맵 씬 이동
+- 성공 시 다음 레벨 `MissionData.isClear = true` (플레이 가능 해금)
+
+## 인스펙터 설정 (ResultPopup)
+
+1. ResultPopup에 `ResultPopupUI` 추가
+2. `_canvasGroup` → ResultPopup CanvasGroup
+3. `_popupTransform` → Result
+4. `_resultText` → ResultText, `_levelText` → Level
+5. `_retryButton` / `_quitButton` 연결

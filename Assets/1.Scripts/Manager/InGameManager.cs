@@ -177,6 +177,14 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
             return;
 
         _isGameOverTriggered = true;
+
+        if (IsLevelMissionActive())
+        {
+            if (MissionManager.Instance != null)
+                MissionManager.Instance.FailMission();
+            return;
+        }
+
         _previousBestScore = LeaderboardManager.Instance.BestScore;
         _scoreSystem.CheckHighScore(_previousBestScore);
         _gameOverUI.Open();
