@@ -51,38 +51,27 @@ public class LevelMapManager : MonoBehaviour
     [Tooltip("노드/도로 간격을 정의하는 패턴 데이터 에셋")]
     [SerializeField] private LevelMapPatternData _patternData;
 
-    [Tooltip("레벨별 클리어 미션 테이블. 배열 길이는 총 레벨 수와 일치해야 함")]
+    [Tooltip("레벨별 클리어 미션 테이블. 배열 길이(LevelCount)가 곧 총 레벨 수")]
     [SerializeField] private LevelMissionTableData _missionTable;
 
 
     [Header("Virtualization Settings")]
-    [Tooltip("전체 레벨 수. 0 이하로 두면 스크롤이 끝에 가까워질 때마다 Content가 절차적으로 늘어남")]
-    [SerializeField] private int _totalLevelCount = 0;
-
     [Tooltip("뷰포트 밖으로 미리 스폰해 둘 여유 영역 (px)")]
     [SerializeField] private float _viewportPadding = 300f;
 
-    [Tooltip("무제한 모드에서 Content 높이를 한 번에 늘리는 단위 (px)")]
+    [Tooltip("미션 테이블이 비어 있을 때 Content 높이를 한 번에 늘리는 단위 (px)")]
     [SerializeField] private float _contentGrowthChunk = 2000f;
 
-    [Tooltip("마지막 노드 위쪽으로 남겨둘 여백 (px). 전체 레벨 수가 정해져 있을 때만 사용")]
+    [Tooltip("마지막 노드 위쪽으로 남겨둘 여백 (px)")]
     [SerializeField] private float _topPadding = 300f;
 
     private LevelMapLayout _layout;
     private LevelMapVirtualizer _virtualizer;
 
-    private void OnValidate()
-    {
-        if (_missionTable != null && _totalLevelCount > 0 && _missionTable.LevelCount != _totalLevelCount)
-        {
-            Debug.LogWarning(
-                $"[LevelMapManager] MissionTable 길이({_missionTable.LevelCount})가 총 레벨 수({_totalLevelCount})와 다릅니다.",
-                this);
-        }
-    }
-
     private void Awake()
     {
+        int totalLevelCount = _missionTable != null ? _missionTable.LevelCount : 0;
+
         _layout = new LevelMapLayout(_patternData);
         _virtualizer = new LevelMapVirtualizer(
             _content,
@@ -97,7 +86,7 @@ public class LevelMapManager : MonoBehaviour
             _viewportPadding,
             _contentGrowthChunk,
             _topPadding,
-            _totalLevelCount,
+            totalLevelCount,
             _missionTable,
             OpenMissionPopup);
 

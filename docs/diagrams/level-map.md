@@ -57,7 +57,6 @@ classDiagram
         -LevelRoadView _roadPrefab
         -LevelMapPatternData _patternData
         -LevelMissionTableData _missionTable
-        -int _totalLevelCount
         -LevelMapLayout _layout
         -LevelMapVirtualizer _virtualizer
         +Awake()
@@ -180,8 +179,8 @@ classDiagram
 2. `ScrollRect.onValueChanged` 이벤트가 발생할 때만 `LevelMapVirtualizer.Refresh()`가 호출된다(Update 폴링 없음).
 3. `Refresh()`는 Viewport의 월드 코너를 Content 로컬 좌표로 변환해 현재 보이는 Y 범위를 구하고,
    그 범위(+여유값) 밖의 노드/도로는 `ObjectPool`로 반환, 범위 안에 없는 것은 새로 스폰한다.
-4. 전체 레벨 수가 정해지지 않은 경우(`_totalLevelCount <= 0`), 스크롤이 상단 여유값에 가까워질 때마다
-   Content의 `sizeDelta.y`를 `_contentGrowthChunk`만큼 늘려 계속 위로 스크롤할 수 있게 한다.
+4. 총 레벨 수는 `_missionTable.LevelCount`를 사용한다. 테이블이 비어 있으면(`LevelCount <= 0`)
+   스크롤이 상단 여유값에 가까워질 때마다 Content의 `sizeDelta.y`를 `_contentGrowthChunk`만큼 늘린다.
 
 ## 레벨 인게임 진입 / 보드 초기화
 

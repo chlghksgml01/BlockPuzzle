@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// 레벨 인덱스별 클리어 미션을 담는 테이블 데이터.
-/// 배열 인덱스 i는 레벨 (i+1)에 대응하며, 길이는 LevelMapManager의 총 레벨 수와 일치해야 한다.
+/// 배열 인덱스 i는 레벨 (i+1)에 대응하며, 배열 길이(LevelCount)가 곧 총 레벨 수이다.
 /// </summary>
 [CreateAssetMenu(menuName = "LevelMap/Mission/Level Mission Table", fileName = "LevelMissionTable")]
 public class LevelMissionTableData : ScriptableObject
