@@ -5,17 +5,27 @@ using UnityEngine;
 
 /// <summary>
 /// LevelInGame 씬의 미션 세션·진행도 총괄.
-/// LevelSessionContext에서 전달된 레벨/미션을 캐시하고, 남은 목표/시간을 추적한다.
-/// UI는 MissionHUD가 이벤트를 구독해 표시한다.
+/// 수집 블록은 HUD로 비행한 뒤에만 카운트가 줄고, 그 다음에 결과 팝업이 뜬다.
 /// </summary>
 [DefaultExecutionOrder(-110)]
 public class MissionManager : MonoBehaviour, IInitializable
 {
-    private const float StageClearSyncDelaySeconds = 0.45f;
-
     [Header("UI")]
     [Tooltip("미션 성공/실패 결과 팝업")]
     [SerializeField] private ResultPopupUI _resultPopup;
+
+    [Tooltip("미션 HUD (비행 목표 아이콘 위치 제공)")]
+    [SerializeField] private MissionHUD _missionHud;
+
+    [Tooltip("수집 블록 → HUD 비행 연출")]
+    [SerializeField] private MissionCollectFlyEffect _flyEffect;
+
+    [Header("Test")]
+    [Tooltip("연결 시 레벨맵 없이 LevelInGame 씬에서 바로 이 미션으로 테스트한다. 비우면 LevelSessionContext 사용.")]
+    [SerializeField] private MissionData _testMissionData;
+
+    [Tooltip("테스트 미션 HUD/결과에 표시할 레벨 번호 (1-base)")]
+    [SerializeField] private int _testLevelNumber = 1;
 
     /// <summary>씬 내 단일 인스턴스. 없으면 null.</summary>
     public static MissionManager Instance { get; private set; }
@@ -56,12 +66,19 @@ public class MissionManager : MonoBehaviour, IInitializable
     private bool _timeExpired;
     private bool _resultResolved;
 
+    private int _pendingCollectFlyCount;
+    private readonly Dictionary<GemType, int> _pendingGemFlyCounts = new Dictionary<GemType, int>();
+
     private Coroutine _timerCoroutine;
-    private Coroutine _boardSyncCoroutine;
+    private Coroutine _grassSpreadSyncCoroutine;
     private bool _subscriptionsBound;
+    private bool _usingTestMission;
 
     /// <summary>레벨 세션이 유효하면 true (미션 에셋 누락과 무관).</summary>
-    public bool IsActive => _currentLevelIndex >= 0 && _missionTable != null;
+    public bool IsActive => _currentMission != null && (_missionTable != null || _usingTestMission);
+
+    /// <summary>인스펙터 테스트 미션으로 플레이 중이면 true.</summary>
+    public bool IsUsingTestMission => _usingTestMission;
 
     /// <summary>현재 레벨 인덱스 (0-base). 비활성 시 -1.</summary>
     public int CurrentLevelIndex => _currentLevelIndex;
@@ -79,10 +96,10 @@ public class MissionManager : MonoBehaviour, IInitializable
     /// <summary>레벨 미션 테이블. 비활성 시 null.</summary>
     public LevelMissionTableData MissionTable => _missionTable;
 
-    /// <summary>Ice/Grass 미션의 남은 블록 수.</summary>
+    /// <summary>Ice/Grass 미션의 남은 블록 수 (비행 중인 것 포함 표시값).</summary>
     public int RemainingCollectCount => _remainingCollectCount;
 
-    /// <summary>Gem 미션의 종류별 남은 개수.</summary>
+    /// <summary>Gem 미션의 종류별 남은 개수 (비행 중인 것 포함 표시값).</summary>
     public IReadOnlyList<GemTargetInfo> RemainingGems => _remainingGems;
 
     /// <summary>ScoreGoal 미션의 남은 시간(초).</summary>
@@ -146,30 +163,41 @@ public class MissionManager : MonoBehaviour, IInitializable
     }
 
     /// <summary>
-    /// LevelSessionContext의 선택 레벨/테이블을 캐시한다.
-    /// 컨텍스트가 비활성이면 내부 상태를 비운다.
+    /// LevelSessionContext 또는 테스트 MissionData를 캐시한다.
+    /// 둘 다 없으면 내부 상태를 비운다.
     /// </summary>
     public void BindFromSession()
     {
-        if (!LevelSessionContext.IsActive)
+        if (LevelSessionContext.IsActive)
+        {
+            _usingTestMission = false;
+            _currentLevelIndex = LevelSessionContext.SelectedLevelIndex;
+            _missionTable = LevelSessionContext.GetMissionTable();
+            _currentMission = _missionTable != null
+                ? _missionTable.GetMission(_currentLevelIndex)
+                : null;
+
+            if (_currentMission == null)
+            {
+                Debug.LogWarning(
+                    $"[MissionManager] 레벨 {_currentLevelIndex}에 MissionData가 없습니다.",
+                    this);
+            }
+        }
+        else if (_testMissionData != null)
+        {
+            _usingTestMission = true;
+            _currentLevelIndex = Mathf.Max(0, _testLevelNumber - 1);
+            _missionTable = null;
+            _currentMission = _testMissionData;
+        }
+        else
         {
             ResetState();
             return;
         }
 
-        _currentLevelIndex = LevelSessionContext.SelectedLevelIndex;
-        _missionTable = LevelSessionContext.GetMissionTable();
-        _currentMission = _missionTable != null
-            ? _missionTable.GetMission(_currentLevelIndex)
-            : null;
-
-        if (_currentMission == null)
-        {
-            Debug.LogWarning(
-                $"[MissionManager] 레벨 {_currentLevelIndex}에 MissionData가 없습니다.",
-                this);
-        }
-
+        ClearPendingFlies();
         ResetProgressValuesFromMissionData();
         OnMissionBound?.Invoke();
         RaiseProgressChanged();
@@ -185,9 +213,10 @@ public class MissionManager : MonoBehaviour, IInitializable
         _objectiveCompleted = false;
         _timeExpired = false;
         _resultResolved = false;
+        ClearPendingFlies();
         _isTracking = true;
 
-        SyncProgressFromBoard();
+        RefreshDisplayedRemaining();
 
         if (CurrentMissionType == MissionType.ScoreGoal)
         {
@@ -212,10 +241,10 @@ public class MissionManager : MonoBehaviour, IInitializable
             _timerCoroutine = null;
         }
 
-        if (_boardSyncCoroutine != null)
+        if (_grassSpreadSyncCoroutine != null)
         {
-            StopCoroutine(_boardSyncCoroutine);
-            _boardSyncCoroutine = null;
+            StopCoroutine(_grassSpreadSyncCoroutine);
+            _grassSpreadSyncCoroutine = null;
         }
     }
 
@@ -227,41 +256,6 @@ public class MissionManager : MonoBehaviour, IInitializable
         LevelSessionContext.Clear();
         OnMissionCleared?.Invoke();
         RaiseProgressChanged();
-    }
-
-    /// <summary>보드 점유 상태를 읽어 Ice/Grass/Gem 남은 수를 갱신한다.</summary>
-    public void SyncProgressFromBoard()
-    {
-        if (_boardManager == null || _currentMission == null)
-            return;
-
-        switch (CurrentMissionType)
-        {
-            case MissionType.Ice:
-                _remainingCollectCount = _boardManager.CountIceCells();
-                break;
-            case MissionType.Grass:
-                _remainingCollectCount = _boardManager.CountGrassCells();
-                break;
-            case MissionType.Gem:
-                SyncGemRemainingFromBoard();
-                break;
-        }
-    }
-
-    private void SyncGemRemainingFromBoard()
-    {
-        _remainingGems.Clear();
-        List<GemTargetInfo> targets = _currentMission.BuildGemTargets();
-        for (int i = 0; i < targets.Count; i++)
-        {
-            GemTargetInfo target = targets[i];
-            _remainingGems.Add(new GemTargetInfo
-            {
-                gemType = target.gemType,
-                count = _boardManager.CountGemCells(target.gemType)
-            });
-        }
     }
 
     private void ResetProgressValuesFromMissionData()
@@ -292,6 +286,45 @@ public class MissionManager : MonoBehaviour, IInitializable
         }
     }
 
+    /// <summary>보드 잔여 + 비행 중인 수집을 합쳐 HUD 표시값을 만든다.</summary>
+    private void RefreshDisplayedRemaining()
+    {
+        if (_boardManager == null || _currentMission == null)
+            return;
+
+        switch (CurrentMissionType)
+        {
+            case MissionType.Ice:
+                _remainingCollectCount = _boardManager.CountIceCells() + _pendingCollectFlyCount;
+                break;
+            case MissionType.Grass:
+                _remainingCollectCount = _boardManager.CountGrassCells() + _pendingCollectFlyCount;
+                break;
+            case MissionType.Gem:
+                RefreshGemDisplayedRemaining();
+                break;
+        }
+    }
+
+    private void RefreshGemDisplayedRemaining()
+    {
+        _remainingGems.Clear();
+        List<GemTargetInfo> targets = _currentMission.BuildGemTargets();
+        for (int i = 0; i < targets.Count; i++)
+        {
+            GemTargetInfo target = targets[i];
+            int boardCount = _boardManager.CountGemCells(target.gemType);
+            int pending = 0;
+            _pendingGemFlyCounts.TryGetValue(target.gemType, out pending);
+
+            _remainingGems.Add(new GemTargetInfo
+            {
+                gemType = target.gemType,
+                count = boardCount + pending
+            });
+        }
+    }
+
     private void TryBindSubscriptions()
     {
         if (_subscriptionsBound)
@@ -302,6 +335,10 @@ public class MissionManager : MonoBehaviour, IInitializable
 
         InGameManager.OnBlockSettled += HandleBlockSettled;
         _scoreSystem.OnScoreChanged += HandleScoreChanged;
+
+        if (_boardManager != null)
+            _boardManager.OnMissionCollectibleRemoved += HandleMissionCollectibleRemoved;
+
         _subscriptionsBound = true;
     }
 
@@ -314,6 +351,9 @@ public class MissionManager : MonoBehaviour, IInitializable
         if (_scoreSystem != null)
             _scoreSystem.OnScoreChanged -= HandleScoreChanged;
 
+        if (_boardManager != null)
+            _boardManager.OnMissionCollectibleRemoved -= HandleMissionCollectibleRemoved;
+
         _subscriptionsBound = false;
     }
 
@@ -322,12 +362,9 @@ public class MissionManager : MonoBehaviour, IInitializable
         if (!_isTracking)
             return;
 
-        if (CurrentMissionType == MissionType.Ice ||
-            CurrentMissionType == MissionType.Grass ||
-            CurrentMissionType == MissionType.Gem)
-        {
-            ScheduleBoardProgressSync();
-        }
+        // grass 전파로 개수가 늘어날 수 있으므로, 비행이 없을 때만 보드와 동기화
+        if (CurrentMissionType == MissionType.Grass)
+            ScheduleGrassSpreadSync();
     }
 
     private void HandleScoreChanged(int previousScore, int newScore)
@@ -339,29 +376,136 @@ public class MissionManager : MonoBehaviour, IInitializable
         EvaluateObjective();
     }
 
-    private void ScheduleBoardProgressSync()
+    private void HandleMissionCollectibleRemoved(MissionCollectInfo info)
     {
-        if (_boardSyncCoroutine != null)
-            StopCoroutine(_boardSyncCoroutine);
+        if (!_isTracking || _resultResolved)
+            return;
 
-        _boardSyncCoroutine = StartCoroutine(BoardProgressSyncCoroutine());
+        if (!IsRelevantCollect(info))
+            return;
+
+        AddPendingFly(info);
+
+        // pending을 올려 표시값은 유지한 채 비행 시작
+        RefreshDisplayedRemaining();
+
+        Vector3 targetWorld = ResolveHudTarget(info);
+        if (_flyEffect != null)
+        {
+            _flyEffect.Play(info.Sprite, info.WorldPosition, targetWorld, () => OnCollectFlyCompleted(info));
+        }
+        else
+        {
+            OnCollectFlyCompleted(info);
+        }
     }
 
-    private IEnumerator BoardProgressSyncCoroutine()
+    private bool IsRelevantCollect(MissionCollectInfo info)
     {
-        // 같은 프레임의 라인클리어·grass 전파 핸들러 이후 반영
+        switch (CurrentMissionType)
+        {
+            case MissionType.Ice:
+                return info.CollectType == MissionType.Ice;
+            case MissionType.Grass:
+                return info.CollectType == MissionType.Grass;
+            case MissionType.Gem:
+                return info.CollectType == MissionType.Gem;
+            default:
+                return false;
+        }
+    }
+
+    private void AddPendingFly(MissionCollectInfo info)
+    {
+        if (info.CollectType == MissionType.Gem)
+        {
+            int count = 0;
+            _pendingGemFlyCounts.TryGetValue(info.GemType, out count);
+            _pendingGemFlyCounts[info.GemType] = count + 1;
+            return;
+        }
+
+        _pendingCollectFlyCount++;
+    }
+
+    private void RemovePendingFly(MissionCollectInfo info)
+    {
+        if (info.CollectType == MissionType.Gem)
+        {
+            if (!_pendingGemFlyCounts.TryGetValue(info.GemType, out int count))
+                return;
+
+            count--;
+            if (count <= 0)
+                _pendingGemFlyCounts.Remove(info.GemType);
+            else
+                _pendingGemFlyCounts[info.GemType] = count;
+            return;
+        }
+
+        _pendingCollectFlyCount = Mathf.Max(0, _pendingCollectFlyCount - 1);
+    }
+
+    private int GetTotalPendingFlies()
+    {
+        int total = _pendingCollectFlyCount;
+        foreach (KeyValuePair<GemType, int> pair in _pendingGemFlyCounts)
+            total += pair.Value;
+        return total;
+    }
+
+    private void OnCollectFlyCompleted(MissionCollectInfo info)
+    {
+        if (_resultResolved)
+            return;
+
+        RemovePendingFly(info);
+        RefreshDisplayedRemaining();
+        RaiseProgressChanged();
+
+        if (GetTotalPendingFlies() <= 0)
+            EvaluateObjective();
+    }
+
+    private Vector3 ResolveHudTarget(MissionCollectInfo info)
+    {
+        if (_missionHud == null)
+            return info.WorldPosition + Vector3.up * 2f;
+
+        if (info.CollectType == MissionType.Gem)
+        {
+            if (_missionHud.TryGetGemIconWorldPosition(info.GemType, out Vector3 gemPos))
+                return gemPos;
+        }
+        else if (_missionHud.TryGetCollectIconWorldPosition(out Vector3 collectPos))
+        {
+            return collectPos;
+        }
+
+        return info.WorldPosition + Vector3.up * 2f;
+    }
+
+    private void ScheduleGrassSpreadSync()
+    {
+        if (_grassSpreadSyncCoroutine != null)
+            StopCoroutine(_grassSpreadSyncCoroutine);
+
+        _grassSpreadSyncCoroutine = StartCoroutine(GrassSpreadSyncCoroutine());
+    }
+
+    private IEnumerator GrassSpreadSyncCoroutine()
+    {
         yield return null;
-        SyncProgressFromBoard();
-        RaiseProgressChanged();
-        EvaluateObjective();
 
-        // ice/grass 단계 제거 DOTween 이후 재동기화
-        yield return new WaitForSeconds(StageClearSyncDelaySeconds);
-        SyncProgressFromBoard();
-        RaiseProgressChanged();
-        EvaluateObjective();
+        if (!_isTracking || _pendingCollectFlyCount > 0)
+        {
+            _grassSpreadSyncCoroutine = null;
+            yield break;
+        }
 
-        _boardSyncCoroutine = null;
+        RefreshDisplayedRemaining();
+        RaiseProgressChanged();
+        _grassSpreadSyncCoroutine = null;
     }
 
     private IEnumerator TimerCoroutine()
@@ -390,6 +534,9 @@ public class MissionManager : MonoBehaviour, IInitializable
     private void EvaluateObjective()
     {
         if (!_isTracking || _objectiveCompleted || _currentMission == null)
+            return;
+
+        if (GetTotalPendingFlies() > 0)
             return;
 
         bool completed = false;
@@ -449,7 +596,6 @@ public class MissionManager : MonoBehaviour, IInitializable
         _resultPopup.ShowResult(success);
     }
 
-    /// <summary>클리어 시 다음 레벨을 플레이 가능(IsClear)으로 연다.</summary>
     private void UnlockNextLevel()
     {
         if (_missionTable == null || _currentLevelIndex < 0)
@@ -486,16 +632,24 @@ public class MissionManager : MonoBehaviour, IInitializable
         OnTimeChanged?.Invoke();
     }
 
+    private void ClearPendingFlies()
+    {
+        _pendingCollectFlyCount = 0;
+        _pendingGemFlyCounts.Clear();
+    }
+
     private void ResetState()
     {
         _currentLevelIndex = -1;
         _missionTable = null;
         _currentMission = null;
+        _usingTestMission = false;
         _remainingCollectCount = 0;
         _remainingGems.Clear();
         _remainingTimeSeconds = 0f;
         _objectiveCompleted = false;
         _timeExpired = false;
         _resultResolved = false;
+        ClearPendingFlies();
     }
 }

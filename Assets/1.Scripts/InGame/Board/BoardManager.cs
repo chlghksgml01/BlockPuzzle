@@ -56,6 +56,9 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
 
     public event Action<IReadOnlyList<int>, IReadOnlyList<int>> OnLinesClearedDetailed;
 
+    /// <summary>Ice/Grass/Gem 미션 블록이 보드에서 제거될 때 (비행 연출용).</summary>
+    public event Action<MissionCollectInfo> OnMissionCollectibleRemoved;
+
     /// <summary>직전 라인 클리어에 grass가 포함되었는지. ProcessFullLines 이후 유효.</summary>
     public bool LastClearContainedGrass { get; private set; }
 
@@ -180,6 +183,7 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
                 _scoreSystem.CalculateLineScore(cleared);
             OnLinesClearedDetailed?.Invoke(rows, cols);
         });
+        _model.SetMissionCollectibleRemovedHandler(info => OnMissionCollectibleRemoved?.Invoke(info));
         _preview = new BoardPreviewController(_model, _mapper, _keepPreviewMaxDistancePx);
         _hint = new BoardHintController(_boardSize, _boardSize, _hintCells, _model);
 

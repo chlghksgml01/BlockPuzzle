@@ -18,7 +18,7 @@ MonoBehaviour:
     y: 6
     spriteName: Pentagon
   isHard: 0
-  isClear: 0
+  isClear: 1
   missionType: 4
   targetScore: 0
   timeLimitSeconds: 0

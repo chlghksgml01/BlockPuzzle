@@ -27,6 +27,7 @@ public sealed class BoardModel
     public Vector2Int LastPlaceableBasePos { get; private set; }
 
     private readonly Action<int, IReadOnlyList<int>, IReadOnlyList<int>> _onLinesCleared;
+    private Action<MissionCollectInfo> _onMissionCollectibleRemoved;
     private Func<string, Sprite> _spriteResolver;
 
     public BoardModel(int width, int height, BoardCell[,] cells, Action<int, IReadOnlyList<int>, IReadOnlyList<int>> onLinesCleared)
@@ -41,6 +42,11 @@ public sealed class BoardModel
     public void SetSpriteResolver(Func<string, Sprite> spriteResolver)
     {
         _spriteResolver = spriteResolver;
+    }
+
+    public void SetMissionCollectibleRemovedHandler(Action<MissionCollectInfo> handler)
+    {
+        _onMissionCollectibleRemoved = handler;
     }
 
     public BoardCell[,] Cells => _cells;
@@ -339,12 +345,65 @@ public sealed class BoardModel
         string spriteName = cell.FilledSprite != null ? cell.FilledSprite.name : null;
         if (BoardCell.TryGetStagedBlockInfo(spriteName, out _, out _))
         {
-            if (_spriteResolver == null || !cell.TryPlayStagedDamage(damage, _spriteResolver))
+            MissionCollectInfo collectInfo = BuildCollectInfo(cell);
+            if (_spriteResolver == null ||
+                !cell.TryPlayStagedDamage(damage, _spriteResolver, () => NotifyCollectibleRemoved(collectInfo)))
+            {
                 cell.ClearAllState();
+                NotifyCollectibleRemoved(collectInfo);
+            }
+
+            return;
+        }
+
+        if (BoardCell.TryGetGemType(spriteName, out _))
+        {
+            MissionCollectInfo collectInfo = BuildCollectInfo(cell);
+            cell.ClearAllState();
+            NotifyCollectibleRemoved(collectInfo);
             return;
         }
 
         cell.ClearAllState();
+    }
+
+    private static MissionCollectInfo BuildCollectInfo(BoardCell cell)
+    {
+        MissionCollectInfo info = new MissionCollectInfo
+        {
+            WorldPosition = cell.transform.position,
+            Sprite = cell.FilledSprite
+        };
+
+        string spriteName = cell.FilledSprite != null ? cell.FilledSprite.name : null;
+        if (BoardCell.IsIceSpriteName(spriteName))
+        {
+            info.CollectType = MissionType.Ice;
+        }
+        else if (BoardCell.IsGrassSpriteName(spriteName))
+        {
+            info.CollectType = MissionType.Grass;
+        }
+        else if (BoardCell.TryGetGemType(spriteName, out GemType gemType))
+        {
+            info.CollectType = MissionType.Gem;
+            info.GemType = gemType;
+        }
+
+        return info;
+    }
+
+    private void NotifyCollectibleRemoved(MissionCollectInfo info)
+    {
+        if (info.Sprite == null)
+            return;
+
+        if (info.CollectType != MissionType.Ice &&
+            info.CollectType != MissionType.Grass &&
+            info.CollectType != MissionType.Gem)
+            return;
+
+        _onMissionCollectibleRemoved?.Invoke(info);
     }
 
     /// <summary>

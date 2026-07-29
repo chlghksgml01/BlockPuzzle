@@ -136,7 +136,8 @@ public class BoardCell : MonoBehaviour
     /// ice/grass 데미지를 한 단계씩 적용하며 DOTween 연출을 재생한다.
     /// max 단계 초과 시 제거 연출 후 클리어.
     /// </summary>
-    public bool TryPlayStagedDamage(int damage, System.Func<string, Sprite> spriteResolver)
+    /// <param name="onFullyCleared">단계 초과로 셀이 완전히 제거된 직후 호출.</param>
+    public bool TryPlayStagedDamage(int damage, System.Func<string, Sprite> spriteResolver, System.Action onFullyCleared = null)
     {
         if (damage <= 0 || spriteResolver == null)
             return false;
@@ -157,7 +158,11 @@ public class BoardCell : MonoBehaviour
             if (nextStage > MaxStagedBlockStage)
             {
                 sequence.Append(transform.DOScale(Vector3.zero, StageClearDuration).SetEase(Ease.InBack));
-                sequence.AppendCallback(ClearOccupiedStateKeepTween);
+                sequence.AppendCallback(() =>
+                {
+                    ClearOccupiedStateKeepTween();
+                    onFullyCleared?.Invoke();
+                });
                 break;
             }
 
@@ -167,7 +172,11 @@ public class BoardCell : MonoBehaviour
             {
                 Debug.LogWarning($"[BoardCell] 단계 스프라이트를 찾지 못해 제거합니다: {nextSpriteName}", this);
                 sequence.Append(transform.DOScale(Vector3.zero, StageClearDuration).SetEase(Ease.InBack));
-                sequence.AppendCallback(ClearOccupiedStateKeepTween);
+                sequence.AppendCallback(() =>
+                {
+                    ClearOccupiedStateKeepTween();
+                    onFullyCleared?.Invoke();
+                });
                 break;
             }
 

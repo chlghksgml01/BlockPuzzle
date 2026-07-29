@@ -51,7 +51,9 @@ public class MissionHUD : MonoBehaviour
     private readonly List<GameObject> _spawnedViews = new List<GameObject>();
     private TextMeshProUGUI _timeText;
     private TextMeshProUGUI _collectCountText;
+    private RectTransform _collectIcon;
     private readonly Dictionary<GemType, TextMeshProUGUI> _gemCountTexts = new Dictionary<GemType, TextMeshProUGUI>();
+    private readonly Dictionary<GemType, RectTransform> _gemIcons = new Dictionary<GemType, RectTransform>();
     private MissionType _builtForType = MissionType.None;
     private bool _isBuilt;
 
@@ -70,6 +72,28 @@ public class MissionHUD : MonoBehaviour
         MissionManager.OnMissionCleared -= HandleMissionCleared;
         MissionManager.OnProgressChanged -= HandleProgressChanged;
         MissionManager.OnTimeChanged -= HandleTimeChanged;
+    }
+
+    /// <summary>Ice/Grass 수집 아이콘의 월드 좌표.</summary>
+    public bool TryGetCollectIconWorldPosition(out Vector3 worldPosition)
+    {
+        worldPosition = default;
+        if (_collectIcon == null)
+            return false;
+
+        worldPosition = _collectIcon.position;
+        return true;
+    }
+
+    /// <summary>Gem 종류별 아이콘의 월드 좌표.</summary>
+    public bool TryGetGemIconWorldPosition(GemType gemType, out Vector3 worldPosition)
+    {
+        worldPosition = default;
+        if (!_gemIcons.TryGetValue(gemType, out RectTransform icon) || icon == null)
+            return false;
+
+        worldPosition = icon.position;
+        return true;
     }
 
     private void HandleMissionBound()
@@ -143,12 +167,12 @@ public class MissionHUD : MonoBehaviour
                 break;
 
             case MissionType.Ice:
-                SpawnIcon(_iceIcon);
+                _collectIcon = SpawnIcon(_iceIcon);
                 _collectCountText = SpawnText(_countPrefab);
                 break;
 
             case MissionType.Grass:
-                SpawnIcon(_grassIcon);
+                _collectIcon = SpawnIcon(_grassIcon);
                 _collectCountText = SpawnText(_countPrefab);
                 break;
 
@@ -170,7 +194,10 @@ public class MissionHUD : MonoBehaviour
         for (int i = 0; i < gems.Count; i++)
         {
             GemTargetInfo gem = gems[i];
-            SpawnIcon(GetGemSprite(gem.gemType));
+            RectTransform icon = SpawnIcon(GetGemSprite(gem.gemType));
+            if (icon != null)
+                _gemIcons[gem.gemType] = icon;
+
             TextMeshProUGUI countText = SpawnText(_countPrefab);
             if (countText != null)
                 _gemCountTexts[gem.gemType] = countText;
@@ -219,10 +246,10 @@ public class MissionHUD : MonoBehaviour
         _timeText.text = FormatTime(manager.RemainingTimeSeconds);
     }
 
-    private void SpawnIcon(Sprite sprite)
+    private RectTransform SpawnIcon(Sprite sprite)
     {
         if (_iconPrefab == null || _contentRoot == null)
-            return;
+            return null;
 
         GameObject icon = Instantiate(_iconPrefab, _contentRoot);
         Image image = icon.GetComponent<Image>();
@@ -235,6 +262,7 @@ public class MissionHUD : MonoBehaviour
         }
 
         _spawnedViews.Add(icon);
+        return icon.transform as RectTransform;
     }
 
     private TextMeshProUGUI SpawnText(GameObject prefab)
@@ -279,8 +307,10 @@ public class MissionHUD : MonoBehaviour
 
         _spawnedViews.Clear();
         _gemCountTexts.Clear();
+        _gemIcons.Clear();
         _timeText = null;
         _collectCountText = null;
+        _collectIcon = null;
         _builtForType = MissionType.None;
         _isBuilt = false;
     }

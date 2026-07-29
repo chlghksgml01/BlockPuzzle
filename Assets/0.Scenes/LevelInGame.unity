@@ -2540,6 +2540,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1665260566}
   - component: {fileID: 1665260565}
+  - component: {fileID: 1665260567}
   m_Layer: 0
   m_Name: MissionManager
   m_TagString: Untagged
@@ -2560,6 +2561,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MissionManager
   _resultPopup: {fileID: 2080335177}
+  _missionHud: {fileID: 660974393}
+  _flyEffect: {fileID: 1665260567}
+  _testMissionData: {fileID: 11400000, guid: a78b5a28edaae014aaffbcffffef3eb2, type: 2}
+  _testLevelNumber: 1
 --- !u!4 &1665260566
 Transform:
   m_ObjectHideFlags: 0
@@ -2575,6 +2580,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1665260567
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1665260564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3d8e1f0a2b74c9d8e6f5a4b3c2d1e0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MissionCollectFlyEffect
+  _flyRoot: {fileID: 1031378053}
+  _flyIconPrefab: {fileID: 5488895339052606942, guid: d85252b0bccb5cb4387d44d1203952b0, type: 3}
+  _flyDuration: 0.7
+  _arcHeight: 1.2
+  _spinTurns: 0.75
+  _endScale: 0.35
 --- !u!224 &1761154051 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3727472670762941952, guid: b841d1bb6fced234ea73593017711194, type: 3}
@@ -3340,7 +3363,7 @@ MonoBehaviour:
 --- !u!114 &709315963735412988
 MonoBehaviour:
   m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 3535347366334861255, guid: ad1466546c41bdb468d2d1263b8d2547, type: 3}
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}

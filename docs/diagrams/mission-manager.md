@@ -76,10 +76,40 @@ classDiagram
   MissionManager --> ScoreSystem : score / target
 ```
 
-## 결과 팝업
+## 수집 비행 연출
 
-`MissionManager` 인스펙터의 `_resultPopup`에 `ResultPopupUI`를 연결한다.
-ResultPopup은 씬에서 **비활성**으로 둬도 된다.
+미션 블록(Ice/Grass/Gem) 제거 시 HUD 아이콘으로 날아간 뒤에만 Count가 줄고,
+모든 비행이 끝난 뒤 목표가 0이면 ResultPopup이 열린다.
+
+```mermaid
+flowchart TD
+  CLEAR[보드에서 미션 블록 제거]
+  FLY[MissionCollectFlyEffect 비행]
+  COUNT[HUD Count 감소]
+  EVAL{남은 목표 0?}
+  POPUP[ResultPopup]
+
+  CLEAR --> FLY --> COUNT --> EVAL
+  EVAL -->|Yes| POPUP
+  EVAL -->|No| WAIT[계속 플레이]
+```
+
+### 인스펙터
+
+**MissionManager**
+- `_testMissionData` → 테스트용 MissionData (연결 시 레벨맵 없이 LevelInGame Play)
+- `_testLevelNumber` → HUD/결과에 표시할 레벨 번호
+- `_missionHud` → MissionHUD
+- `_flyEffect` → MissionCollectFlyEffect
+- `_resultPopup` → ResultPopupUI
+
+**MissionCollectFlyEffect**
+- `_flyRoot` → Canvas RectTransform
+- `_flyIconPrefab` → IconImage
+- `_flyDuration` → 비행 시간(초). **작을수록 빠름** (0.05~1.5)
+- `_arcHeight` → 포물선 높이
+- `_spinTurns` → 비행 중 회전 횟수 (0 = 회전 없음)
+- `_endScale` → 도착 시 크기
 
 | 결과 | ResultText | Level | 트리거 |
 |------|------------|-------|--------|
