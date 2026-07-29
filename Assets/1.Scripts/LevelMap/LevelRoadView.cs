@@ -25,12 +25,13 @@ public sealed class LevelRoadView : MonoBehaviour
         _defaultFillAmount = _fillImage.fillAmount;
     }
 
-    public void Bind(int roadPairIndex, Vector2 anchoredPosition, bool mirrored, bool forceHalfFill)
+    public void Bind(int roadPairIndex, Vector2 anchoredPosition, bool mirrored, bool forceHalfFill, string namePrefix = "Road")
     {
         RoadPairIndex = roadPairIndex;
         RectTransform.anchoredPosition = anchoredPosition;
         RectTransform.localRotation = mirrored ? MirroredRotation : Quaternion.identity;
-        gameObject.name = mirrored ? $"Road_{roadPairIndex}_L" : $"Road_{roadPairIndex}_R";
+        string side = mirrored ? "L" : "R";
+        gameObject.name = $"{namePrefix}_{roadPairIndex}_{side}";
         _fillImage.fillAmount = forceHalfFill ? 0.5f : _defaultFillAmount;
     }
 }
