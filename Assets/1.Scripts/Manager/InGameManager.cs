@@ -33,6 +33,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     private Coroutine _gameOverCoroutine;
     private bool _isGameOverTriggered;
     private bool _subscriptionsBound;
+    private bool _spawnBlocksAfterIntro;
     private int _previousBestScore;
 
     private BoardManager _boardManger;
@@ -92,16 +93,15 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
         if (!hasData || isNewGame)
         {
-            if (!hasData)
-                SpawnBlocksInSlots();
-
-            EnableInteraction(false);
-            _boardManger.PlayIntro(HandleIntroCompleted);
+            // 점수 0 세이브 복원 시 슬롯 블록이 인트로보다 먼저 보이지 않도록 비운다.
+            ClearAllSlots();
+            BeginIntroThenSpawnBlocks();
         }
         else
+        {
             EnableInteraction(true);
-
-        ScheduleGameOverIfNeeded();
+            ScheduleGameOverIfNeeded();
+        }
     }
 
     private void HandleBlockPlaced(int blockShapeCount)
@@ -525,10 +525,15 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
     private void StartLevelGame()
     {
-        SpawnBlocksInSlots();
+        ClearAllSlots();
+        BeginIntroThenSpawnBlocks();
+    }
+
+    private void BeginIntroThenSpawnBlocks()
+    {
+        _spawnBlocksAfterIntro = true;
         EnableInteraction(false);
         _boardManger.PlayIntro(HandleIntroCompleted);
-        ScheduleGameOverIfNeeded();
     }
 
     private void HandleIntroCompleted()
@@ -537,6 +542,12 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         {
             ApplyLevelBoardLayout();
             BeginMissionProgressTracking();
+        }
+
+        if (_spawnBlocksAfterIntro)
+        {
+            _spawnBlocksAfterIntro = false;
+            SpawnBlocksInSlots();
         }
 
         EnableInteraction(true);

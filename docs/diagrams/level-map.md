@@ -195,11 +195,12 @@ sequenceDiagram
     UI->>Ctx: BeginLevel(levelIndex, missionTable)
     UI->>UI: LoadScene(LevelInGame)
     Init->>IGM: Initialize(context)
-    IGM->>BM: PrepareBoardSizeFromLayout(layout)
-    BM->>BM: GenerateBoard()
-    IGM->>BM: ApplyBoardLayout(layout, spriteResolver)
+    IGM->>BM: PlayIntro(HandleIntroCompleted)
+    BM->>BM: PlayIntroDominoEffect
+    IGM->>IGM: ApplyLevelBoardLayout / BeginMissionProgressTracking
     IGM->>IGM: SpawnBlocksInSlots()
 ```
 
 - `MissionData`가 보드 크기와 초기 채움 칸을 정의한다.
+- 인트로 도미노 연출이 끝난 뒤(`HandleIntroCompleted`) 슬롯 블록을 스폰한다.
 - 레벨 모드에서는 Classic 저장(`InGameSaveStorage`)을 사용하지 않는다.
