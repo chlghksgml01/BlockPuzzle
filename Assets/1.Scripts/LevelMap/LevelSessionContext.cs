@@ -16,12 +16,18 @@ public static class LevelSessionContext
         _missionTable = missionTable;
     }
 
-    public static LevelMissionData GetSelectedMission()
+    /// <summary>씬 진입 시 전달된 미션 테이블. 비활성 시 null.</summary>
+    public static LevelMissionTableData GetMissionTable()
+    {
+        return _missionTable;
+    }
+
+    public static MissionData GetSelectedMission()
     {
         if (!IsActive)
             return null;
 
-        return _missionTable.GetMission<LevelMissionData>(_selectedLevelIndex);
+        return _missionTable.GetMission(_selectedLevelIndex);
     }
 
     public static void Clear()

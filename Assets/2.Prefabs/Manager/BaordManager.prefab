@@ -98,9 +98,9 @@ MonoBehaviour:
   _gridLayoutPresets:
   - _boardSize: 8
     _boardImg: {fileID: 21300000, guid: bb6cbe020085df7489f7dc98ab43bd9b, type: 3}
-    _paddingLeft: 12
+    _paddingLeft: 23
     _paddingRight: 0
-    _paddingTop: 9
+    _paddingTop: 24
     _paddingBottom: 2
     _cellSize: {x: 119, y: 119}
     _spacing: {x: 3.3, y: 1.5}
@@ -114,9 +114,9 @@ MonoBehaviour:
     _spacing: {x: 3.3, y: 1.5}
   - _boardSize: 10
     _boardImg: {fileID: 21300000, guid: e1a0eefbcee004a4398be67c06775ade, type: 3}
-    _paddingLeft: 7
+    _paddingLeft: 17
     _paddingRight: 0
-    _paddingTop: 5
+    _paddingTop: 20
     _paddingBottom: 2
     _cellSize: {x: 97, y: 97}
     _spacing: {x: 1.8, y: 0.3}

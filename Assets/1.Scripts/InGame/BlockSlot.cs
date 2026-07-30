@@ -99,7 +99,7 @@ public class BlockSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         {
             _inGame.StopHintCoroutine(Block, true);
             Sprite placedSprite = Block.BlockSprite;
-            if (_boardHandler.PlaceLastPreview(Block, Block.BlockSprite, out int placedCount))
+            if (_boardHandler.PlaceLastPreview(Block, out int placedCount))
             {
                 RemoveBlock();
                 OnBlockSpritePlaced?.Invoke(placedSprite);

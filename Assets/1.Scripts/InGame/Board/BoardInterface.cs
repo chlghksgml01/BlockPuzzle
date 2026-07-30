@@ -6,7 +6,7 @@ public interface IBoardHandler
 {
     public void UpdatePreviewFromScreen(DraggableBlock block, Vector2 anchorScreenPos, Vector2Int anchorOffset, Camera uiCam = null);
 
-    public bool PlaceLastPreview(DraggableBlock block, Sprite blockSprite, out int placedCount);
+    public bool PlaceLastPreview(DraggableBlock block, out int placedCount);
 
     public void ClearDragPreview();
 

@@ -10,10 +10,25 @@ public sealed class BoardModel
 
     private readonly List<int> _fullRow = new List<int>();
     private readonly List<int> _fullCol = new List<int>();
+    private readonly HashSet<int> _fullRowSet = new HashSet<int>();
+    private readonly HashSet<int> _fullColSet = new HashSet<int>();
+    private readonly HashSet<Vector2Int> _clearedCellKeys = new HashSet<Vector2Int>();
+    private readonly List<BoardCell> _grassCandidates = new List<BoardCell>();
+    private readonly List<BoardCell> _spreadTargets = new List<BoardCell>();
+
+    private static readonly Vector2Int[] OrthogonalOffsets =
+    {
+        new Vector2Int(0, -1),
+        new Vector2Int(0, 1),
+        new Vector2Int(-1, 0),
+        new Vector2Int(1, 0)
+    };
 
     public Vector2Int LastPlaceableBasePos { get; private set; }
 
     private readonly Action<int, IReadOnlyList<int>, IReadOnlyList<int>> _onLinesCleared;
+    private Action<MissionCollectInfo> _onMissionCollectibleRemoved;
+    private Func<string, Sprite> _spriteResolver;
 
     public BoardModel(int width, int height, BoardCell[,] cells, Action<int, IReadOnlyList<int>, IReadOnlyList<int>> onLinesCleared)
     {
@@ -24,26 +39,195 @@ public sealed class BoardModel
         LastPlaceableBasePos = new Vector2Int(-1, -1);
     }
 
+    public void SetSpriteResolver(Func<string, Sprite> spriteResolver)
+    {
+        _spriteResolver = spriteResolver;
+    }
+
+    public void SetMissionCollectibleRemovedHandler(Action<MissionCollectInfo> handler)
+    {
+        _onMissionCollectibleRemoved = handler;
+    }
+
     public BoardCell[,] Cells => _cells;
 
     public bool IsFilled(int x, int y) => _cells[x, y].IsFilled;
+    public bool IsOccupied(int x, int y) => _cells[x, y].IsOccupied;
 
     public void ResetBoard()
     {
         for (int x = 0; x < _width; x++)
         {
             for (int y = 0; y < _height; y++)
+                _cells[x, y].ClearAllState();
+        }
+    }
+
+    /// <returns>클리어된 줄에 grass가 하나라도 포함되었으면 true.</returns>
+    public bool ProcessFullLines()
+    {
+        UpdateFullLinesState();
+        bool containedGrass = ClearedLinesContainGrass();
+        RemoveFullLines();
+        return containedGrass;
+    }
+
+    public bool HasAnyGrass()
+    {
+        return CountIceOrGrass(grass: true) > 0;
+    }
+
+    /// <summary>보드에 남은 ice 셀 수.</summary>
+    public int CountIceCells()
+    {
+        return CountIceOrGrass(grass: false);
+    }
+
+    /// <summary>보드에 남은 grass 셀 수.</summary>
+    public int CountGrassCells()
+    {
+        return CountIceOrGrass(grass: true);
+    }
+
+    /// <summary>보드에 남은 특정 Gem 셀 수.</summary>
+    public int CountGemCells(GemType gemType)
+    {
+        int count = 0;
+        for (int x = 0; x < _width; x++)
+        {
+            for (int y = 0; y < _height; y++)
             {
-                _cells[x, y].SetFilled(false);
-                _cells[x, y].UpdateCellVisual(false);
+                BoardCell cell = _cells[x, y];
+                if (!cell.IsOccupied || cell.FilledSprite == null)
+                    continue;
+
+                if (BoardCell.TryGetGemType(cell.FilledSprite.name, out GemType type) && type == gemType)
+                    count++;
+            }
+        }
+
+        return count;
+    }
+
+    private int CountIceOrGrass(bool grass)
+    {
+        int count = 0;
+        for (int x = 0; x < _width; x++)
+        {
+            for (int y = 0; y < _height; y++)
+            {
+                BoardCell cell = _cells[x, y];
+                if (grass)
+                {
+                    if (cell.IsGrass)
+                        count++;
+                }
+                else if (cell.IsIce)
+                {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
+    /// <summary>
+    /// 보드의 grass 하나를 골라, 상하좌우 중 미션 블록이 아닌 칸을 grass01로 바꾼다.
+    /// </summary>
+    public bool TrySpreadGrass(float appearDuration)
+    {
+        if (_spriteResolver == null)
+            return false;
+
+        string grass01Name = BoardCell.GetStagedSpriteName("grass", 1);
+        Sprite grassSprite = _spriteResolver.Invoke(grass01Name);
+        if (grassSprite == null)
+        {
+            Debug.LogWarning($"[BoardModel] grass 전파 스프라이트를 찾지 못했습니다: {grass01Name}");
+            return false;
+        }
+
+        CollectGrassCellsWithSpreadTargets();
+        if (_grassCandidates.Count == 0)
+            return false;
+
+        BoardCell source = _grassCandidates[UnityEngine.Random.Range(0, _grassCandidates.Count)];
+        CollectSpreadTargetsAround(source);
+        if (_spreadTargets.Count == 0)
+            return false;
+
+        BoardCell target = _spreadTargets[UnityEngine.Random.Range(0, _spreadTargets.Count)];
+        target.SetStageSprite(grassSprite);
+        if (appearDuration > 0f)
+            target.PlayAppearTween(appearDuration);
+
+        return true;
+    }
+
+    private bool ClearedLinesContainGrass()
+    {
+        for (int i = 0; i < _fullRow.Count; i++)
+        {
+            int row = _fullRow[i];
+            for (int x = 0; x < _width; x++)
+            {
+                if (_cells[x, row].IsGrass)
+                    return true;
+            }
+        }
+
+        for (int i = 0; i < _fullCol.Count; i++)
+        {
+            int col = _fullCol[i];
+            for (int y = 0; y < _height; y++)
+            {
+                if (_cells[col, y].IsGrass)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void CollectGrassCellsWithSpreadTargets()
+    {
+        _grassCandidates.Clear();
+        for (int x = 0; x < _width; x++)
+        {
+            for (int y = 0; y < _height; y++)
+            {
+                BoardCell cell = _cells[x, y];
+                if (!cell.IsGrass)
+                    continue;
+
+                CollectSpreadTargetsAround(cell);
+                if (_spreadTargets.Count > 0)
+                    _grassCandidates.Add(cell);
             }
         }
     }
 
-    public void ProcessFullLines()
+    private void CollectSpreadTargetsAround(BoardCell source)
     {
-        UpdateFullLinesState();
-        RemoveFullLines();
+        _spreadTargets.Clear();
+        if (source == null)
+            return;
+
+        for (int i = 0; i < OrthogonalOffsets.Length; i++)
+        {
+            Vector2Int offset = OrthogonalOffsets[i];
+            int tx = source._x + offset.x;
+            int ty = source._y + offset.y;
+            if (tx < 0 || tx >= _width || ty < 0 || ty >= _height)
+                continue;
+
+            BoardCell neighbor = _cells[tx, ty];
+            if (neighbor.IsMissionBlock)
+                continue;
+
+            _spreadTargets.Add(neighbor);
+        }
     }
 
     public void PreviewLineClears(List<BoardCell> previewCells, Sprite blockSprite)
@@ -64,40 +248,20 @@ public sealed class BoardModel
 
         foreach (int y in rowsToCheck)
         {
-            bool isFull = true;
-            for (int x = 0; x < _width; x++)
-            {
-                if (!_cells[x, y].IsFilled && !_cells[x, y].IsPreviewFilled)
-                {
-                    isFull = false;
-                    break;
-                }
-            }
+            if (!IsLineClearableRow(y, includePreview: true))
+                continue;
 
-            if (isFull)
-            {
-                for (int x = 0; x < _width; x++)
-                    _cells[x, y].SetLinePreview(true, blockSprite);
-            }
+            for (int x = 0; x < _width; x++)
+                _cells[x, y].SetLinePreview(true, blockSprite);
         }
 
         foreach (int x in colsToCheck)
         {
-            bool isFull = true;
-            for (int y = 0; y < _height; y++)
-            {
-                if (!_cells[x, y].IsFilled && !_cells[x, y].IsPreviewFilled)
-                {
-                    isFull = false;
-                    break;
-                }
-            }
+            if (!IsLineClearableCol(x, includePreview: true))
+                continue;
 
-            if (isFull)
-            {
-                for (int y = 0; y < _height; y++)
-                    _cells[x, y].SetLinePreview(true, blockSprite);
-            }
+            for (int y = 0; y < _height; y++)
+                _cells[x, y].SetLinePreview(true, blockSprite);
         }
     }
 
@@ -119,33 +283,13 @@ public sealed class BoardModel
 
         for (int y = 0; y < _height; y++)
         {
-            bool isFull = true;
-            for (int x = 0; x < _width; x++)
-            {
-                if (!_cells[x, y].IsFilled)
-                {
-                    isFull = false;
-                    break;
-                }
-            }
-
-            if (isFull)
+            if (IsLineClearableRow(y, includePreview: false))
                 _fullRow.Add(y);
         }
 
         for (int x = 0; x < _width; x++)
         {
-            bool isFull = true;
-            for (int y = 0; y < _height; y++)
-            {
-                if (!_cells[x, y].IsFilled)
-                {
-                    isFull = false;
-                    break;
-                }
-            }
-
-            if (isFull)
+            if (IsLineClearableCol(x, includePreview: false))
                 _fullCol.Add(x);
         }
 
@@ -156,23 +300,139 @@ public sealed class BoardModel
 
     private void RemoveFullLines()
     {
+        _fullRowSet.Clear();
+        _fullColSet.Clear();
+        _clearedCellKeys.Clear();
+
+        for (int i = 0; i < _fullRow.Count; i++)
+            _fullRowSet.Add(_fullRow[i]);
+        for (int i = 0; i < _fullCol.Count; i++)
+            _fullColSet.Add(_fullCol[i]);
+
         foreach (int row in _fullRow)
         {
             for (int x = 0; x < _width; x++)
-            {
-                _cells[x, row].SetFilled(false);
-                _cells[x, row].UpdateCellVisual(false);
-            }
+                ProcessClearedCell(x, row);
         }
 
         foreach (int col in _fullCol)
         {
             for (int y = 0; y < _height; y++)
-            {
-                _cells[col, y].SetFilled(false);
-                _cells[col, y].UpdateCellVisual(false);
-            }
+                ProcessClearedCell(col, y);
         }
+    }
+
+    /// <summary>
+    /// 클리어된 행/열에 속한 셀을 한 번만 처리한다.
+    /// ice/grass는 속한 줄 수만큼 단계가 오르고(행+열이면 +2), 그 외는 즉시 제거.
+    /// </summary>
+    private void ProcessClearedCell(int x, int y)
+    {
+        Vector2Int key = new Vector2Int(x, y);
+        if (!_clearedCellKeys.Add(key))
+            return;
+
+        BoardCell cell = _cells[x, y];
+        int damage = 0;
+        if (_fullRowSet.Contains(y))
+            damage++;
+        if (_fullColSet.Contains(x))
+            damage++;
+
+        if (damage <= 0)
+            return;
+
+        string spriteName = cell.FilledSprite != null ? cell.FilledSprite.name : null;
+        if (BoardCell.TryGetStagedBlockInfo(spriteName, out _, out _))
+        {
+            MissionCollectInfo collectInfo = BuildCollectInfo(cell);
+            if (_spriteResolver == null ||
+                !cell.TryPlayStagedDamage(damage, _spriteResolver, () => NotifyCollectibleRemoved(collectInfo)))
+            {
+                cell.ClearAllState();
+                NotifyCollectibleRemoved(collectInfo);
+            }
+
+            return;
+        }
+
+        if (BoardCell.TryGetGemType(spriteName, out _))
+        {
+            MissionCollectInfo collectInfo = BuildCollectInfo(cell);
+            cell.ClearAllState();
+            NotifyCollectibleRemoved(collectInfo);
+            return;
+        }
+
+        cell.ClearAllState();
+    }
+
+    private static MissionCollectInfo BuildCollectInfo(BoardCell cell)
+    {
+        MissionCollectInfo info = new MissionCollectInfo
+        {
+            WorldPosition = cell.transform.position,
+            Sprite = cell.FilledSprite
+        };
+
+        string spriteName = cell.FilledSprite != null ? cell.FilledSprite.name : null;
+        if (BoardCell.IsIceSpriteName(spriteName))
+        {
+            info.CollectType = MissionType.Ice;
+        }
+        else if (BoardCell.IsGrassSpriteName(spriteName))
+        {
+            info.CollectType = MissionType.Grass;
+        }
+        else if (BoardCell.TryGetGemType(spriteName, out GemType gemType))
+        {
+            info.CollectType = MissionType.Gem;
+            info.GemType = gemType;
+        }
+
+        return info;
+    }
+
+    private void NotifyCollectibleRemoved(MissionCollectInfo info)
+    {
+        if (info.Sprite == null)
+            return;
+
+        if (info.CollectType != MissionType.Ice &&
+            info.CollectType != MissionType.Grass &&
+            info.CollectType != MissionType.Gem)
+            return;
+
+        _onMissionCollectibleRemoved?.Invoke(info);
+    }
+
+    /// <summary>
+    /// 라인이 가득 차면 클리어 대상 (stone 포함). ice/grass는 제거 대신 단계 상승.
+    /// </summary>
+    private bool IsLineClearableRow(int y, bool includePreview)
+    {
+        for (int x = 0; x < _width; x++)
+        {
+            BoardCell cell = _cells[x, y];
+            bool occupied = cell.IsOccupied || (includePreview && cell.IsPreviewFilled);
+            if (!occupied)
+                return false;
+        }
+
+        return true;
+    }
+
+    private bool IsLineClearableCol(int x, bool includePreview)
+    {
+        for (int y = 0; y < _height; y++)
+        {
+            BoardCell cell = _cells[x, y];
+            bool occupied = cell.IsOccupied || (includePreview && cell.IsPreviewFilled);
+            if (!occupied)
+                return false;
+        }
+
+        return true;
     }
 
     public bool CanPlaceShape(Vector2Int[] shapeOffset)
@@ -184,7 +444,7 @@ public sealed class BoardModel
         {
             for (int x = 0; x < _width; x++)
             {
-                if (!_cells[x, y].IsFilled && CanPlaceAt(x, y, shapeOffset))
+                if (!_cells[x, y].IsOccupied && CanPlaceAt(x, y, shapeOffset))
                     return true;
             }
         }
@@ -206,7 +466,7 @@ public sealed class BoardModel
             if (tx < 0 || tx >= _width || ty < 0 || ty >= _height)
                 return false;
 
-            if (_cells[tx, ty].IsFilled)
+            if (_cells[tx, ty].IsOccupied)
                 return false;
         }
 
@@ -235,7 +495,7 @@ public sealed class BoardModel
             if (tx < 0 || tx >= _width || ty < 0 || ty >= _height)
                 return false;
 
-            if (_cells[tx, ty].IsFilled)
+            if (_cells[tx, ty].IsOccupied)
                 return false;
 
             cells.Add(_cells[tx, ty]);

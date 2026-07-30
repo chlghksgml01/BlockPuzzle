@@ -52,8 +52,15 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
     private BoardModel _model;
     private BoardPreviewController _preview;
     private BoardHintController _hint;
+    private Func<string, Sprite> _missionSpriteResolver;
 
     public event Action<IReadOnlyList<int>, IReadOnlyList<int>> OnLinesClearedDetailed;
+
+    /// <summary>Ice/Grass/Gem 미션 블록이 보드에서 제거될 때 (비행 연출용).</summary>
+    public event Action<MissionCollectInfo> OnMissionCollectibleRemoved;
+
+    /// <summary>직전 라인 클리어에 grass가 포함되었는지. ProcessFullLines 이후 유효.</summary>
+    public bool LastClearContainedGrass { get; private set; }
 
     private ScoreSystem _scoreSystem;
 
@@ -62,22 +69,49 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
         _scoreSystem = context.ScoreSystem;
     }
 
-    /// <summary>BoardLayoutData의 크기로 보드 생성 전 _boardSize를 맞춘다. BoardManager.Awake 이전에 호출해야 한다.</summary>
-    public void PrepareBoardSizeFromLayout(BoardLayoutData layoutData)
+    /// <summary>MissionData의 크기로 보드 생성 전 _boardSize를 맞춘다. BoardManager.Awake 이전에 호출해야 한다.</summary>
+    public void PrepareBoardSizeFromLayout(MissionData missionData)
     {
-        if (layoutData == null)
+        if (missionData == null)
             return;
 
-        _boardSize = Mathf.Clamp(layoutData.boardSize, MinBoardSize, MaxBoardSize);
+        _boardSize = Mathf.Clamp(missionData.boardSize, MinBoardSize, MaxBoardSize);
     }
 
-    /// <summary>BoardLayoutData에 정의된 초기 채움 상태를 보드에 적용한다.</summary>
-    public void ApplyBoardLayout(BoardLayoutData layoutData, Func<string, Sprite> spriteResolver)
+    /// <summary>MissionData에 정의된 초기 채움 상태를 보드에 적용한다.</summary>
+    public void ApplyBoardLayout(MissionData missionData, Func<string, Sprite> spriteResolver)
     {
-        if (layoutData == null)
+        if (missionData == null)
             return;
 
-        RestoreFilledCells(layoutData.filledCells, spriteResolver);
+        RestoreFilledCells(missionData.filledCells, spriteResolver);
+    }
+
+    /// <summary>점유된 미션 셀을 동시에 등장시킨다.</summary>
+    public void PlayOccupiedCellsAppear(float duration)
+    {
+        if (_cells == null)
+            return;
+
+        for (int y = 0; y < _boardSize; y++)
+        {
+            for (int x = 0; x < _boardSize; x++)
+            {
+                BoardCell cell = _cells[x, y];
+                if (!cell.IsOccupied)
+                    continue;
+
+                cell.PlayAppearTween(duration);
+            }
+        }
+    }
+
+    /// <summary>미션 팔레트 스프라이트 해석기. ice 단계 전환(ice01→ice02 등)에 사용.</summary>
+    public void SetMissionSpriteResolver(Func<string, Sprite> spriteResolver)
+    {
+        _missionSpriteResolver = spriteResolver;
+        if (_model != null)
+            _model.SetSpriteResolver(_missionSpriteResolver);
     }
 
     private void Awake()
@@ -149,8 +183,12 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
                 _scoreSystem.CalculateLineScore(cleared);
             OnLinesClearedDetailed?.Invoke(rows, cols);
         });
+        _model.SetMissionCollectibleRemovedHandler(info => OnMissionCollectibleRemoved?.Invoke(info));
         _preview = new BoardPreviewController(_model, _mapper, _keepPreviewMaxDistancePx);
         _hint = new BoardHintController(_boardSize, _boardSize, _hintCells, _model);
+
+        if (_missionSpriteResolver != null)
+            _model.SetSpriteResolver(_missionSpriteResolver);
     }
 
     private void ApplyGridLayoutSettings()
@@ -274,14 +312,14 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
         CanPlaceBlock = canPlace;
     }
 
-    public bool PlaceLastPreview(DraggableBlock block, Sprite blockSprite, out int placedCount)
+    public bool PlaceLastPreview(DraggableBlock block, out int placedCount)
     {
         placedCount = 0;
 
         if (!CanPlaceBlock)
             return false;
 
-        bool canPlaceBlock = _preview.PlaceLastPreview(block, blockSprite, out placedCount);
+        bool canPlaceBlock = _preview.PlaceLastPreview(block, out placedCount);
         if (canPlaceBlock)
             CanPlaceBlock = false;
 
@@ -296,7 +334,26 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
 
     private void ProcessFullLines(int blockShapeCount)
     {
-        _model.ProcessFullLines();
+        LastClearContainedGrass = _model.ProcessFullLines();
+    }
+
+    public bool HasAnyGrass() => _model != null && _model.HasAnyGrass();
+
+    /// <summary>보드에 남은 ice 셀 수.</summary>
+    public int CountIceCells() => _model != null ? _model.CountIceCells() : 0;
+
+    /// <summary>보드에 남은 grass 셀 수.</summary>
+    public int CountGrassCells() => _model != null ? _model.CountGrassCells() : 0;
+
+    /// <summary>보드에 남은 특정 Gem 셀 수.</summary>
+    public int CountGemCells(GemType gemType) => _model != null ? _model.CountGemCells(gemType) : 0;
+
+    public bool TrySpreadGrass(float appearDuration)
+    {
+        if (_model == null)
+            return false;
+
+        return _model.TrySpreadGrass(appearDuration);
     }
 
     private void ResetBoard()
@@ -304,6 +361,7 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
         ClearDragPreview();
         _hint.ClearAll();
         _model.ResetBoard();
+        LastClearContainedGrass = false;
     }
 
     public void ActivateGrayscale(bool useGrayScale, float effectDuration = 0f)
@@ -312,9 +370,9 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
     }
 
     #region InGameManager
-    public void PlayIntro()
+    public void PlayIntro(Action onComplete = null)
     {
-        _boardEffect.PlayIntro(_cells, _boardSize, _boardSize);
+        _boardEffect.PlayIntro(_cells, _boardSize, _boardSize, onComplete);
     }
 
     public void ShowHint(bool showHint, DraggableBlock block, bool isPlaced = false)
@@ -339,8 +397,14 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
             if (data.x < 0 || data.x >= _boardSize || data.y < 0 || data.y >= _boardSize)
                 continue;
 
+            if (BoardCell.IsGemSpriteName(data.spriteName))
+                continue;
+
             Sprite sprite = spriteResolver != null ? spriteResolver(data.spriteName) : null;
-            _cells[data.x, data.y].RestoreFilledState(sprite);
+            if (BoardCell.IsStoneSpriteName(data.spriteName))
+                _cells[data.x, data.y].SetBlocked(sprite);
+            else
+                _cells[data.x, data.y].RestoreFilledState(sprite);
         }
     }
 
@@ -352,7 +416,7 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
             for (int y = 0; y < _boardSize; y++)
             {
                 BoardCell cell = _cells[x, y];
-                if (!cell.IsFilled)
+                if (!cell.IsOccupied)
                     continue;
 
                 result.Add(new FilledCellData

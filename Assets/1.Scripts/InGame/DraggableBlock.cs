@@ -12,6 +12,9 @@ public class DraggableBlock : MonoBehaviour
 
     public Vector2Int[] CurrentOffsets { get; private set; }
     private Sprite _blockSprite;
+    private Sprite _gemSprite;
+    private Sprite _gemBodySprite;
+    private RectTransform _gemTileRect;
 
     [Header("Prefab & Settings")]
     [SerializeField] private float _scaleDuration = 0.2f;
@@ -26,6 +29,10 @@ public class DraggableBlock : MonoBehaviour
 
     private RectTransform _rectTransform;
     private List<RectTransform> _bodyBlocks = new List<RectTransform>();
+    public bool HasGemTile { get; private set; }
+    public GemType GemTileType { get; private set; }
+    public Vector2Int GemTileOffset { get; private set; }
+
     public Sprite BlockSprite => _blockSprite;
     public RectTransform RectTransform => _rectTransform;
     private readonly Dictionary<Vector2Int, RectTransform> _tileByOffset = new Dictionary<Vector2Int, RectTransform>();
@@ -37,6 +44,7 @@ public class DraggableBlock : MonoBehaviour
 
     public void InitializeBlock(Sprite blockSprite, BlockShape blockshape = null, bool reduceLargeShapeSpawnRate = false)
     {
+        ClearGemTile();
         _blockSprite = blockSprite;
 
         if (blockshape != null)
@@ -62,9 +70,76 @@ public class DraggableBlock : MonoBehaviour
 
     public void InitializeBlockFromOffsets(Sprite blockSprite, Vector2Int[] offsets)
     {
+        ClearGemTile();
         _blockSprite = blockSprite;
         CurrentOffsets = (Vector2Int[])offsets.Clone();
         CreateBodyTiles();
+    }
+
+    /// <summary>형태 중 랜덤 셀에 Gem 타일을 부여한다.</summary>
+    public void AssignGemTile(GemType gemType, Sprite gemSprite, Sprite gemBodySprite)
+    {
+        if (CurrentOffsets == null || CurrentOffsets.Length == 0 || gemSprite == null)
+            return;
+
+        ClearGemTile();
+        HasGemTile = true;
+        GemTileType = gemType;
+        _gemSprite = gemSprite;
+        _gemBodySprite = gemBodySprite != null ? gemBodySprite : _blockSprite;
+
+        int index = UnityEngine.Random.Range(0, CurrentOffsets.Length);
+        GemTileOffset = CurrentOffsets[index];
+
+        if (_tileByOffset.TryGetValue(GemTileOffset, out RectTransform gemRect))
+            _gemTileRect = gemRect;
+
+        ApplyGemOverlay();
+    }
+
+    /// <summary>보드 배치·프리뷰용 셀 스프라이트. Gem 셀은 Gem 스프라이트를 반환한다.</summary>
+    public Sprite GetPlacementSpriteForOffset(Vector2Int offset)
+    {
+        if (HasGemTile && offset == GemTileOffset && _gemSprite != null)
+            return _gemSprite;
+
+        if (HasGemTile && _gemBodySprite != null)
+            return _gemBodySprite;
+
+        return _blockSprite;
+    }
+
+    private void ClearGemTile()
+    {
+        for (int i = 0; i < _bodyBlocks.Count; i++)
+        {
+            Image bodyImage = _bodyBlocks[i].GetComponent<Image>();
+            if (bodyImage != null)
+                bodyImage.sprite = _blockSprite;
+        }
+
+        HasGemTile = false;
+        GemTileType = default;
+        GemTileOffset = default;
+        _gemSprite = null;
+        _gemBodySprite = null;
+        _gemTileRect = null;
+    }
+
+    private void ApplyGemOverlay()
+    {
+        if (_gemTileRect == null || _gemSprite == null)
+            return;
+
+        for (int i = 0; i < _bodyBlocks.Count; i++)
+        {
+            RectTransform bodyBlock = _bodyBlocks[i];
+            Image bodyImage = bodyBlock.GetComponent<Image>();
+            if (bodyImage == null)
+                continue;
+
+            bodyImage.sprite = bodyBlock == _gemTileRect ? _gemSprite : _gemBodySprite;
+        }
     }
 
     private int PickShapeIndexWeighted(BlockShape[] shapes, bool reduceLargeShapeSpawnRate)
