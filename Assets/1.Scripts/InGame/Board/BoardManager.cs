@@ -39,6 +39,16 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
     [Header("Drag Preview Settings")]
     [SerializeField, Min(0f)] private float _keepPreviewMaxDistancePx = 180f;
 
+    [Header("Line Clear Sparkle")]
+    [Tooltip("클리어 예정 줄을 반짝이 파티클로 감싸 표시할지 여부 (Ice/Grass/Gem)")]
+    [SerializeField] private bool _enableLineClearSparkle = true;
+
+    [Tooltip("ParticleSystem + LineClearSparkleSegment 프리팹")]
+    [SerializeField] private LineClearSparkleSegment _lineClearSparkleParticlePrefab;
+
+    [Tooltip("셀 바운드 바깥으로 파티클 박스를 확장할 월드 단위 패딩")]
+    [SerializeField, Min(0f)] private float _lineClearSparklePadding = 0.08f;
+
     public float BoardCellSize { get; private set; }
     public bool CanPlaceBlock { get; private set; }
 
@@ -55,6 +65,7 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
     private Func<string, Sprite> _missionSpriteResolver;
 
     public event Action<IReadOnlyList<int>, IReadOnlyList<int>> OnLinesClearedDetailed;
+    public event Action<IReadOnlyList<int>, IReadOnlyList<int>> OnLineClearPreviewChanged;
 
     /// <summary>Ice/Grass/Gem 미션 블록이 보드에서 제거될 때 (비행 연출용).</summary>
     public event Action<MissionCollectInfo> OnMissionCollectibleRemoved;
@@ -119,6 +130,7 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
         GenerateBoard();
         _boardEffect = GetComponentInChildren<BoardEffect>();
         ActivateGrayscale(false);
+        EnsureLineClearSparkleOverlay();
     }
 
     private void Reset()
@@ -184,6 +196,7 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
             OnLinesClearedDetailed?.Invoke(rows, cols);
         });
         _model.SetMissionCollectibleRemovedHandler(info => OnMissionCollectibleRemoved?.Invoke(info));
+        _model.SetLineClearPreviewHandler((rows, cols) => OnLineClearPreviewChanged?.Invoke(rows, cols));
         _preview = new BoardPreviewController(_model, _mapper, _keepPreviewMaxDistancePx);
         _hint = new BoardHintController(_boardSize, _boardSize, _hintCells, _model);
 
@@ -303,12 +316,40 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
         return true;
     }
 
+    public bool TryGetCellWorldCorners(int x, int y, Vector3[] corners)
+    {
+        if (corners == null || corners.Length < 4)
+            return false;
+
+        if (_cells == null || x < 0 || x >= _boardSize || y < 0 || y >= _boardSize)
+            return false;
+
+        BoardCell cell = _cells[x, y];
+        if (cell == null)
+            return false;
+
+        RectTransform cellRect = cell.transform as RectTransform;
+        if (cellRect == null)
+            return false;
+
+        cellRect.GetWorldCorners(corners);
+        return true;
+    }
+
     public void UpdatePreviewFromScreen(DraggableBlock block, Vector2 anchorScreenPos, Vector2Int anchorOffset, Camera uiCam = null)
     {
         bool canPlace;
         bool changed = _preview.UpdatePreview(block, anchorScreenPos, anchorOffset, uiCam, out canPlace, out _lastPreviewCells);
         if (changed)
-            _model.PreviewLineClears(_lastPreviewCells, block.BlockSprite);
+        {
+            bool useSparkle = ShouldUseSparkleLinePreview();
+            if (useSparkle)
+                EnsureLineClearSparkleOverlay();
+
+            Sprite previewSprite = block != null ? block.BlockSprite : null;
+            _model.PreviewLineClears(_lastPreviewCells, previewSprite, useSparkle);
+        }
+
         CanPlaceBlock = canPlace;
     }
 
@@ -323,12 +364,14 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
         if (canPlaceBlock)
             CanPlaceBlock = false;
 
+        _model.ClearLineClearPreview();
         return canPlaceBlock;
     }
 
     public void ClearDragPreview()
     {
         _preview.Clear();
+        _model.ClearLineClearPreview();
         CanPlaceBlock = false;
     }
 
@@ -433,6 +476,85 @@ public class BoardManager : MonoBehaviour, IInitializable, IBoardHandler, IBoard
 
     public bool CanPlaceShape(Vector2Int[] shapeOffset) => _model.CanPlaceShape(shapeOffset);
     #endregion
+
+    private void EnsureLineClearSparkleOverlay()
+    {
+        if (!_enableLineClearSparkle || _boardRoot == null)
+            return;
+
+        if (!ShouldUseSparkleLinePreview())
+            return;
+
+        if (_lineClearSparkleParticlePrefab == null)
+        {
+            Debug.LogWarning("BoardManager: Line Clear Sparkle Particle Prefab이 비어 있습니다.", this);
+            return;
+        }
+
+        // 보드와 같은 Canvas 계층에 두어 Screen Space Camera 정렬/좌표를 맞춘다.
+        Transform effectRoot = _boardRoot.parent != null ? _boardRoot.parent : transform;
+
+        Transform existing = transform.Find("LineClearSparkle");
+        if (existing == null && effectRoot != null)
+            existing = effectRoot.Find("LineClearSparkle");
+
+        if (existing != null)
+        {
+            LineClearSparkleController existingController = existing.GetComponent<LineClearSparkleController>();
+            if (existingController != null)
+            {
+                existingController.Configure(
+                    this,
+                    this,
+                    effectRoot,
+                    _lineClearSparkleParticlePrefab,
+                    _lineClearSparklePadding);
+            }
+
+            return;
+        }
+
+        GameObject sparkleGo = new GameObject("LineClearSparkle");
+        sparkleGo.SetActive(false);
+        sparkleGo.transform.SetParent(transform, false);
+
+        LineClearSparkleController controller = sparkleGo.AddComponent<LineClearSparkleController>();
+        controller.Configure(
+            this,
+            this,
+            effectRoot,
+            _lineClearSparkleParticlePrefab,
+            _lineClearSparklePadding);
+
+        sparkleGo.SetActive(true);
+    }
+
+    /// <summary>
+    /// Ice/Grass/Gem 미션만 반짝이 파티클 프리뷰를 쓴다.
+    /// Classic·ScoreGoal은 기존처럼 블록 이미지로 줄을 표시한다.
+    /// </summary>
+    private static bool ShouldUseSparkleLinePreview()
+    {
+        MissionType missionType = ResolveCurrentMissionType();
+        return missionType == MissionType.Ice
+            || missionType == MissionType.Grass
+            || missionType == MissionType.Gem;
+    }
+
+    private static MissionType ResolveCurrentMissionType()
+    {
+        if (MissionManager.Instance != null && MissionManager.Instance.IsActive)
+            return MissionManager.Instance.CurrentMissionType;
+
+        if (LevelSessionContext.IsActive)
+        {
+            MissionData mission = LevelSessionContext.GetSelectedMission();
+            if (mission != null)
+                return mission.MissionType;
+        }
+
+        return MissionType.None;
+    }
 
     [ContextMenu("Turn On GrayScale 1s")]
     private void Test_TurnOn()

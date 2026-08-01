@@ -127,3 +127,6 @@ MonoBehaviour:
   _hintCellPrefab: {fileID: 7066565143273184599, guid: 32318d4053e1784429ad964970ac84f7, type: 3}
   _previewColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 1}
   _keepPreviewMaxDistancePx: 200
+  _enableLineClearSparkle: 1
+  _lineClearSparkleParticlePrefab: {fileID: 9039781091110608354, guid: 3aed44e9b83b4174b85401c25755e285, type: 3}
+  _lineClearSparklePadding: 0.08

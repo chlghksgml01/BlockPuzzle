@@ -28,7 +28,11 @@ public sealed class BoardModel
 
     private readonly Action<int, IReadOnlyList<int>, IReadOnlyList<int>> _onLinesCleared;
     private Action<MissionCollectInfo> _onMissionCollectibleRemoved;
+    private Action<IReadOnlyList<int>, IReadOnlyList<int>> _onLineClearPreview;
     private Func<string, Sprite> _spriteResolver;
+
+    private readonly List<int> _previewClearRows = new List<int>();
+    private readonly List<int> _previewClearCols = new List<int>();
 
     public BoardModel(int width, int height, BoardCell[,] cells, Action<int, IReadOnlyList<int>, IReadOnlyList<int>> onLinesCleared)
     {
@@ -47,6 +51,11 @@ public sealed class BoardModel
     public void SetMissionCollectibleRemovedHandler(Action<MissionCollectInfo> handler)
     {
         _onMissionCollectibleRemoved = handler;
+    }
+
+    public void SetLineClearPreviewHandler(Action<IReadOnlyList<int>, IReadOnlyList<int>> handler)
+    {
+        _onLineClearPreview = handler;
     }
 
     public BoardCell[,] Cells => _cells;
@@ -230,12 +239,17 @@ public sealed class BoardModel
         }
     }
 
-    public void PreviewLineClears(List<BoardCell> previewCells, Sprite blockSprite)
+    public void PreviewLineClears(List<BoardCell> previewCells, Sprite blockSprite, bool useSparkle)
     {
         ClearAllLinePreviews();
+        _previewClearRows.Clear();
+        _previewClearCols.Clear();
 
         if (previewCells == null || previewCells.Count == 0)
+        {
+            _onLineClearPreview?.Invoke(_previewClearRows, _previewClearCols);
             return;
+        }
 
         HashSet<int> rowsToCheck = new HashSet<int>();
         HashSet<int> colsToCheck = new HashSet<int>();
@@ -248,21 +262,48 @@ public sealed class BoardModel
 
         foreach (int y in rowsToCheck)
         {
-            if (!IsLineClearableRow(y, includePreview: true))
-                continue;
-
-            for (int x = 0; x < _width; x++)
-                _cells[x, y].SetLinePreview(true, blockSprite);
+            if (IsLineClearableRow(y, includePreview: true))
+                _previewClearRows.Add(y);
         }
 
         foreach (int x in colsToCheck)
         {
-            if (!IsLineClearableCol(x, includePreview: true))
-                continue;
+            if (IsLineClearableCol(x, includePreview: true))
+                _previewClearCols.Add(x);
+        }
 
+        if (useSparkle)
+        {
+            _onLineClearPreview?.Invoke(_previewClearRows, _previewClearCols);
+            return;
+        }
+
+        for (int i = 0; i < _previewClearRows.Count; i++)
+        {
+            int y = _previewClearRows[i];
+            for (int x = 0; x < _width; x++)
+                _cells[x, y].SetLinePreview(true, blockSprite);
+        }
+
+        for (int i = 0; i < _previewClearCols.Count; i++)
+        {
+            int x = _previewClearCols[i];
             for (int y = 0; y < _height; y++)
                 _cells[x, y].SetLinePreview(true, blockSprite);
         }
+
+        // 스프라이트 모드일 때는 반짝이 프레임을 끈다.
+        _previewClearRows.Clear();
+        _previewClearCols.Clear();
+        _onLineClearPreview?.Invoke(_previewClearRows, _previewClearCols);
+    }
+
+    public void ClearLineClearPreview()
+    {
+        ClearAllLinePreviews();
+        _previewClearRows.Clear();
+        _previewClearCols.Clear();
+        _onLineClearPreview?.Invoke(_previewClearRows, _previewClearCols);
     }
 
     private void ClearAllLinePreviews()
@@ -270,9 +311,7 @@ public sealed class BoardModel
         for (int x = 0; x < _width; x++)
         {
             for (int y = 0; y < _height; y++)
-            {
                 _cells[x, y].SetLinePreview(false);
-            }
         }
     }
 

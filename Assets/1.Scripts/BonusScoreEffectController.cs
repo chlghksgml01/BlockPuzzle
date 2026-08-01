@@ -94,6 +94,9 @@ public class BonusScoreEffectController : MonoBehaviour, IInitializable
 
         _comboBonusDelayTween?.Kill();
 
+        // ScoreGoal이 아닌 레벨 미션에서는 +점수 연출만 숨기고 콤보 연출은 유지
+        bool showScoreEffect = ShouldShowScoreEffect();
+
         if (isCombo)
         {
             if (!_comboTextTransform.gameObject.activeSelf)
@@ -101,15 +104,34 @@ public class BonusScoreEffectController : MonoBehaviour, IInitializable
 
             TriggerComboShake();
             ShowComboCount(comboCount);
-            _comboBonusDelayTween = DOVirtual.DelayedCall(_comboScoreDelay, () => ShowComboBonusText(bonusScore))
-                .SetLink(gameObject, LinkBehaviour.KillOnDestroy);
+
+            if (showScoreEffect)
+            {
+                _comboBonusDelayTween = DOVirtual.DelayedCall(_comboScoreDelay, () => ShowComboBonusText(bonusScore))
+                    .SetLink(gameObject, LinkBehaviour.KillOnDestroy);
+            }
             return;
         }
+
+        if (!showScoreEffect)
+            return;
 
         if (_comboTextTransform.gameObject.activeSelf)
             _comboTextTransform.gameObject.SetActive(false);
 
         ShowComboBonusText(bonusScore);
+    }
+
+    /// <summary>
+    /// Classic 모드 또는 ScoreGoal 미션일 때만 +점수 ScoreEffect를 표시한다.
+    /// Ice/Grass/Gem 등 수집형 미션에서는 점수가 목표가 아니므로 숨긴다.
+    /// </summary>
+    private static bool ShouldShowScoreEffect()
+    {
+        if (MissionManager.Instance == null || !MissionManager.Instance.IsActive)
+            return true;
+
+        return MissionManager.Instance.CurrentMissionType == MissionType.ScoreGoal;
     }
 
     private void TriggerComboShake()

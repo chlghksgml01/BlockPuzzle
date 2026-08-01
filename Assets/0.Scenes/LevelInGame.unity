@@ -1876,6 +1876,57 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 3711596170978361483, guid: 02f3c5a8a629aa74698d5438c13afaa1, type: 3}
   m_PrefabInstance: {fileID: 1077923171}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1121464221
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1121464222}
+  - component: {fileID: 1121464223}
+  m_Layer: 0
+  m_Name: LineClearSparkle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1121464222
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1121464221}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2600909120691593443}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1121464223
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1121464221}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6db853ab0c465c488de66057e984e45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LineClearSparkleController
+  _segmentPrefab: {fileID: 0}
+  _padding: 0.08
+  _prewarmCount: 4
 --- !u!114 &1194597036 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1151359815240372624, guid: 29c2bdba7893d3c41aff21c1e3a46874, type: 3}
@@ -3823,7 +3874,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 482992224638637391, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1121464222}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7912788501387897607, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
       insertIndex: -1
@@ -3865,6 +3919,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GrassSpreadController
   _missedClearsBeforeSpread: 3
   _spreadAppearDuration: 0.28
+--- !u!4 &2600909120691593443 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 482992224638637391, guid: 9692da9fca625f14dabb69a5c523e82a, type: 3}
+  m_PrefabInstance: {fileID: 2600909120691593439}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &3464612543862031900
 PrefabInstance:
   m_ObjectHideFlags: 0
