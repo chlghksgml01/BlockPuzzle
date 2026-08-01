@@ -289,7 +289,7 @@ ParticleSystem:
       serializedVersion: 2
       minMaxState: 3
       scalar: 0.2
-      minScalar: 0.08
+      minScalar: 0.13
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -1433,59 +1433,6 @@ ParticleSystem:
     fps: 30
     frameOverTime:
       serializedVersion: 2
-      minMaxState: 1
-      scalar: 0.9999
-      minScalar: 0.9999
-      maxCurve:
-        serializedVersion: 2
-        m_Curve:
-        - serializedVersion: 3
-          time: 0
-          value: 0
-          inSlope: 0
-          outSlope: 1
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0.33333334
-          outWeight: 0.33333334
-        - serializedVersion: 3
-          time: 1
-          value: 1
-          inSlope: 1
-          outSlope: 0
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0.33333334
-          outWeight: 0.33333334
-        m_PreInfinity: 2
-        m_PostInfinity: 2
-        m_RotationOrder: 4
-      minCurve:
-        serializedVersion: 2
-        m_Curve:
-        - serializedVersion: 3
-          time: 0
-          value: 1
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0.33333334
-          outWeight: 0.33333334
-        - serializedVersion: 3
-          time: 1
-          value: 1
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0.33333334
-          outWeight: 0.33333334
-        m_PreInfinity: 2
-        m_PostInfinity: 2
-        m_RotationOrder: 4
-    startFrame:
-      serializedVersion: 2
       minMaxState: 0
       scalar: 0
       minScalar: 0
@@ -1537,6 +1484,59 @@ ParticleSystem:
         m_PreInfinity: 2
         m_PostInfinity: 2
         m_RotationOrder: 4
+    startFrame:
+      serializedVersion: 2
+      minMaxState: 3
+      scalar: 0.9999
+      minScalar: 0
+      maxCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.33333334
+          outWeight: 0.33333334
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.33333334
+          outWeight: 0.33333334
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      minCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.33333334
+          outWeight: 0.33333334
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0.33333334
+          outWeight: 0.33333334
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
     speedRange: {x: 0, y: 1}
     tilesX: 1
     tilesY: 1
@@ -1546,7 +1546,10 @@ ParticleSystem:
     uvChannelMask: -1
     rowMode: 1
     sprites:
-    - sprite: {fileID: 21300000, guid: a1b2c3d4e5f60718293a4b5c6d7e8f90, type: 3}
+    - sprite: {fileID: 21300000, guid: 9fa0b537cf7aa07409372e0786b535be, type: 3}
+    - sprite: {fileID: 21300000, guid: f8a1876970a6ec94fad1011495102c8c, type: 3}
+    - sprite: {fileID: 21300000, guid: 509b228b531aaa5498362a6dec1adb4c, type: 3}
+    - sprite: {fileID: 21300000, guid: b3679a3f2d22634498601771cc7cc09d, type: 3}
     flipU: 0
     flipV: 0
   VelocityModule:
@@ -4907,3 +4910,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1934d64302fc91d40b956ede6fd8572c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LineClearSparkleSegment
+  _sparkSprites:
+  - {fileID: 21300000, guid: 9fa0b537cf7aa07409372e0786b535be, type: 3}
+  - {fileID: 21300000, guid: f8a1876970a6ec94fad1011495102c8c, type: 3}
+  - {fileID: 21300000, guid: 509b228b531aaa5498362a6dec1adb4c, type: 3}
+  - {fileID: 21300000, guid: b3679a3f2d22634498601771cc7cc09d, type: 3}
