@@ -5,11 +5,13 @@ public class MainUIButtonController : MonoBehaviour
 {
     [SerializeField] private Button _leaderBoardButton;
     [SerializeField] private Button _startButton;
+    [SerializeField] private Button _levelButton;
     [SerializeField] private LeaderboardUI _leaderBoardUI;
 
     private void Start()
     {
         _leaderBoardButton.onClick.AddListener(() => _leaderBoardUI.Open());
         _startButton.onClick.AddListener(() => SceneLoadManager.LoadScene(SceneName.Classic));
+        _levelButton.onClick.AddListener(() => SceneLoadManager.LoadScene(SceneName.Level));
     }
 }

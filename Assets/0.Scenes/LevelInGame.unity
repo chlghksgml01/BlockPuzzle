@@ -2615,7 +2615,7 @@ MonoBehaviour:
   _resultPopup: {fileID: 2080335177}
   _missionHud: {fileID: 660974393}
   _flyEffect: {fileID: 1665260567}
-  _testMissionData: {fileID: 11400000, guid: a78b5a28edaae014aaffbcffffef3eb2, type: 2}
+  _testMissionData: {fileID: 11400000, guid: 7817c6d1cfea2bd4b9668b22640ca976, type: 2}
   _testLevelNumber: 1
 --- !u!4 &1665260566
 Transform:

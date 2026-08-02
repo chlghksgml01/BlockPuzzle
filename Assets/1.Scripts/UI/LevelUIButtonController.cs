@@ -7,6 +7,7 @@ public class LevelUIButtonController : MonoBehaviour
     [Header("References")]
     [SerializeField] private Button _levelButton;
     [SerializeField] private Button _startButton;
+    [SerializeField] private Button _backButton;
     [SerializeField] private TextMeshProUGUI _currentLevelText;
     [SerializeField] private MissionPopupUI _missionPopupUI;
 
@@ -30,6 +31,7 @@ public class LevelUIButtonController : MonoBehaviour
     {
         _levelButton.onClick.AddListener(MissionPopup);
         _startButton.onClick.AddListener(LoadScene);
+        _backButton.onClick.AddListener(() => SceneLoadManager.LoadScene(SceneName.Lobby));
     }
 
     /// <summary>LevelButton에 클리어 진행 레벨을 표시한다.</summary>
