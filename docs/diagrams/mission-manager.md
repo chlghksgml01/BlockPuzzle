@@ -7,8 +7,8 @@ LevelInGame 씬의 미션 세션·진행도·HUD 표시.
 | 클래스 | 책임 |
 |--------|------|
 | `LevelSessionContext` | 씬 간 전달 (정적, 진입 전 BeginLevel) |
-| `MissionManager` | 세션 캐시 + **진행도** (남은 Ice/Grass/Gem, 시간, 점수 목표) |
-| `MissionHUD` | 레벨/남은 수/시간 **표시만** |
+| `MissionManager` | 세션 캐시 + **진행도** (남은 Ice/Grass/Gem, 점수 목표) |
+| `MissionHUD` | 레벨/남은 수/목표 점수 **표시만** |
 | `MissionBoardController` | 보드 레이아웃·팔레트 적용 |
 | `InGameManager` | 게임 루프, 인트로 후 `BeginProgressTracking` 호출 |
 
@@ -30,7 +30,7 @@ flowchart LR
   BM -->|"CountIce/Grass"| MM
   IGM -->|"GemSlotSpawn"| MM
   SS -->|"OnScoreChanged"| MM
-  MM -->|"OnProgressChanged / OnTimeChanged"| HUD
+  MM -->|"OnProgressChanged"| HUD
 ```
 
 ## 진행도 규칙
@@ -40,9 +40,9 @@ flowchart LR
 | Ice | 보드 ice 셀 수 | 블록 배치 후 (스테이지 제거 연출 포함) |
 | Grass | 보드 grass 셀 수 (전파 반영) | 동일 |
 | Gem | 종류별 목표 개수 (`gemTargets`) | 줄 제거 시 수집 (슬롯 DraggableBlock에서 스폰) |
-| ScoreGoal | `RemainingTimeSeconds` + `CurrentScore`/`TargetScore` | 타이머 코루틴 / 점수 이벤트 |
+| ScoreGoal | `CurrentScore` / `TargetScore` (시간 제한 없음) | 점수 이벤트 |
 
-인트로·레이아웃 적용이 끝난 뒤 `BeginProgressTracking()`을 호출해야 타이머가 시작한다.
+인트로·레이아웃 적용이 끝난 뒤 `BeginProgressTracking()`을 호출해야 진행 추적이 시작된다.
 
 ## 클래스
 
@@ -52,16 +52,12 @@ classDiagram
     +Instance MissionManager$
     +OnMissionBound Action$
     +OnProgressChanged Action$
-    +OnTimeChanged Action$
     +OnObjectiveCompleted Action$
-    +OnTimeExpired Action$
     +int RemainingCollectCount
     +IReadOnlyList~GemTargetInfo~ RemainingGems
-    +float RemainingTimeSeconds
     +int TargetScore
     +int CurrentScore
     +BeginProgressTracking()
-    +SyncProgressFromBoard()
     +StopProgressTracking()
   }
 
@@ -115,7 +111,7 @@ flowchart TD
 | 결과 | ResultText | Level | 트리거 |
 |------|------------|-------|--------|
 | 성공 | SUCCESS | Level  N | 목표 달성 |
-| 실패 | FAIL | Level  N | 시간 초과 / 배치 불가 게임오버 |
+| 실패 | FAIL | Level  N | 배치 불가 게임오버 |
 
 ### 실패 연출 순서
 
@@ -126,9 +122,7 @@ flowchart TD
 flowchart TD
   FAIL[미션 실패 조건]
   FAIL -->|배치 불가| DELAY[GameOverDelayCoroutine 대기]
-  FAIL -->|시간 초과| PRESENT[PresentMissionFailure]
   DELAY --> GRAY[ActivateGrayscale]
-  PRESENT --> GRAY
   GRAY --> POPUP[ShowFailResultPopup]
 ```
 

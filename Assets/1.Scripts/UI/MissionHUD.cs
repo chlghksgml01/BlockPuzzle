@@ -17,16 +17,16 @@ public class MissionHUD : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _levelText;
 
     [Header("Content")]
-    [Tooltip("아이콘/카운트/시간이 배치되는 HorizontalLayoutGroup 루트")]
+    [Tooltip("아이콘/카운트가 배치되는 HorizontalLayoutGroup 루트")]
     [SerializeField] private Transform _contentRoot;
 
     [Tooltip("목표 아이콘 프리팹 (루트에 Image)")]
     [SerializeField] private GameObject _iconPrefab;
 
-    [Tooltip("남은 개수 텍스트 프리팹 (루트에 TextMeshProUGUI)")]
+    [Tooltip("남은 개수/목표 점수 텍스트 프리팹 (루트에 TextMeshProUGUI)")]
     [SerializeField] private GameObject _countPrefab;
 
-    [Tooltip("남은 시간 텍스트 프리팹 (루트에 TextMeshProUGUI). 비우면 Count 프리팹을 재사용")]
+    [Tooltip("레거시 시간 텍스트 프리팹. ScoreGoal은 Count 프리팹을 사용한다.")]
     [SerializeField] private GameObject _timePrefab;
 
     [Header("Icons")]
@@ -36,7 +36,7 @@ public class MissionHUD : MonoBehaviour
     [Tooltip("Grass 미션 아이콘")]
     [SerializeField] private Sprite _grassIcon;
 
-    [Tooltip("시간 제한 아이콘")]
+    [Tooltip("ScoreGoal 미션 아이콘")]
     [SerializeField] private Sprite _timeIcon;
 
     [Tooltip("Pentagon 보석 아이콘")]
@@ -49,7 +49,7 @@ public class MissionHUD : MonoBehaviour
     [SerializeField] private Sprite _starIcon;
 
     private readonly List<GameObject> _spawnedViews = new List<GameObject>();
-    private TextMeshProUGUI _timeText;
+    private TextMeshProUGUI _scoreGoalText;
     private TextMeshProUGUI _collectCountText;
     private RectTransform _collectIcon;
     private readonly Dictionary<GemType, TextMeshProUGUI> _gemCountTexts = new Dictionary<GemType, TextMeshProUGUI>();
@@ -62,7 +62,6 @@ public class MissionHUD : MonoBehaviour
         MissionManager.OnMissionBound += HandleMissionBound;
         MissionManager.OnMissionCleared += HandleMissionCleared;
         MissionManager.OnProgressChanged += HandleProgressChanged;
-        MissionManager.OnTimeChanged += HandleTimeChanged;
         RefreshAll();
     }
 
@@ -71,7 +70,6 @@ public class MissionHUD : MonoBehaviour
         MissionManager.OnMissionBound -= HandleMissionBound;
         MissionManager.OnMissionCleared -= HandleMissionCleared;
         MissionManager.OnProgressChanged -= HandleProgressChanged;
-        MissionManager.OnTimeChanged -= HandleTimeChanged;
     }
 
     /// <summary>Ice/Grass 수집 아이콘의 월드 좌표.</summary>
@@ -113,11 +111,6 @@ public class MissionHUD : MonoBehaviour
         UpdateProgressTexts();
     }
 
-    private void HandleTimeChanged()
-    {
-        UpdateTimeText();
-    }
-
     private void RefreshAll()
     {
         MissionManager manager = MissionManager.Instance;
@@ -132,7 +125,6 @@ public class MissionHUD : MonoBehaviour
         UpdateLevelText(manager.CurrentLevelNumber);
         RebuildContent(manager);
         UpdateProgressTexts();
-        UpdateTimeText();
     }
 
     private void UpdateLevelText(int levelNumber)
@@ -163,7 +155,7 @@ public class MissionHUD : MonoBehaviour
         {
             case MissionType.ScoreGoal:
                 SpawnIcon(_timeIcon);
-                _timeText = SpawnText(GetTimePrefab());
+                _scoreGoalText = SpawnText(_countPrefab != null ? _countPrefab : GetTimePrefab());
                 break;
 
             case MissionType.Ice:
@@ -229,21 +221,10 @@ public class MissionHUD : MonoBehaviour
                 break;
 
             case MissionType.ScoreGoal:
-                UpdateTimeText();
+                if (_scoreGoalText != null)
+                    _scoreGoalText.text = manager.TargetScore.ToString();
                 break;
         }
-    }
-
-    private void UpdateTimeText()
-    {
-        if (_timeText == null)
-            return;
-
-        MissionManager manager = MissionManager.Instance;
-        if (manager == null)
-            return;
-
-        _timeText.text = FormatTime(manager.RemainingTimeSeconds);
     }
 
     private RectTransform SpawnIcon(Sprite sprite)
@@ -308,7 +289,7 @@ public class MissionHUD : MonoBehaviour
         _spawnedViews.Clear();
         _gemCountTexts.Clear();
         _gemIcons.Clear();
-        _timeText = null;
+        _scoreGoalText = null;
         _collectCountText = null;
         _collectIcon = null;
         _builtForType = MissionType.None;
@@ -319,11 +300,5 @@ public class MissionHUD : MonoBehaviour
     {
         if (_root != null)
             _root.SetActive(active);
-    }
-
-    private static string FormatTime(float timeSeconds)
-    {
-        int totalSeconds = Mathf.Max(0, Mathf.CeilToInt(timeSeconds));
-        return $"{totalSeconds / 60}:{totalSeconds % 60:00}";
     }
 }

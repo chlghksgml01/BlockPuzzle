@@ -98,7 +98,7 @@ classDiagram
 ## 레벨 클리어 미션 데이터
 
 레벨마다 클리어 조건이 다르므로, `MissionData` 하나로 보드 배치와 미션 메타를 담는다.
-Ice/Grass/Gem 목표 개수는 `filledCells`에서 산출하고, ScoreGoal만 `targetScore` / `timeLimitSeconds`를 별도 필드로 둔다.
+Ice/Grass/Gem 목표 개수는 `filledCells`에서 산출하고, ScoreGoal만 `targetScore`를 별도 필드로 둔다 (시간 제한 없음).
 
 ```mermaid
 classDiagram
@@ -109,7 +109,6 @@ classDiagram
         +bool isClear
         +MissionType missionType
         +int targetScore
-        +float timeLimitSeconds
         +CountIceCells() int
         +CountGrassCells() int
         +BuildGemTargets() List~GemTargetInfo~

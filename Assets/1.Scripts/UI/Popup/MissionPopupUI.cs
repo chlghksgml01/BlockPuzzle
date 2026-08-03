@@ -20,7 +20,7 @@ public class MissionPopupUI : BasePopupUI
     [Tooltip("점수 목표 미션 UI 그룹 루트")]
     [SerializeField] private GameObject _scoreGoalMission;
 
-    [Tooltip("제한 시간을 'm:ss' 형식으로 표시하는 텍스트")]
+    [Tooltip("목표 점수를 표시하는 텍스트")]
     [SerializeField] private TextMeshProUGUI _scoreTimeText;
 
     [Header("Collect Block Mission")]
@@ -84,7 +84,8 @@ public class MissionPopupUI : BasePopupUI
         {
             case MissionType.ScoreGoal:
                 _scoreGoalMission.SetActive(true);
-                _scoreTimeText.text = FormatTime(missionData.TimeLimitSeconds);
+                if (_scoreTimeText != null)
+                    _scoreTimeText.text = missionData.TargetScore.ToString();
                 break;
 
             case MissionType.Ice:
@@ -108,12 +109,6 @@ public class MissionPopupUI : BasePopupUI
                 Debug.LogWarning($"[MissionPopupUI] Unsupported mission type: {missionData.MissionType}", this);
                 break;
         }
-    }
-
-    private static string FormatTime(float timeLimitSeconds)
-    {
-        int totalSeconds = Mathf.Max(0, Mathf.RoundToInt(timeLimitSeconds));
-        return $"{totalSeconds / 60}:{totalSeconds % 60:00}";
     }
 
     private void SpawnGemTargets(IReadOnlyList<GemTargetInfo> gemTargets)

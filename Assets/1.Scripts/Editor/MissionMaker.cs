@@ -27,7 +27,6 @@ public sealed class MissionMaker : EditorWindow
     [SerializeField] private bool _isClear;
     [SerializeField] private MissionType _missionType = MissionType.ScoreGoal;
     [SerializeField] private int _targetScore;
-    [SerializeField] private float _timeLimitSeconds;
 
     [Header("Gem Targets")]
     [SerializeField] private int _gemPentagonCount;
@@ -104,7 +103,6 @@ public sealed class MissionMaker : EditorWindow
         if (_missionType == MissionType.ScoreGoal)
         {
             _targetScore = EditorGUILayout.IntField("Target Score", _targetScore);
-            _timeLimitSeconds = EditorGUILayout.FloatField("Time Limit (sec)", _timeLimitSeconds);
         }
 
         if (_missionType == MissionType.Gem)
@@ -465,7 +463,6 @@ public sealed class MissionMaker : EditorWindow
         _isHard = _missionAsset.isHard;
         _isClear = _missionAsset.isClear;
         _targetScore = _missionAsset.targetScore;
-        _timeLimitSeconds = _missionAsset.timeLimitSeconds;
         LoadGemTargetsFromAsset(_missionAsset);
         _filledCells.Clear();
 
@@ -559,7 +556,7 @@ public sealed class MissionMaker : EditorWindow
         _missionAsset.isClear = _isClear;
         _missionAsset.missionType = _missionType;
         _missionAsset.targetScore = _targetScore;
-        _missionAsset.timeLimitSeconds = _timeLimitSeconds;
+        _missionAsset.timeLimitSeconds = 0f;
         _missionAsset.gemTargets = ExportGemTargets();
 
         EditorUtility.SetDirty(_missionAsset);
@@ -596,7 +593,7 @@ public sealed class MissionMaker : EditorWindow
         temp.isClear = _isClear;
         temp.missionType = _missionType;
         temp.targetScore = _targetScore;
-        temp.timeLimitSeconds = _timeLimitSeconds;
+        temp.timeLimitSeconds = 0f;
         EditorGUIUtility.systemCopyBuffer = JsonUtility.ToJson(temp, true);
         Debug.Log("Board mission JSON copied to clipboard.");
         DestroyImmediate(temp);

@@ -198,7 +198,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
     /// <summary>
     /// 미션 실패 연출: 그레이스케일 후 ResultPopup.
-    /// 시간 초과 등 GameOverDelayCoroutine을 거치지 않는 경로에서 사용한다.
+    /// 배치 불가 등 GameOverDelayCoroutine을 거치지 않는 경로에서 사용한다.
     /// </summary>
     public void PresentMissionFailure()
     {

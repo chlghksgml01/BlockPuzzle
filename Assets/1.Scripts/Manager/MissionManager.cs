@@ -39,16 +39,10 @@ public class MissionManager : MonoBehaviour, IInitializable
     /// <summary>남은 목표/점수 등 진행도가 바뀌었을 때.</summary>
     public static event Action OnProgressChanged;
 
-    /// <summary>남은 시간이 바뀌었을 때 (표시용).</summary>
-    public static event Action OnTimeChanged;
-
     /// <summary>목표를 모두 달성했을 때.</summary>
     public static event Action OnObjectiveCompleted;
 
-    /// <summary>제한 시간 소진 시.</summary>
-    public static event Action OnTimeExpired;
-
-    /// <summary>미션 실패(시간 초과·게임오버 등) 시.</summary>
+    /// <summary>미션 실패(배치 불가 게임오버 등) 시.</summary>
     public static event Action OnMissionFailed;
 
     private int _currentLevelIndex = -1;
@@ -62,16 +56,13 @@ public class MissionManager : MonoBehaviour, IInitializable
     private readonly List<GemTargetInfo> _remainingGems = new List<GemTargetInfo>(3);
     private readonly List<GemTargetInfo> _gemTargetSnapshot = new List<GemTargetInfo>(3);
     private readonly Dictionary<GemType, int> _collectedGemCounts = new Dictionary<GemType, int>();
-    private float _remainingTimeSeconds;
     private bool _isTracking;
     private bool _objectiveCompleted;
-    private bool _timeExpired;
     private bool _resultResolved;
 
     private int _pendingCollectFlyCount;
     private readonly Dictionary<GemType, int> _pendingGemFlyCounts = new Dictionary<GemType, int>();
 
-    private Coroutine _timerCoroutine;
     private Coroutine _grassSpreadSyncCoroutine;
     private bool _subscriptionsBound;
     private bool _usingTestMission;
@@ -176,17 +167,11 @@ public class MissionManager : MonoBehaviour, IInitializable
         return Mathf.Max(0, target - collected - onBoard - pending - inSlot);
     }
 
-    /// <summary>ScoreGoal 미션의 남은 시간(초).</summary>
-    public float RemainingTimeSeconds => _remainingTimeSeconds;
-
     /// <summary>ScoreGoal 목표 점수.</summary>
     public int TargetScore => _currentMission != null ? _currentMission.TargetScore : 0;
 
     /// <summary>현재 점수 (ScoreSystem).</summary>
     public int CurrentScore => _scoreSystem != null ? _scoreSystem.CurrentScore : 0;
-
-    /// <summary>제한 시간이 소진되었으면 true.</summary>
-    public bool IsTimeExpired => _timeExpired;
 
     /// <summary>목표를 달성했으면 true.</summary>
     public bool IsObjectiveCompleted => _objectiveCompleted;
@@ -280,7 +265,7 @@ public class MissionManager : MonoBehaviour, IInitializable
         RaiseProgressChanged();
     }
 
-    /// <summary>인트로/레이아웃 적용 후 호출. 보드 기준으로 진행도를 맞추고 타이머를 시작한다.</summary>
+    /// <summary>인트로/레이아웃 적용 후 호출. 보드 기준으로 진행도를 맞추고 추적을 시작한다.</summary>
     public void BeginProgressTracking()
     {
         if (!IsActive || _currentMission == null)
@@ -288,35 +273,21 @@ public class MissionManager : MonoBehaviour, IInitializable
 
         StopProgressTracking();
         _objectiveCompleted = false;
-        _timeExpired = false;
         _resultResolved = false;
         ClearPendingFlies();
         _isTracking = true;
 
         RefreshDisplayedRemaining();
 
-        if (CurrentMissionType == MissionType.ScoreGoal)
-        {
-            _remainingTimeSeconds = Mathf.Max(0f, _currentMission.TimeLimitSeconds);
-            RaiseTimeChanged();
-            _timerCoroutine = StartCoroutine(TimerCoroutine());
-        }
-
         TryBindSubscriptions();
         RaiseProgressChanged();
         EvaluateObjective();
     }
 
-    /// <summary>진행 추적·타이머를 중단한다.</summary>
+    /// <summary>진행 추적을 중단한다.</summary>
     public void StopProgressTracking()
     {
         _isTracking = false;
-
-        if (_timerCoroutine != null)
-        {
-            StopCoroutine(_timerCoroutine);
-            _timerCoroutine = null;
-        }
 
         if (_grassSpreadSyncCoroutine != null)
         {
@@ -341,9 +312,7 @@ public class MissionManager : MonoBehaviour, IInitializable
         _remainingGems.Clear();
         _gemTargetSnapshot.Clear();
         _collectedGemCounts.Clear();
-        _remainingTimeSeconds = 0f;
         _objectiveCompleted = false;
-        _timeExpired = false;
 
         if (_currentMission == null)
             return;
@@ -361,9 +330,6 @@ public class MissionManager : MonoBehaviour, IInitializable
                 _gemTargetSnapshot.AddRange(_currentMission.BuildGemTargets());
                 _remainingGems.AddRange(_gemTargetSnapshot);
                 _collectedGemCounts.Clear();
-                break;
-            case MissionType.ScoreGoal:
-                _remainingTimeSeconds = Mathf.Max(0f, _currentMission.TimeLimitSeconds);
                 break;
         }
     }
@@ -609,29 +575,6 @@ public class MissionManager : MonoBehaviour, IInitializable
         _grassSpreadSyncCoroutine = null;
     }
 
-    private IEnumerator TimerCoroutine()
-    {
-        while (_isTracking && _remainingTimeSeconds > 0f)
-        {
-            yield return null;
-            _remainingTimeSeconds -= Time.deltaTime;
-            if (_remainingTimeSeconds < 0f)
-                _remainingTimeSeconds = 0f;
-
-            RaiseTimeChanged();
-
-            if (_remainingTimeSeconds <= 0f)
-            {
-                _timeExpired = true;
-                OnTimeExpired?.Invoke();
-                RequestMissionFailPresentation();
-                break;
-            }
-        }
-
-        _timerCoroutine = null;
-    }
-
     private void EvaluateObjective()
     {
         if (!_isTracking || _objectiveCompleted || _currentMission == null)
@@ -694,19 +637,6 @@ public class MissionManager : MonoBehaviour, IInitializable
         TryShowResultPopup(success: false);
     }
 
-    /// <summary>시간 초과 등 — InGameManager 그레이스케일 연출 후 ResultPopup.</summary>
-    private void RequestMissionFailPresentation()
-    {
-        if (InGameManager.HasInstance)
-        {
-            InGameManager.Instance.PresentMissionFailure();
-            return;
-        }
-
-        FailMission();
-        ShowFailResultPopup();
-    }
-
     private void TryShowResultPopup(bool success)
     {
         if (_resultPopup == null)
@@ -749,11 +679,6 @@ public class MissionManager : MonoBehaviour, IInitializable
         OnProgressChanged?.Invoke();
     }
 
-    private void RaiseTimeChanged()
-    {
-        OnTimeChanged?.Invoke();
-    }
-
     private void ClearPendingFlies()
     {
         _pendingCollectFlyCount = 0;
@@ -770,9 +695,7 @@ public class MissionManager : MonoBehaviour, IInitializable
         _remainingGems.Clear();
         _gemTargetSnapshot.Clear();
         _collectedGemCounts.Clear();
-        _remainingTimeSeconds = 0f;
         _objectiveCompleted = false;
-        _timeExpired = false;
         _resultResolved = false;
         ClearPendingFlies();
     }
