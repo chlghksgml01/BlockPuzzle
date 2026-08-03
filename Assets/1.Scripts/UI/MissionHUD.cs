@@ -26,8 +26,8 @@ public class MissionHUD : MonoBehaviour
     [Tooltip("남은 개수/목표 점수 텍스트 프리팹 (루트에 TextMeshProUGUI)")]
     [SerializeField] private GameObject _countPrefab;
 
-    [Tooltip("레거시 시간 텍스트 프리팹. ScoreGoal은 Count 프리팹을 사용한다.")]
-    [SerializeField] private GameObject _timePrefab;
+    [Tooltip("레거시 시간 텍스트 프리팹")]
+    [SerializeField] private GameObject _scorePrefab;
 
     [Header("Icons")]
     [Tooltip("Ice 미션 아이콘")]
@@ -155,7 +155,7 @@ public class MissionHUD : MonoBehaviour
         {
             case MissionType.ScoreGoal:
                 SpawnIcon(_timeIcon);
-                _scoreGoalText = SpawnText(_countPrefab != null ? _countPrefab : GetTimePrefab());
+                _scoreGoalText = SpawnText(_scorePrefab);
                 break;
 
             case MissionType.Ice:
@@ -258,11 +258,6 @@ public class MissionHUD : MonoBehaviour
         if (text == null)
             text = view.GetComponentInChildren<TextMeshProUGUI>();
         return text;
-    }
-
-    private GameObject GetTimePrefab()
-    {
-        return _timePrefab != null ? _timePrefab : _countPrefab;
     }
 
     private Sprite GetGemSprite(GemType gemType)

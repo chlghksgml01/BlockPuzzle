@@ -18,5 +18,5 @@ MonoBehaviour:
   isClear: 1
   missionType: 1
   gemTargets: []
-  targetScore: 200
+  targetScore: 10
   timeLimitSeconds: 30
