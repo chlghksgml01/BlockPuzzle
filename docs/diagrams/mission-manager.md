@@ -52,6 +52,7 @@ classDiagram
     +Instance MissionManager$
     +OnMissionBound Action$
     +OnProgressChanged Action$
+    +OnScoreGoalProgressChanged Action~int,int~$
     +OnObjectiveCompleted Action$
     +int RemainingCollectCount
     +IReadOnlyList~GemTargetInfo~ RemainingGems
@@ -64,11 +65,16 @@ classDiagram
   class MissionHUD {
     -TextMeshProUGUI _levelText
     -Transform _contentRoot
+    -GameObject _currentScoreRoot
+    -NumberDisplay _currentScoreDisplay
     -RebuildContent()
     -UpdateProgressTexts()
+    -HandleScoreGoalProgressChanged(int,int)
+    -SetCurrentScoreActive(bool)
   }
 
   MissionHUD --> MissionManager : subscribe events
+  MissionHUD --> NumberDisplay : ScoreGoal current score
   MissionManager --> BoardManager : count cells
   MissionManager --> ScoreSystem : score / target
 ```
@@ -99,6 +105,14 @@ flowchart TD
 - `_missionHud` → MissionHUD
 - `_flyEffect` → MissionCollectFlyEffect
 - `_resultPopup` → ResultPopupUI
+
+**MissionHUD**
+- `_root` → Mission 루트
+- `_levelText` → 레벨 번호 텍스트
+- `_contentRoot` → LayoutGroup (아이콘/목표 동적 스폰)
+- `_currentScoreRoot` → Mission/Score (ScoreGoal일 때만 활성)
+- `_currentScoreDisplay` → Score의 NumberDisplay (현재 점수 롤 표시)
+- `_scoreRollDuration` → 점수 롤 애니메이션 시간(초)
 
 **MissionCollectFlyEffect**
 - `_flyRoot` → Canvas RectTransform

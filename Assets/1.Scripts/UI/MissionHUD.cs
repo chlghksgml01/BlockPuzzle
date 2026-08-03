@@ -26,8 +26,18 @@ public class MissionHUD : MonoBehaviour
     [Tooltip("남은 개수/목표 점수 텍스트 프리팹 (루트에 TextMeshProUGUI)")]
     [SerializeField] private GameObject _countPrefab;
 
-    [Tooltip("레거시 시간 텍스트 프리팹")]
+    [Tooltip("목표 점수 텍스트 프리팹 (ScoreGoal LayoutGroup용)")]
     [SerializeField] private GameObject _scorePrefab;
+
+    [Header("ScoreGoal Current Score")]
+    [Tooltip("ScoreGoal 미션일 때만 활성화하는 현재 점수 루트 (Mission/Score)")]
+    [SerializeField] private GameObject _currentScoreRoot;
+
+    [Tooltip("현재 점수를 표시하는 NumberDisplay")]
+    [SerializeField] private NumberDisplay _currentScoreDisplay;
+
+    [Tooltip("점수 롤 애니메이션 시간(초)")]
+    [SerializeField] private float _scoreRollDuration = 0.5f;
 
     [Header("Icons")]
     [Tooltip("Ice 미션 아이콘")]
@@ -56,12 +66,15 @@ public class MissionHUD : MonoBehaviour
     private readonly Dictionary<GemType, RectTransform> _gemIcons = new Dictionary<GemType, RectTransform>();
     private MissionType _builtForType = MissionType.None;
     private bool _isBuilt;
+    private int _displayedScore;
 
     private void OnEnable()
     {
+        EnsureCurrentScoreDisplay();
         MissionManager.OnMissionBound += HandleMissionBound;
         MissionManager.OnMissionCleared += HandleMissionCleared;
         MissionManager.OnProgressChanged += HandleProgressChanged;
+        MissionManager.OnScoreGoalProgressChanged += HandleScoreGoalProgressChanged;
         RefreshAll();
     }
 
@@ -70,6 +83,16 @@ public class MissionHUD : MonoBehaviour
         MissionManager.OnMissionBound -= HandleMissionBound;
         MissionManager.OnMissionCleared -= HandleMissionCleared;
         MissionManager.OnProgressChanged -= HandleProgressChanged;
+        MissionManager.OnScoreGoalProgressChanged -= HandleScoreGoalProgressChanged;
+    }
+
+    private void EnsureCurrentScoreDisplay()
+    {
+        if (_currentScoreDisplay != null)
+            return;
+
+        if (_currentScoreRoot != null)
+            _currentScoreDisplay = _currentScoreRoot.GetComponent<NumberDisplay>();
     }
 
     /// <summary>Ice/Grass 수집 아이콘의 월드 좌표.</summary>
@@ -103,12 +126,24 @@ public class MissionHUD : MonoBehaviour
     {
         SetRootActive(false);
         ClearContent();
+        SetCurrentScoreActive(false);
     }
 
     private void HandleProgressChanged()
     {
         EnsureContentBuilt();
         UpdateProgressTexts();
+        RebuildLayout();
+    }
+
+    private void HandleScoreGoalProgressChanged(int previousScore, int newScore)
+    {
+        EnsureContentBuilt();
+        if (_scoreGoalText != null && MissionManager.Instance != null)
+            _scoreGoalText.text = MissionManager.Instance.TargetScore.ToString();
+
+        RollCurrentScoreDisplay(previousScore, newScore);
+        RebuildLayout();
     }
 
     private void RefreshAll()
@@ -118,6 +153,7 @@ public class MissionHUD : MonoBehaviour
         {
             SetRootActive(false);
             ClearContent();
+            SetCurrentScoreActive(false);
             return;
         }
 
@@ -125,6 +161,7 @@ public class MissionHUD : MonoBehaviour
         UpdateLevelText(manager.CurrentLevelNumber);
         RebuildContent(manager);
         UpdateProgressTexts();
+        RebuildLayout();
     }
 
     private void UpdateLevelText(int levelNumber)
@@ -150,6 +187,11 @@ public class MissionHUD : MonoBehaviour
         ClearContent();
         _builtForType = manager.CurrentMissionType;
         _isBuilt = true;
+
+        bool isScoreGoal = manager.CurrentMissionType == MissionType.ScoreGoal;
+        SetCurrentScoreActive(isScoreGoal);
+        if (isScoreGoal)
+            ResetCurrentScoreDisplay(manager.CurrentScore);
 
         switch (manager.CurrentMissionType)
         {
@@ -223,8 +265,45 @@ public class MissionHUD : MonoBehaviour
             case MissionType.ScoreGoal:
                 if (_scoreGoalText != null)
                     _scoreGoalText.text = manager.TargetScore.ToString();
+                // 현재 점수는 OnScoreGoalProgressChanged에서 롤 갱신한다.
+                // 여기선 바인드/리셋 직후 표시값만 맞춘다.
+                if (_displayedScore != manager.CurrentScore)
+                    ResetCurrentScoreDisplay(manager.CurrentScore);
                 break;
         }
+    }
+
+    private void SetCurrentScoreActive(bool active)
+    {
+        if (_currentScoreRoot != null)
+            _currentScoreRoot.SetActive(active);
+
+        if (active)
+            EnsureCurrentScoreDisplay();
+    }
+
+    private void ResetCurrentScoreDisplay(int score)
+    {
+        EnsureCurrentScoreDisplay();
+        _displayedScore = score;
+        if (_currentScoreDisplay != null)
+            _currentScoreDisplay.UpdateDisplay(score);
+    }
+
+    private void RollCurrentScoreDisplay(int previousScore, int newScore)
+    {
+        EnsureCurrentScoreDisplay();
+        if (_currentScoreDisplay == null)
+            return;
+
+        _displayedScore = newScore;
+        if (previousScore == newScore)
+        {
+            _currentScoreDisplay.UpdateDisplay(newScore);
+            return;
+        }
+
+        _currentScoreDisplay.ScoreRollUpdate(previousScore, newScore, _scoreRollDuration);
     }
 
     private RectTransform SpawnIcon(Sprite sprite)
@@ -289,11 +368,21 @@ public class MissionHUD : MonoBehaviour
         _collectIcon = null;
         _builtForType = MissionType.None;
         _isBuilt = false;
+        _displayedScore = 0;
     }
 
     private void SetRootActive(bool active)
     {
         if (_root != null)
             _root.SetActive(active);
+    }
+
+    /// <summary>
+    /// ContentSizeFitter 텍스트 너비가 LayoutGroup spacing에 반영되도록 즉시 재배치한다.
+    /// </summary>
+    private void RebuildLayout()
+    {
+        if (_contentRoot is RectTransform contentRect)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
     }
 }

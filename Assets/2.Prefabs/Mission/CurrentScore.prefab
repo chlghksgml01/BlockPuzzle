@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 5887979881704980565}
   - component: {fileID: 5426728671670585362}
   - component: {fileID: 7817084839292098124}
-  - component: {fileID: 1587306397878517448}
   m_Layer: 5
   m_Name: CurrentScore
   m_TagString: Untagged
@@ -90,21 +89,6 @@ MonoBehaviour:
   - {fileID: 21300000, guid: bbf6e11146afe2b4fb95a806e949ab49, type: 3}
   - {fileID: 21300000, guid: 681d5815740f8e64f8ce716fd21f14e2, type: 3}
   _container: {fileID: 5887979881704980565}
---- !u!114 &1587306397878517448
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5450943337579244574}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 462249511b070764dac4239836010a5e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ScoreUI
-  _scoreDisplay: {fileID: 7817084839292098124}
-  _bestScoreDisplay: {fileID: 0}
-  _animationDuration: 0.5
 --- !u!1 &8746070412652006245
 GameObject:
   m_ObjectHideFlags: 0

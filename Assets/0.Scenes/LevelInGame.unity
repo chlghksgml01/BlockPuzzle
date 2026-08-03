@@ -990,6 +990,9 @@ MonoBehaviour:
   _iconPrefab: {fileID: 5488895339052606942, guid: d85252b0bccb5cb4387d44d1203952b0, type: 3}
   _countPrefab: {fileID: 9111817178518525218, guid: 02f3c5a8a629aa74698d5438c13afaa1, type: 3}
   _scorePrefab: {fileID: 1449726899430701867, guid: 96c25a09902b34b45a8ecd77c46c2bb4, type: 3}
+  _currentScoreRoot: {fileID: 1031819960}
+  _currentScoreDisplay: {fileID: 1031819961}
+  _scoreRollDuration: 0.5
   _iceIcon: {fileID: 21300000, guid: fc6a857d10b3b434db0e2ec19b35df32, type: 3}
   _grassIcon: {fileID: 21300000, guid: 29cab4b5a4f864c4bbbe0ada9d31fe0d, type: 3}
   _timeIcon: {fileID: 21300000, guid: 1fa452f854e7d6d498bc6ebd8fc69cc6, type: 3}
@@ -1643,6 +1646,22 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 5887979881704980565, guid: b7d5f42b75efe3645a70a9ea5853754a, type: 3}
   m_PrefabInstance: {fileID: 4741158302995751488}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1031819960 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5450943337579244574, guid: b7d5f42b75efe3645a70a9ea5853754a, type: 3}
+  m_PrefabInstance: {fileID: 4741158302995751488}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1031819961 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7817084839292098124, guid: b7d5f42b75efe3645a70a9ea5853754a, type: 3}
+  m_PrefabInstance: {fileID: 4741158302995751488}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d564d2452fbeec44a1017ea6db92952, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NumberDisplay
 --- !u!1 &1053086587
 GameObject:
   m_ObjectHideFlags: 0
@@ -3993,6 +4012,10 @@ PrefabInstance:
     - target: {fileID: 5450943337579244574, guid: b7d5f42b75efe3645a70a9ea5853754a, type: 3}
       propertyPath: m_Name
       value: Score
+      objectReference: {fileID: 0}
+    - target: {fileID: 5450943337579244574, guid: b7d5f42b75efe3645a70a9ea5853754a, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5887979881704980565, guid: b7d5f42b75efe3645a70a9ea5853754a, type: 3}
       propertyPath: m_Pivot.x

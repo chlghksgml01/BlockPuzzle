@@ -100,9 +100,10 @@ public class ScoreSystem : ScriptableObject
 
     public void AddScore(int score)
     {
-        int newScore = CurrentScore + score;
-        OnScoreChanged?.Invoke(CurrentScore, newScore);
-        CurrentScore = newScore;
+        int previousScore = CurrentScore;
+        CurrentScore = previousScore + score;
+        // 구독자가 이벤트 시점에 CurrentScore를 읽어도 최신값이 되도록 먼저 반영한다.
+        OnScoreChanged?.Invoke(previousScore, CurrentScore);
     }
 
     public void ExportState(out int score, out int currentPlaceCount, out int currentComboCount)

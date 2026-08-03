@@ -39,6 +39,9 @@ public class MissionManager : MonoBehaviour, IInitializable
     /// <summary>남은 목표/점수 등 진행도가 바뀌었을 때.</summary>
     public static event Action OnProgressChanged;
 
+    /// <summary>ScoreGoal 점수 변경 시 (previous, new).</summary>
+    public static event Action<int, int> OnScoreGoalProgressChanged;
+
     /// <summary>목표를 모두 달성했을 때.</summary>
     public static event Action OnObjectiveCompleted;
 
@@ -431,6 +434,7 @@ public class MissionManager : MonoBehaviour, IInitializable
         if (!_isTracking || CurrentMissionType != MissionType.ScoreGoal)
             return;
 
+        OnScoreGoalProgressChanged?.Invoke(previousScore, newScore);
         RaiseProgressChanged();
         EvaluateObjective();
     }
