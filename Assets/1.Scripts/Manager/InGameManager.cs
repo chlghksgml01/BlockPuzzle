@@ -180,8 +180,12 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
         if (IsLevelMissionActive())
         {
+            // GameOverDelayCoroutine에서 그레이스케일 연출이 끝난 뒤 호출된다.
             if (MissionManager.Instance != null)
+            {
                 MissionManager.Instance.FailMission();
+                MissionManager.Instance.ShowFailResultPopup();
+            }
             return;
         }
 
@@ -190,6 +194,39 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         _gameOverUI.Open();
         SoundManager.Instance.PlaySFX(SFXType.Score);
         ResetGame();
+    }
+
+    /// <summary>
+    /// 미션 실패 연출: 그레이스케일 후 ResultPopup.
+    /// 시간 초과 등 GameOverDelayCoroutine을 거치지 않는 경로에서 사용한다.
+    /// </summary>
+    public void PresentMissionFailure()
+    {
+        if (_isGameOverTriggered)
+            return;
+
+        _isGameOverTriggered = true;
+        EnableInteraction(false);
+
+        if (_gameOverCoroutine != null)
+        {
+            StopCoroutine(_gameOverCoroutine);
+            _gameOverCoroutine = null;
+        }
+
+        if (MissionManager.Instance != null)
+            MissionManager.Instance.FailMission();
+
+        _gameOverCoroutine = StartCoroutine(MissionFailPresentationCoroutine());
+    }
+
+    private IEnumerator MissionFailPresentationCoroutine()
+    {
+        yield return PlayGameOverGrayscaleRoutine();
+        _gameOverCoroutine = null;
+
+        if (MissionManager.Instance != null)
+            MissionManager.Instance.ShowFailResultPopup();
     }
 
     public void ResetGame()
@@ -243,14 +280,20 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         Debug.Log("wait gameOverDelaySeconds");
         yield return new WaitForSeconds(_gameOverDelaySeconds);
 
-        Debug.Log("wait grayEffectDuration");
-        SoundManager.Instance.PlaySFX(SFXType.GameOver);
-        _boardManger.ActivateGrayscale(true, _grayEffectDuration);
-        yield return new WaitForSeconds(_grayEffectDuration + 1f);
+        yield return PlayGameOverGrayscaleRoutine();
 
         _gameOverCoroutine = null;
 
         TriggerGameOverIfAllBlocksCannotPlace();
+    }
+
+    /// <summary>게임오버/미션 실패 공통: SFX + 보드 그레이스케일 연출 대기.</summary>
+    private IEnumerator PlayGameOverGrayscaleRoutine()
+    {
+        Debug.Log("wait grayEffectDuration");
+        SoundManager.Instance.PlaySFX(SFXType.GameOver);
+        _boardManger.ActivateGrayscale(true, _grayEffectDuration);
+        yield return new WaitForSeconds(_grayEffectDuration + 1f);
     }
 
     private void SetNewBest(int newBestScore)

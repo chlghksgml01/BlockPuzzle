@@ -117,6 +117,21 @@ flowchart TD
 | 성공 | SUCCESS | Level  N | 목표 달성 |
 | 실패 | FAIL | Level  N | 시간 초과 / 배치 불가 게임오버 |
 
+### 실패 연출 순서
+
+실패 확정(`FailMission`)과 ResultPopup 표시(`ShowFailResultPopup`)를 분리한다.
+팝업은 항상 보드 그레이스케일 연출 이후에 연다.
+
+```mermaid
+flowchart TD
+  FAIL[미션 실패 조건]
+  FAIL -->|배치 불가| DELAY[GameOverDelayCoroutine 대기]
+  FAIL -->|시간 초과| PRESENT[PresentMissionFailure]
+  DELAY --> GRAY[ActivateGrayscale]
+  PRESENT --> GRAY
+  GRAY --> POPUP[ShowFailResultPopup]
+```
+
 - Retry → 같은 레벨 `ResetGame`
 - Quit → `ClearSession` 후 Level 맵 씬 이동
 - 성공 시 다음 레벨 `MissionData.isClear = true` (플레이 가능 해금)

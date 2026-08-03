@@ -623,8 +623,8 @@ public class MissionManager : MonoBehaviour, IInitializable
             if (_remainingTimeSeconds <= 0f)
             {
                 _timeExpired = true;
-                FailMission();
                 OnTimeExpired?.Invoke();
+                RequestMissionFailPresentation();
                 break;
             }
         }
@@ -674,7 +674,10 @@ public class MissionManager : MonoBehaviour, IInitializable
         TryShowResultPopup(success: true);
     }
 
-    /// <summary>블록을 더 이상 배치할 수 없을 때 등 외부에서 미션 실패를 알린다.</summary>
+    /// <summary>
+    /// 미션 실패를 확정한다 (진행 추적 중지·이벤트).
+    /// ResultPopup은 <see cref="ShowFailResultPopup"/>으로 따로 연다.
+    /// </summary>
     public void FailMission()
     {
         if (!IsActive || _resultResolved)
@@ -683,7 +686,25 @@ public class MissionManager : MonoBehaviour, IInitializable
         _resultResolved = true;
         StopProgressTracking();
         OnMissionFailed?.Invoke();
+    }
+
+    /// <summary>실패 ResultPopup을 연다. 그레이스케일 연출 이후에 호출한다.</summary>
+    public void ShowFailResultPopup()
+    {
         TryShowResultPopup(success: false);
+    }
+
+    /// <summary>시간 초과 등 — InGameManager 그레이스케일 연출 후 ResultPopup.</summary>
+    private void RequestMissionFailPresentation()
+    {
+        if (InGameManager.HasInstance)
+        {
+            InGameManager.Instance.PresentMissionFailure();
+            return;
+        }
+
+        FailMission();
+        ShowFailResultPopup();
     }
 
     private void TryShowResultPopup(bool success)
