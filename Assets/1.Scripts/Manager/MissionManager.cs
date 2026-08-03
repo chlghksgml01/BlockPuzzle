@@ -277,6 +277,12 @@ public class MissionManager : MonoBehaviour, IInitializable
         StopProgressTracking();
         _objectiveCompleted = false;
         _resultResolved = false;
+
+        // Retry 시 이전 수집·비행이 남지 않도록 런타임 진행도를 비운다.
+        if (_flyEffect != null)
+            _flyEffect.CancelAll();
+
+        _collectedGemCounts.Clear();
         ClearPendingFlies();
         _isTracking = true;
 
@@ -519,7 +525,8 @@ public class MissionManager : MonoBehaviour, IInitializable
 
     private void OnCollectFlyCompleted(MissionCollectInfo info)
     {
-        if (_resultResolved)
+        // 실패/Retry로 추적이 끊긴 뒤 도착한 이전 비행은 무시한다.
+        if (!_isTracking || _resultResolved)
             return;
 
         RemovePendingFly(info);

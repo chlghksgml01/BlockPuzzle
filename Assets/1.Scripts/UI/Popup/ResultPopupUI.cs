@@ -120,8 +120,12 @@ public class ResultPopupUI : BasePopupUI
         _isShowing = false;
         Close();
 
-        if (InGameManager.HasInstance)
-            InGameManager.Instance.ResetGame();
+        if (!InGameManager.HasInstance)
+            return;
+
+        InGameManager.Instance.ResetGame();
+        // ShowResult에서 막아 둔 슬롯 입력을 Retry 후 다시 연다.
+        InGameManager.Instance.EnableInteraction(true);
     }
 
     /// <summary>레벨맵 씬으로 나간다.</summary>

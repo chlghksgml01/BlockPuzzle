@@ -141,6 +141,9 @@ flowchart TD
 ```
 
 - Retry → 같은 레벨 `ResetGame`
+  - 보드 레이아웃 복원 + `BeginProgressTracking` (Gem 수집량·비행 pending 초기화, 비행 연출 CancelAll)
+  - `ScoreSystem.ResetScore` → `OnScoreChanged`로 ScoreGoal HUD 0 동기화
+  - 슬롯 입력 재활성화 (`EnableInteraction(true)`)
 - Quit → `ClearSession` 후 Level 맵 씬 이동
 - 성공 시 다음 레벨 `MissionData.isClear = true` (플레이 가능 해금)
 

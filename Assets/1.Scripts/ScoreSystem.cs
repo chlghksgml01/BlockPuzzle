@@ -126,9 +126,12 @@ public class ScoreSystem : ScriptableObject
     public void ResetScore()
     {
         CheckHighScore(LeaderboardManager.Instance.BestScore);
+        int previousScore = CurrentScore;
         _currentPlaceCount = 0;
         _currentComboCount = 0;
         CurrentScore = 0;
+        // Retry/리셋 시 ScoreGoal HUD·ScoreUI가 0으로 동기화되도록 이벤트를 보낸다.
+        OnScoreChanged?.Invoke(previousScore, CurrentScore);
     }
 
     public void CheckHighScore(int bestScore)
