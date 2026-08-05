@@ -53,10 +53,16 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
     /// maxClearedLevel 기준으로 MissionData.isClear를 재적용한다.
     /// isClear = (levelIndex &lt;= maxClearedLevel) → 완료 레벨 + 다음 플레이 가능 레벨 해금.
     /// </summary>
-    public void ApplyToMissionTable(LevelMissionTableData table)
+    /// <param name="overrideMaxClearedLevel">
+    /// null이 아니면 실제 저장된 진행도 대신 이 값을 기준으로 적용한다.
+    /// 에디터에서 ClearRoad 등 진행도 UI를 테스트할 때만 사용할 것.
+    /// </param>
+    public void ApplyToMissionTable(LevelMissionTableData table, int? overrideMaxClearedLevel = null)
     {
         if (table == null)
             return;
+
+        int maxClearedLevel = overrideMaxClearedLevel ?? _maxClearedLevel;
 
         int levelCount = table.LevelCount;
         for (int i = 0; i < levelCount; i++)
@@ -65,7 +71,7 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
             if (mission == null)
                 continue;
 
-            mission.isClear = i <= _maxClearedLevel;
+            mission.isClear = i <= maxClearedLevel;
         }
     }
 

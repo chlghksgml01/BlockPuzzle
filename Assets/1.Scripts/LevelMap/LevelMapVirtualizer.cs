@@ -120,13 +120,18 @@ public sealed class LevelMapVirtualizer
         else
             maxPairIndex = minPairIndex - 1;
 
+        int currentPlayableLevelIndex = _missionTable != null
+            ? _missionTable.GetCurrentPlayableLevelIndex()
+            : -1;
+
         SyncActive(_activeNodes, _nodePool, minNodeIndex, maxNodeIndex,
             (index, view) =>
             {
                 MissionData mission = _missionTable != null
                     ? _missionTable.GetMission(index)
                     : null;
-                view.Bind(index, _layout.GetNodePosition(index), mission);
+                bool isCurrent = index == currentPlayableLevelIndex;
+                view.Bind(index, _layout.GetNodePosition(index), mission, isCurrent);
             });
 
         SyncActive(_activeRoads, _roadPool, minPairIndex, maxPairIndex,

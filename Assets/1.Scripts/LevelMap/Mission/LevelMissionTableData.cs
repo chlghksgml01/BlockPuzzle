@@ -55,4 +55,25 @@ public class LevelMissionTableData : ScriptableObject
 
         return consecutiveClearIndex - 1;
     }
+
+    /// <summary>
+    /// 다음에 플레이할 레벨(해금되었지만 아직 완료되지 않음)의 인덱스 (0-base).
+    /// 전체 레벨을 모두 클리어해 다음 레벨이 없으면 -1.
+    /// </summary>
+    public int GetCurrentPlayableLevelIndex()
+    {
+        if (_missions == null || _missions.Length == 0)
+            return -1;
+
+        int lastConsecutiveClearLevel = GetLastConsecutiveClearLevel();
+        int consecutiveClearIndex = lastConsecutiveClearLevel - 1;
+
+        if (consecutiveClearIndex < 0)
+            return 0;
+
+        if (consecutiveClearIndex >= _missions.Length - 1)
+            return -1;
+
+        return consecutiveClearIndex;
+    }
 }

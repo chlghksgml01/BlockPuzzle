@@ -69,10 +69,13 @@ classDiagram
     class LevelNodeView {
         -TMP_Text _levelText
         -Button _nodeButton
+        -Sprite _defaultSprite
+        -Sprite _clearSprite
+        -Sprite _currentSprite
         +RectTransform RectTransform
         +int NodeIndex
         +event Action~int~ OnClicked
-        +Bind(nodeIndex, anchoredPosition)
+        +Bind(nodeIndex, anchoredPosition, missionData, isCurrent)
     }
 
     class LevelRoadView {
@@ -94,6 +97,18 @@ classDiagram
 ```
 
 노드 클릭 시 `LevelNodeView.OnClicked(nodeIndex)` 이벤트가 발생하고, `LevelMapVirtualizer`가 노드 생성 시점(풀링되므로 1회만)에 이를 `LevelMapManager.OpenMissionPopup`으로 구독시켜 전달한다. `LevelNodeView`는 `LevelMapManager`를 직접 참조하지 않는다(Action 기반 설계).
+
+### 노드 시각 상태 (3단계)
+
+`MissionData.isClear`는 "완료"와 "해금(다음 플레이 가능)"을 모두 `true`로 나타내는 단일 플래그이므로, 노드 스프라이트만으로는 이 둘을 구분할 수 없다. 이를 구분하기 위해 `LevelMissionTableData.GetCurrentPlayableLevelIndex()`로 "해금되었지만 아직 완료하지 않은" 단일 인덱스를 별도로 계산하고, `LevelMapVirtualizer.Refresh()`가 매 바인딩마다 `isCurrent` 여부를 함께 넘긴다.
+
+| 상태 | 조건 | 스프라이트 |
+|------|------|-----------|
+| 잠김 | `isClear == false` | `_defaultSprite` |
+| 현재(해금, 미완료) | 해당 인덱스가 `GetCurrentPlayableLevelIndex()`와 일치 | `_currentSprite` |
+| 완료 | `isClear == true` 이고 현재 위치가 아님 | `_clearSprite` |
+
+`_currentSprite`가 비어 있으면(미할당) 기존처럼 완료 스프라이트로 대체된다.
 
 ## 레벨 클리어 미션 데이터
 
@@ -139,6 +154,9 @@ classDiagram
         -MissionData[] _missions
         +int LevelCount
         +GetMission(levelIndex) MissionData
+        +GetLastConsecutiveClearLevel() int
+        +GetLastCompletedLevelIndex() int
+        +GetCurrentPlayableLevelIndex() int
     }
 
     class MissionPopupUI {

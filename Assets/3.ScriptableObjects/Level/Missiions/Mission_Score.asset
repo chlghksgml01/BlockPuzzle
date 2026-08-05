@@ -15,7 +15,7 @@ MonoBehaviour:
   boardSize: 9
   filledCells: []
   isHard: 0
-  isClear: 1
+  isClear: 0
   missionType: 1
   gemTargets: []
   targetScore: 300

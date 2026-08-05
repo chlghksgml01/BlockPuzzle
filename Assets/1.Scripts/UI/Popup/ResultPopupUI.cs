@@ -54,6 +54,9 @@ public class ResultPopupUI : BasePopupUI
         if (_retryButton != null)
             _retryButton.onClick.AddListener(Retry);
 
+        if (_nextButton != null)
+            _nextButton.onClick.AddListener(Next);
+
         if (_quitButton != null)
             _quitButton.onClick.AddListener(Quit);
 
@@ -67,6 +70,9 @@ public class ResultPopupUI : BasePopupUI
 
         if (_retryButton != null)
             _retryButton.onClick.RemoveListener(Retry);
+
+        if (_nextButton != null)
+            _nextButton.onClick.RemoveListener(Next);
 
         if (_quitButton != null)
             _quitButton.onClick.RemoveListener(Quit);
@@ -107,8 +113,9 @@ public class ResultPopupUI : BasePopupUI
 
     private void SetResultButtonVisibility(bool success)
     {
+        // 성공이고 다음 미션이 있을 때만 Next를 켠다 (마지막 레벨은 Quit만).
         if (_nextButton != null)
-            _nextButton.gameObject.SetActive(success);
+            _nextButton.gameObject.SetActive(success && HasNextLevel());
 
         if (_retryButton != null)
             _retryButton.gameObject.SetActive(!success);
@@ -128,12 +135,40 @@ public class ResultPopupUI : BasePopupUI
         InGameManager.Instance.EnableInteraction(true);
     }
 
+    /// <summary>다음 레벨로 이동한다. 다음 미션이 없으면 레벨맵으로 나간다.</summary>
+    public void Next()
+    {
+        _isShowing = false;
+        Close();
+
+        if (!TryResolveSession(out LevelMissionTableData missionTable, out int currentLevelIndex))
+        {
+            ExitToLevelMap();
+            return;
+        }
+
+        int nextLevelIndex = currentLevelIndex + 1;
+        if (missionTable.GetMission(nextLevelIndex) == null)
+        {
+            ExitToLevelMap();
+            return;
+        }
+
+        // 보드 크기가 레벨마다 달라질 수 있어 씬을 다시 로드한다.
+        LevelSessionContext.BeginLevel(nextLevelIndex, missionTable);
+        SceneLoadManager.LoadScene(SceneName.LevelInGame);
+    }
+
     /// <summary>레벨맵 씬으로 나간다.</summary>
     public void Quit()
     {
         _isShowing = false;
         Close();
+        ExitToLevelMap();
+    }
 
+    private void ExitToLevelMap()
+    {
         if (MissionManager.Instance != null)
             MissionManager.Instance.ClearSession();
 
@@ -141,5 +176,33 @@ public class ResultPopupUI : BasePopupUI
             InGameManager.Instance.ResetGame();
 
         SceneLoadManager.LoadScene(SceneName.Level);
+    }
+
+    private static bool HasNextLevel()
+    {
+        if (!TryResolveSession(out LevelMissionTableData missionTable, out int currentLevelIndex))
+            return false;
+
+        return missionTable.GetMission(currentLevelIndex + 1) != null;
+    }
+
+    private static bool TryResolveSession(out LevelMissionTableData missionTable, out int currentLevelIndex)
+    {
+        missionTable = null;
+        currentLevelIndex = -1;
+
+        if (MissionManager.Instance != null && MissionManager.Instance.IsActive
+            && !MissionManager.Instance.IsUsingTestMission)
+        {
+            missionTable = MissionManager.Instance.MissionTable;
+            currentLevelIndex = MissionManager.Instance.CurrentLevelIndex;
+        }
+        else if (LevelSessionContext.IsActive)
+        {
+            missionTable = LevelSessionContext.GetMissionTable();
+            currentLevelIndex = LevelSessionContext.SelectedLevelIndex;
+        }
+
+        return missionTable != null && currentLevelIndex >= 0;
     }
 }

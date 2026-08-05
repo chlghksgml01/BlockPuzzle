@@ -39,7 +39,8 @@ MonoBehaviour:
     y: 7
     spriteName: grass01
   isHard: 1
-  isClear: 1
+  isClear: 0
   missionType: 3
+  gemTargets: []
   targetScore: 0
   timeLimitSeconds: 0

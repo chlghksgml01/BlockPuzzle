@@ -144,6 +144,9 @@ flowchart TD
   - 보드 레이아웃 복원 + `BeginProgressTracking` (Gem 수집량·비행 pending 초기화, 비행 연출 CancelAll)
   - `ScoreSystem.ResetScore` → `OnScoreChanged`로 ScoreGoal HUD 0 동기화
   - 슬롯 입력 재활성화 (`EnableInteraction(true)`)
+- Next → `LevelSessionContext.BeginLevel(nextIndex)` 후 `LevelInGame` 씬 재로드
+  - 성공이고 다음 `MissionData`가 있을 때만 버튼 표시
+  - 마지막 레벨(다음 미션 없음)이면 Next 숨김, 클릭 시에도 Level 맵으로 폴백
 - Quit → `ClearSession` 후 Level 맵 씬 이동
 - 성공 시 다음 레벨 `MissionData.isClear = true` (플레이 가능 해금)
 
@@ -153,4 +156,4 @@ flowchart TD
 2. `_canvasGroup` → ResultPopup CanvasGroup
 3. `_popupTransform` → Result
 4. `_resultText` → ResultText, `_levelText` → Level
-5. `_retryButton` / `_quitButton` 연결
+5. `_retryButton` / `_nextButton` / `_quitButton` 연결

@@ -65,6 +65,14 @@ public class LevelMapManager : MonoBehaviour
     [Tooltip("마지막 노드 위쪽으로 남겨둘 여백 (px)")]
     [SerializeField] private float _topPadding = 300f;
 
+
+    [Header("Debug/Test")]
+    [Tooltip("체크하면 실제 저장된 진행도(PlayerPrefs MaxClearedLevel) 대신 아래 값을 기준으로 클리어 상태(ClearRoad 등)를 강제 적용한다. 테스트 종료 후 반드시 해제할 것")]
+    [SerializeField] private bool _useDebugMaxClearedLevel = false;
+
+    [Tooltip("테스트용 최고 클리어 레벨 (1-base, 0 = 미클리어). _useDebugMaxClearedLevel이 체크된 경우에만 사용됨")]
+    [SerializeField] private int _debugMaxClearedLevel = 0;
+
     private LevelMapLayout _layout;
     private LevelMapVirtualizer _virtualizer;
 
@@ -121,8 +129,23 @@ public class LevelMapManager : MonoBehaviour
         if (_missionTable == null)
             return;
 
-        LevelProgressManager.Instance.ApplyToMissionTable(_missionTable);
+        int? debugOverride = _useDebugMaxClearedLevel ? _debugMaxClearedLevel : (int?)null;
+        LevelProgressManager.Instance.ApplyToMissionTable(_missionTable, debugOverride);
     }
+
+#if UNITY_EDITOR
+    /// <summary>
+    /// 플레이 모드에서 인스펙터의 Debug/Test 값을 조절할 때 즉시 ClearRoad 등을 갱신하기 위한 에디터 전용 훅.
+    /// </summary>
+    private void OnValidate()
+    {
+        if (!Application.isPlaying || _virtualizer == null)
+            return;
+
+        ApplyProgressToMissionTable();
+        _virtualizer.Refresh();
+    }
+#endif
 
     private void OnScrollChanged(Vector2 _)
     {

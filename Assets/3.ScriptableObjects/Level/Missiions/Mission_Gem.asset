@@ -19,10 +19,10 @@ MonoBehaviour:
   missionType: 4
   gemTargets:
   - gemType: 0
-    count: 200
+    count: 2
   - gemType: 1
-    count: 35
+    count: 3
   - gemType: 2
-    count: 25
+    count: 5
   targetScore: 0
   timeLimitSeconds: 0

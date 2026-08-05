@@ -172,6 +172,8 @@ MonoBehaviour:
   _nodeImg: {fileID: 7513998718474293070}
   _defaultSprite: {fileID: 21300000, guid: a9e6f00d4e20f504eadf6aeb07767038, type: 3}
   _clearSprite: {fileID: 21300000, guid: 7513c800d5bb95246a61540de76031d1, type: 3}
+  _currentSprite: {fileID: 21300000, guid: c905c9a603efaee408915e326d2711fd, type: 3}
+  _clearTextColor: {r: 0.9490197, g: 0.854902, b: 0.22352943, a: 1}
 --- !u!114 &6811834252440084320
 MonoBehaviour:
   m_ObjectHideFlags: 0
