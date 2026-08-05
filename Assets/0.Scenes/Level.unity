@@ -1332,7 +1332,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Level 5
+  m_text: Level 1
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 10247029dae368345b52f90975544dce, type: 2}
   m_sharedMaterial: {fileID: -8401363481842351713, guid: 10247029dae368345b52f90975544dce, type: 2}
@@ -1632,6 +1632,8 @@ MonoBehaviour:
   _viewportPadding: 300
   _contentGrowthChunk: 2000
   _topPadding: 300
+  _useDebugMaxClearedLevel: 1
+  _debugMaxClearedLevel: 1
 --- !u!4 &887040040
 Transform:
   m_ObjectHideFlags: 0
@@ -4615,6 +4617,8 @@ MonoBehaviour:
   _nodeImg: {fileID: 0}
   _defaultSprite: {fileID: 0}
   _clearSprite: {fileID: 0}
+  _currentSprite: {fileID: 0}
+  _clearTextColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &3618664708740291360
 GameObject:
   m_ObjectHideFlags: 0
