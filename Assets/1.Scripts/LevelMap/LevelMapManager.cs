@@ -158,6 +158,9 @@ public class LevelMapManager : MonoBehaviour
         if (mission == null)
             return;
 
+        if (!mission.IsClear)
+            return;
+
         if (_levelUIButtonController != null)
             _levelUIButtonController.SelectLevel(levelIndex);
 
