@@ -20,7 +20,8 @@
 ## 테스트용 진행도 오버라이드
 
 - `ApplyToMissionTable(table, overrideMaxClearedLevel)`의 두 번째 인자에 값을 넘기면 실제 `PlayerPrefs` 진행도 대신 그 값으로 `isClear`를 재적용한다.
-- `LevelMapManager` 인스펙터의 `Debug/Test` 섹션(`_useDebugMaxClearedLevel`, `_debugMaxClearedLevel`)에서 켜고 끌 수 있으며, ClearRoad 등 진행도 UI를 에디터에서 빠르게 확인할 때 사용한다.
+- `LevelMapManager` 인스펙터의 `Debug/Test` 섹션(`_useDebugCurrentLevel`, `_debugCurrentLevel`)에서 켜고 끌 수 있으며, ClearRoad 등 진행도 UI를 에디터에서 빠르게 확인할 때 사용한다.
+- `_debugCurrentLevel`은 현재 플레이 레벨(1-base)이며, 적용 시 `maxClearedLevel = currentLevel - 1`로 변환한다. (예: Current Level=4 → 1~3 클리어, 4가 현재 위치)
 - 실제 저장 데이터(PlayerPrefs/서버)는 변경되지 않으며, 플레이 모드 종료 후 값은 유지되므로 테스트 후 반드시 체크박스를 해제할 것.
 
 ## 동기화 흐름

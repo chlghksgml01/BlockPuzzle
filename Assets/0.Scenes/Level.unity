@@ -1632,8 +1632,8 @@ MonoBehaviour:
   _viewportPadding: 300
   _contentGrowthChunk: 2000
   _topPadding: 300
-  _useDebugMaxClearedLevel: 1
-  _debugMaxClearedLevel: 1
+  _useDebugCurrentLevel: 1
+  _debugCurrentLevel: 2
 --- !u!4 &887040040
 Transform:
   m_ObjectHideFlags: 0
