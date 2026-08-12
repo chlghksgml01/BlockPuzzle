@@ -45,3 +45,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelProgressManager
   _dontDestroyOnLoad: 1
+  _useDebugCurrentLevel: 0
+  _debugCurrentLevel: 1

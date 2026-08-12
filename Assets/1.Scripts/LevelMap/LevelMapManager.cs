@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 /// <summary>
@@ -66,16 +65,6 @@ public class LevelMapManager : MonoBehaviour
     [Tooltip("마지막 노드 위쪽으로 남겨둘 여백 (px)")]
     [SerializeField] private float _topPadding = 300f;
 
-
-    [Header("Debug/Test")]
-    [Tooltip("체크하면 실제 저장된 진행도 대신 아래 Current Level을 기준으로 클리어 상태(ClearRoad 등)를 강제 적용한다. 테스트 종료 후 반드시 해제할 것")]
-    [FormerlySerializedAs("_useDebugMaxClearedLevel")]
-    [SerializeField] private bool _useDebugCurrentLevel = false;
-
-    [Tooltip("테스트용 현재 플레이 레벨 (1-base). N 입력 시 1~(N-1) 클리어, N이 현재 위치. _useDebugCurrentLevel이 체크된 경우에만 사용됨")]
-    [FormerlySerializedAs("_debugMaxClearedLevel")]
-    [SerializeField] private int _debugCurrentLevel = 1;
-
     private LevelMapLayout _layout;
     private LevelMapVirtualizer _virtualizer;
 
@@ -132,30 +121,8 @@ public class LevelMapManager : MonoBehaviour
         if (_missionTable == null)
             return;
 
-        int? debugOverride = null;
-        if (_useDebugCurrentLevel)
-        {
-            // Current Level(N) → maxClearedLevel(N-1): N이 현재 플레이 위치, 그 이전까지 클리어
-            int currentLevel = Mathf.Max(1, _debugCurrentLevel);
-            debugOverride = currentLevel - 1;
-        }
-
-        LevelProgressManager.Instance.ApplyToMissionTable(_missionTable, debugOverride);
+        LevelProgressManager.Instance.ApplyToMissionTable(_missionTable);
     }
-
-#if UNITY_EDITOR
-    /// <summary>
-    /// 플레이 모드에서 인스펙터의 Debug/Test 값을 조절할 때 즉시 ClearRoad 등을 갱신하기 위한 에디터 전용 훅.
-    /// </summary>
-    private void OnValidate()
-    {
-        if (!Application.isPlaying || _virtualizer == null)
-            return;
-
-        ApplyProgressToMissionTable();
-        _virtualizer.Refresh();
-    }
-#endif
 
     private void OnScrollChanged(Vector2 _)
     {

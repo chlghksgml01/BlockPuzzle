@@ -16,10 +16,17 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
     /// <summary>진행도가 로컬 또는 서버 병합으로 변경되었을 때.</summary>
     public static event Action OnProgressChanged;
 
+    [Header("Debug/Test")]
+    [Tooltip("체크하면 실제 저장된 진행도 대신 아래 Current Level을 기준으로 isClear를 강제 적용한다. 테스트 종료 후 반드시 해제할 것")]
+    [SerializeField] private bool _useDebugCurrentLevel = false;
+
+    [Tooltip("테스트용 현재 플레이 레벨 (1-base). N 입력 시 1~(N-1) 클리어, N이 현재 위치. _useDebugCurrentLevel이 체크된 경우에만 사용됨")]
+    [SerializeField] private int _debugCurrentLevel = 1;
+
     private int _maxClearedLevel;
     private string _userIndate = string.Empty;
 
-    /// <summary>클리어 완료한 최고 레벨 번호 (1-base). 미클리어는 0.</summary>
+    /// <summary>클리어 완료한 최고 레벨 번호 (1-base). 미클리어는 0. Debug 오버라이드는 포함하지 않는다.</summary>
     public int MaxClearedLevel => _maxClearedLevel;
 
     protected override void OnAwake()
@@ -37,6 +44,19 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
         GoogleLoginManager.OnLoginSucceed -= SyncWithServer;
     }
 
+#if UNITY_EDITOR
+    /// <summary>
+    /// 플레이 모드에서 인스펙터 Debug/Test 값을 바꿀 때 UI(ClearRoad 등)를 즉시 갱신한다.
+    /// </summary>
+    private void OnValidate()
+    {
+        if (!Application.isPlaying || !HasInstance || Instance != this)
+            return;
+
+        OnProgressChanged?.Invoke();
+    }
+#endif
+
     /// <summary>
     /// 레벨 클리어를 반영한다. levelNumber는 1-base.
     /// 기존 최고보다 높을 때만 로컬 저장 후 서버에 동기화한다.
@@ -50,19 +70,16 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
     }
 
     /// <summary>
-    /// maxClearedLevel 기준으로 MissionData.isClear를 재적용한다.
-    /// isClear = (levelIndex &lt;= maxClearedLevel) → 완료 레벨 + 다음 플레이 가능 레벨 해금.
+    /// 유효 진행도 기준으로 MissionData.isClear를 재적용한다.
+    /// isClear = (levelIndex &lt;= effectiveMaxCleared) → 완료 레벨 + 다음 플레이 가능 레벨 해금.
+    /// Debug 오버라이드가 켜져 있으면 저장된 진행도 대신 그 기준을 쓴다.
     /// </summary>
-    /// <param name="overrideMaxClearedLevel">
-    /// null이 아니면 실제 저장된 진행도 대신 이 값을 기준으로 적용한다.
-    /// 에디터에서 ClearRoad 등 진행도 UI를 테스트할 때만 사용할 것.
-    /// </param>
-    public void ApplyToMissionTable(LevelMissionTableData table, int? overrideMaxClearedLevel = null)
+    public void ApplyToMissionTable(LevelMissionTableData table)
     {
         if (table == null)
             return;
 
-        int maxClearedLevel = overrideMaxClearedLevel ?? _maxClearedLevel;
+        int maxClearedLevel = GetEffectiveMaxClearedLevel();
 
         int levelCount = table.LevelCount;
         for (int i = 0; i < levelCount; i++)
@@ -73,6 +90,19 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
 
             mission.isClear = i <= maxClearedLevel;
         }
+    }
+
+    /// <summary>
+    /// Apply에 사용할 maxClearedLevel.
+    /// Debug ON이면 Current Level(N) → N-1, OFF면 실제 저장값.
+    /// </summary>
+    private int GetEffectiveMaxClearedLevel()
+    {
+        if (!_useDebugCurrentLevel)
+            return _maxClearedLevel;
+
+        int currentLevel = Mathf.Max(1, _debugCurrentLevel);
+        return currentLevel - 1;
     }
 
     private void SyncWithServer(bool isSucceed)
