@@ -4,14 +4,15 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// 레벨 클리어 진행도(최고 클리어 레벨)를 로컬/서버에 동기화한다.
+/// 레벨 진행도(현재 플레이 레벨)를 로컬/서버에 동기화한다.
 /// </summary>
 [DefaultExecutionOrder(-100)]
 public class LevelProgressManager : Singleton<LevelProgressManager>
 {
-    private const string PrefsKey = "MaxClearedLevel";
+    private const string PrefsKey = "CurrentLevel";
     private const string TableName = "LEVEL_PROGRESS";
-    private const string MaxClearedColumn = "maxClearedLevel";
+    private const string CurrentLevelColumn = "CurrentLevel";
+    private const int DefaultCurrentLevel = 1;
 
     /// <summary>진행도가 로컬 또는 서버 병합으로 변경되었을 때.</summary>
     public static event Action OnProgressChanged;
@@ -23,15 +24,15 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
     [Tooltip("테스트용 현재 플레이 레벨 (1-base). N 입력 시 1~(N-1) 클리어, N이 현재 위치. _useDebugCurrentLevel이 체크된 경우에만 사용됨")]
     [SerializeField] private int _debugCurrentLevel = 1;
 
-    private int _maxClearedLevel;
+    private int _currentLevel;
     private string _userIndate = string.Empty;
 
-    /// <summary>클리어 완료한 최고 레벨 번호 (1-base). 미클리어는 0. Debug 오버라이드는 포함하지 않는다.</summary>
-    public int MaxClearedLevel => _maxClearedLevel;
+    /// <summary>현재 플레이 레벨 번호 (1-base). 미진행은 1. Debug 오버라이드는 포함하지 않는다.</summary>
+    public int CurrentLevel => _currentLevel;
 
     protected override void OnAwake()
     {
-        _maxClearedLevel = Mathf.Max(0, PlayerPrefs.GetInt(PrefsKey, 0));
+        _currentLevel = Mathf.Max(DefaultCurrentLevel, PlayerPrefs.GetInt(PrefsKey, DefaultCurrentLevel));
     }
 
     private void OnEnable()
@@ -59,19 +60,23 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
 
     /// <summary>
     /// 레벨 클리어를 반영한다. levelNumber는 1-base.
-    /// 기존 최고보다 높을 때만 로컬 저장 후 서버에 동기화한다.
+    /// 클리어한 다음 레벨이 현재보다 앞설 때만 로컬 저장 후 서버에 동기화한다.
     /// </summary>
     public void NotifyLevelCleared(int levelNumber)
     {
-        if (levelNumber <= 0 || levelNumber <= _maxClearedLevel)
+        if (levelNumber <= 0)
             return;
 
-        SetMaxClearedLevel(levelNumber, syncToServer: true);
+        int nextLevel = levelNumber + 1;
+        if (nextLevel <= _currentLevel)
+            return;
+
+        SetCurrentLevel(nextLevel, syncToServer: true);
     }
 
     /// <summary>
     /// 유효 진행도 기준으로 MissionData.isClear를 재적용한다.
-    /// isClear = (levelIndex &lt;= effectiveMaxCleared) → 완료 레벨 + 다음 플레이 가능 레벨 해금.
+    /// isClear = (levelIndex &lt; effectiveCurrentLevel) → 완료 레벨 + 다음 플레이 가능 레벨 해금.
     /// Debug 오버라이드가 켜져 있으면 저장된 진행도 대신 그 기준을 쓴다.
     /// </summary>
     public void ApplyToMissionTable(LevelMissionTableData table)
@@ -79,7 +84,7 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
         if (table == null)
             return;
 
-        int maxClearedLevel = GetEffectiveMaxClearedLevel();
+        int currentLevel = GetEffectiveCurrentLevel();
 
         int levelCount = table.LevelCount;
         for (int i = 0; i < levelCount; i++)
@@ -88,21 +93,20 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
             if (mission == null)
                 continue;
 
-            mission.isClear = i <= maxClearedLevel;
+            mission.isClear = i < currentLevel;
         }
     }
 
     /// <summary>
-    /// Apply에 사용할 maxClearedLevel.
-    /// Debug ON이면 Current Level(N) → N-1, OFF면 실제 저장값.
+    /// Apply에 사용할 currentLevel.
+    /// Debug ON이면 인스펙터 Current Level, OFF면 실제 저장값.
     /// </summary>
-    private int GetEffectiveMaxClearedLevel()
+    private int GetEffectiveCurrentLevel()
     {
         if (!_useDebugCurrentLevel)
-            return _maxClearedLevel;
+            return _currentLevel;
 
-        int currentLevel = Mathf.Max(1, _debugCurrentLevel);
-        return currentLevel - 1;
+        return Mathf.Max(DefaultCurrentLevel, _debugCurrentLevel);
     }
 
     private void SyncWithServer(bool isSucceed)
@@ -128,12 +132,12 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
                 JsonData row = bro.FlattenRows()[0];
                 _userIndate = row["inDate"].ToString();
 
-                int serverMax = 0;
-                if (row.ContainsKey(MaxClearedColumn) && row[MaxClearedColumn] != null)
-                    int.TryParse(row[MaxClearedColumn].ToString(), out serverMax);
+                int serverCurrentLevel = DefaultCurrentLevel;
+                if (row.ContainsKey(CurrentLevelColumn) && row[CurrentLevelColumn] != null)
+                    int.TryParse(row[CurrentLevelColumn].ToString(), out serverCurrentLevel);
 
-                int merged = Mathf.Max(_maxClearedLevel, Mathf.Max(0, serverMax));
-                SetMaxClearedLevel(merged, syncToServer: false);
+                int merged = Mathf.Max(_currentLevel, Mathf.Max(DefaultCurrentLevel, serverCurrentLevel));
+                SetCurrentLevel(merged, syncToServer: false);
                 TrySyncProgressToServer();
             }
             else
@@ -146,13 +150,13 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
     private void CreateInitialServerData()
     {
         Param param = new Param();
-        param.Add(MaxClearedColumn, _maxClearedLevel);
+        param.Add(CurrentLevelColumn, _currentLevel);
 
         BackendReturnObject bro = Backend.GameData.Insert(TableName, param);
         if (bro.IsSuccess())
         {
             _userIndate = bro.GetInDate();
-            Debug.Log($"[LevelProgressManager] Initial row created. maxClearedLevel={_maxClearedLevel}");
+            Debug.Log($"[LevelProgressManager] Initial row created. currentLevel={_currentLevel}");
         }
         else
         {
@@ -160,13 +164,13 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
         }
     }
 
-    private void SetMaxClearedLevel(int value, bool syncToServer)
+    private void SetCurrentLevel(int value, bool syncToServer)
     {
-        int clamped = Mathf.Max(0, value);
-        bool changed = clamped != _maxClearedLevel;
+        int clamped = Mathf.Max(DefaultCurrentLevel, value);
+        bool changed = clamped != _currentLevel;
 
-        _maxClearedLevel = clamped;
-        PlayerPrefs.SetInt(PrefsKey, _maxClearedLevel);
+        _currentLevel = clamped;
+        PlayerPrefs.SetInt(PrefsKey, _currentLevel);
         PlayerPrefs.Save();
 
         if (changed)
@@ -182,7 +186,7 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
             return;
 
         Param param = new Param();
-        param.Add(MaxClearedColumn, _maxClearedLevel);
+        param.Add(CurrentLevelColumn, _currentLevel);
 
         if (string.IsNullOrEmpty(_userIndate))
         {
@@ -191,7 +195,7 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
                 if (bro.IsSuccess())
                 {
                     _userIndate = bro.GetInDate();
-                    Debug.Log($"[LevelProgressManager] Insert succeeded. maxClearedLevel={_maxClearedLevel}");
+                    Debug.Log($"[LevelProgressManager] Insert succeeded. currentLevel={_currentLevel}");
                 }
                 else
                 {
@@ -204,7 +208,7 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
         Backend.GameData.UpdateV2(TableName, _userIndate, Backend.UserInDate, param, bro =>
         {
             if (bro.IsSuccess())
-                Debug.Log($"[LevelProgressManager] UpdateV2 succeeded. maxClearedLevel={_maxClearedLevel}");
+                Debug.Log($"[LevelProgressManager] UpdateV2 succeeded. currentLevel={_currentLevel}");
             else
                 Debug.LogError($"[LevelProgressManager] UpdateV2 failed: {bro.GetErrorCode()} - {bro.GetMessage()}");
         });

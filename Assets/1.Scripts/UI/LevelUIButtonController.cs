@@ -30,7 +30,7 @@ public class LevelUIButtonController : MonoBehaviour
 
     private void OnValidate()
     {
-        RefreshHighestClearedLevelDisplay();
+        RefreshCurrentLevelDisplay();
     }
 
     private void Start()
@@ -50,11 +50,11 @@ public class LevelUIButtonController : MonoBehaviour
         if (_missionTable != null && Application.isPlaying)
             LevelProgressManager.Instance.ApplyToMissionTable(_missionTable);
 
-        RefreshHighestClearedLevelDisplay();
+        RefreshCurrentLevelDisplay();
     }
 
     /// <summary>LevelButton에 현재 플레이 가능 레벨을 표시한다.</summary>
-    private void RefreshHighestClearedLevelDisplay()
+    private void RefreshCurrentLevelDisplay()
     {
         if (_currentLevelText == null)
             return;

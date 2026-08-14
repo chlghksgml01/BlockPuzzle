@@ -68,7 +68,7 @@
 ### 6. 로비/리더보드/로그인 구성
 - `GoogleLoginManager`에서 구글 로그인 후 BackEnd 페더레이션 로그인 수행
 - `LeaderboardManager`가 로컬 최고점(PlayerPrefs)과 서버 데이터(`BEST_SCORE` 테이블) 동기화
-- `LevelProgressManager`가 클리어한 최고 레벨(`maxClearedLevel`)을 PlayerPrefs와 서버(`LEVEL_PROGRESS` 테이블)에 Max 병합 동기화
+- `LevelProgressManager`가 현재 플레이 레벨(`currentLevel`)을 PlayerPrefs와 서버(`LEVEL_PROGRESS` 테이블)에 Max 병합 동기화
 - 랭킹 조회 결과를 `LeaderboardUI`에서 보여줌
 - 유저 고유 UUID의 앞 4자리를 조합한 기본 닉네임(Player_XXXX) 자동 생성, 닉네임 변경 가능
 
@@ -92,7 +92,7 @@ flowchart TB
     IGM -->|"query/place"| BM
     SS -->|"new best"| LM
 
-    LPM["LevelProgressManager"] -->|"maxClearedLevel"| LPSAVE["PlayerPrefs + LEVEL_PROGRESS"]
+    LPM["LevelProgressManager"] -->|"currentLevel"| LPSAVE["PlayerPrefs + LEVEL_PROGRESS"]
 ```
 
 ### 보드 도메인 구조
