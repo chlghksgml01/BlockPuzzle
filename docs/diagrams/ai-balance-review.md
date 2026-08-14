@@ -37,11 +37,21 @@ flowchart TD
 
 ## 검수 기준 (프롬프트)
 
-Claude에게 아래만 JSON으로 답하도록 요청한다.
+`ClaudeBalanceReviewer.BuildReviewPrompt`가 미션 타입별 클리어 규칙을 먼저 알려 준 뒤 JSON만 요청한다.
+무관한 필드(Ice에서 `targetScore` 등)는 검수하지 않는다.
 
-1. `isHard`와 실제 난이도(보드 크기, 채움 칸, 목표 점수) 일치 여부
-2. `gemTargets`가 `filledCellCount` 대비 과도한지 (클리어 불가 위험)
-3. `targetScore`가 `boardSize` 대비 과소/과대인지
+| MissionType | 클리어 조건 | 관련 필드 |
+|-------------|-------------|-----------|
+| Ice | 줄 제거로 ice 칸을 전부 제거 | `iceCellCount`, `filledCellCount`, `boardSize`, `isHard` |
+| Grass | 줄 제거로 grass 칸을 전부 제거. 잔디 줄 3연속 미스 시 인접 칸으로 1칸 전파 | `grassCellCount`, `filledCellCount`, `boardSize`, `isHard` |
+| Gem | 슬롯에서 스폰된 젬 블록을 줄 제거로 목표 개수 수집 | `gemTargets`, `filledCellCount`, `boardSize`, `isHard` |
+| ScoreGoal | `targetScore` 도달 (시간 제한 없음) | `targetScore`, `filledCellCount`, `boardSize`, `isHard` |
+
+공통 검수:
+
+1. 해당 타입의 클리어 필드가 유효한가 (0/빈 값이면 high)
+2. `isHard`와 실제 난이도 일치 여부 (관련 필드만)
+3. 타입별 현실성 (Ice/Grass 칸 수, Gem 목표량, ScoreGoal 점수)
 
 예상 응답 스키마:
 
@@ -109,6 +119,7 @@ classDiagram
     -HttpClient Client$
     -CreateClient()$ HttpClient
     +ReviewMissionAsync(string)$ Task~string~
+    -BuildReviewPrompt(string)$ string
     -ExtractAssistantText(string)$ string
   }
 
