@@ -235,8 +235,6 @@ public class MissionManager : MonoBehaviour, IInitializable
             _usingTestMission = false;
             _currentLevelIndex = LevelSessionContext.SelectedLevelIndex;
             _missionTable = LevelSessionContext.GetMissionTable();
-            if (_missionTable != null)
-                LevelProgressManager.Instance.ApplyToMissionTable(_missionTable);
 
             _currentMission = _missionTable != null
                 ? _missionTable.GetMission(_currentLevelIndex)
@@ -666,9 +664,6 @@ public class MissionManager : MonoBehaviour, IInitializable
 
         int clearedLevelNumber = _currentLevelIndex + 1;
         LevelProgressManager.Instance.NotifyLevelCleared(clearedLevelNumber);
-
-        if (_missionTable != null)
-            LevelProgressManager.Instance.ApplyToMissionTable(_missionTable);
     }
 
     private bool AreAllGemsCleared()

@@ -20,7 +20,7 @@ public class LevelUIButtonController : MonoBehaviour
     private void OnEnable()
     {
         LevelProgressManager.OnProgressChanged += OnLevelProgressChanged;
-        ApplyProgressAndRefreshDisplay();
+        RefreshCurrentLevelDisplay();
     }
 
     private void OnDisable()
@@ -42,14 +42,6 @@ public class LevelUIButtonController : MonoBehaviour
 
     private void OnLevelProgressChanged()
     {
-        ApplyProgressAndRefreshDisplay();
-    }
-
-    private void ApplyProgressAndRefreshDisplay()
-    {
-        if (_missionTable != null && Application.isPlaying)
-            LevelProgressManager.Instance.ApplyToMissionTable(_missionTable);
-
         RefreshCurrentLevelDisplay();
     }
 
@@ -62,7 +54,8 @@ public class LevelUIButtonController : MonoBehaviour
         int playableLevel = 1;
         if (_missionTable != null)
         {
-            int consecutiveClear = _missionTable.GetLastConsecutiveClearLevel();
+            int consecutiveClear = _missionTable.GetLastConsecutiveClearLevel(
+                LevelProgressManager.PeekEffectiveCurrentLevel());
             int levelCount = _missionTable.LevelCount;
             if (consecutiveClear <= 0)
                 playableLevel = 1;

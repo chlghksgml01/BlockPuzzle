@@ -6,22 +6,23 @@
 
 | 클래스 | 책임 |
 |--------|------|
-| `LevelProgressManager` | `currentLevel` 로컬/서버 동기화, Debug 오버라이드, `MissionData.isClear` 파생 적용 |
+| `LevelProgressManager` | `currentLevel` 로컬/서버 동기화, Debug 오버라이드, 해금 판정 제공 |
 | `MissionManager` | 클리어 시 `NotifyLevelCleared` 호출 |
-| `LevelMapManager` / `LevelUIButtonController` | 맵 진입·진행 변경 시 Apply + UI refresh |
+| `LevelMapManager` / `LevelUIButtonController` | 맵 진입·진행 변경 시 UI refresh |
 | `LeaderboardManager` | 점수/랭킹만 담당 (레벨 진행과 분리) |
 
 ## 저장 의미
 
 - `currentLevel`: 현재 플레이 레벨 번호 (1-base). 미진행 = `1`
 - 레벨 N 클리어 시 `currentLevel = N + 1`
-- 런타임 `isClear` 파생: `isClear = (levelIndex < effectiveCurrentLevel)`
+- 해금 판정: `levelIndex < effectiveCurrentLevel` (완료 레벨 + 다음 플레이 가능 레벨)
   - 예: `effectiveCurrentLevel=4` → 레벨 1~3 완료, 레벨 4까지 해금
+- 해금 여부는 `MissionData`에 쓰지 않고 `GetEffectiveCurrentLevel()` / `IsLevelUnlocked()`로 조회한다.
 
 ## 테스트용 진행도 오버라이드
 
 - Debug 설정은 `LevelProgressManager` 인스펙터의 `Debug/Test` 섹션(`_useDebugCurrentLevel`, `_debugCurrentLevel`)에 둔다.
-- `ApplyToMissionTable(table)`은 항상 `GetEffectiveCurrentLevel()`을 사용하므로, `LevelMapManager` / `LevelUIButtonController` / `MissionManager` 호출이 같은 기준을 공유한다.
+- UI/맵 조회는 항상 `PeekEffectiveCurrentLevel()`을 사용하므로, `LevelMapManager` / `LevelUIButtonController` / `MissionManager`가 같은 기준을 공유한다.
 - `_debugCurrentLevel`은 현재 플레이 레벨(1-base)이며, 저장값 변환 없이 그대로 적용한다. (예: Current Level=4 → 1~3 클리어, 4가 현재 위치)
 - 실제 저장 데이터(PlayerPrefs/서버)는 변경되지 않는다. DDOL 싱글톤이므로 Lobby에서 진입하면 Lobby 인스턴스 값이 유지되고, Level 씬을 직접 열면 해당 씬 오버라이드가 적용된다. 테스트 후 반드시 체크박스를 해제할 것.
 
@@ -33,11 +34,10 @@ flowchart LR
   LPM -->|PlayerPrefs| Local[CurrentLevel]
   LPM -->|"GetMyData Insert UpdateV2"| BE[LEVEL_PROGRESS]
   Login[GoogleLoginManager.OnLoginSucceed] --> LPM
-  LPM -->|ApplyToMissionTable| Table[LevelMissionTableData]
-  Table --> Map[LevelMapManager]
-  Table --> UI[LevelUIButtonController]
-  LPM -->|OnProgressChanged| Map
-  LPM -->|OnProgressChanged| UI
+  LPM -->|OnProgressChanged| Map[LevelMapManager]
+  LPM -->|OnProgressChanged| UI[LevelUIButtonController]
+  Map -->|"PeekEffectiveCurrentLevel"| LPM
+  UI -->|"PeekEffectiveCurrentLevel"| LPM
 ```
 
 ## 로그인 시 Max 병합
@@ -76,8 +76,9 @@ classDiagram
     +OnProgressChanged Action$
     +int CurrentLevel
     +NotifyLevelCleared(int levelNumber)
-    +ApplyToMissionTable(LevelMissionTableData table)
-    -GetEffectiveCurrentLevel() int
+    +GetEffectiveCurrentLevel() int
+    +PeekEffectiveCurrentLevel() int$
+    +IsLevelUnlocked(int levelIndex) bool$
     -SyncWithServer(bool isSucceed)
     -FetchGameData()
     -TrySyncProgressToServer()
@@ -89,12 +90,12 @@ classDiagram
 
   class LevelMissionTableData {
     +GetMission(int levelIndex)
-    +GetLastConsecutiveClearLevel()
-    +GetLastCompletedLevelIndex()
+    +GetLastConsecutiveClearLevel(int currentLevel)
+    +GetLastCompletedLevelIndex(int currentLevel)
   }
 
   MissionManager --> LevelProgressManager : NotifyLevelCleared
-  LevelProgressManager --> LevelMissionTableData : ApplyToMissionTable
+  LevelMissionTableData ..> LevelProgressManager : currentLevel 인자
 ```
 
 ## 뒤끝 테이블

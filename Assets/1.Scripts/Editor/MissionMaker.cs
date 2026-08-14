@@ -24,7 +24,6 @@ public sealed class MissionMaker : EditorWindow
     [SerializeField] private MissionData _missionAsset;
     [SerializeField] private bool _eraseMode;
     [SerializeField] private bool _isHard;
-    [SerializeField] private bool _isClear;
     [SerializeField] private MissionType _missionType = MissionType.ScoreGoal;
     [SerializeField] private int _targetScore;
 
@@ -91,10 +90,7 @@ public sealed class MissionMaker : EditorWindow
             typeof(MissionData),
             false);
 
-        EditorGUILayout.BeginHorizontal();
         _isHard = EditorGUILayout.ToggleLeft("Is Hard", _isHard, GUILayout.Width(80f));
-        _isClear = EditorGUILayout.ToggleLeft("Is Clear", _isClear, GUILayout.Width(80f));
-        EditorGUILayout.EndHorizontal();
 
         EditorGUI.BeginDisabledGroup(true);
         EditorGUILayout.EnumPopup("Mission Type (Auto)", _missionType);
@@ -461,7 +457,6 @@ public sealed class MissionMaker : EditorWindow
 
         _boardSize = Mathf.Clamp(_missionAsset.boardSize, MinBoardSize, MaxBoardSize);
         _isHard = _missionAsset.isHard;
-        _isClear = _missionAsset.isClear;
         _targetScore = _missionAsset.targetScore;
         LoadGemTargetsFromAsset(_missionAsset);
         _filledCells.Clear();
@@ -553,7 +548,6 @@ public sealed class MissionMaker : EditorWindow
         _missionAsset.boardSize = _boardSize;
         _missionAsset.filledCells = ExportFilledCells();
         _missionAsset.isHard = _isHard;
-        _missionAsset.isClear = _isClear;
         _missionAsset.missionType = _missionType;
         _missionAsset.targetScore = _targetScore;
         _missionAsset.timeLimitSeconds = 0f;
@@ -590,7 +584,6 @@ public sealed class MissionMaker : EditorWindow
         temp.boardSize = _boardSize;
         temp.filledCells = ExportFilledCells();
         temp.isHard = _isHard;
-        temp.isClear = _isClear;
         temp.missionType = _missionType;
         temp.targetScore = _targetScore;
         temp.timeLimitSeconds = 0f;

@@ -15,9 +15,6 @@ public class MissionData : ScriptableObject
     [Tooltip("하드 미션 여부")]
     public bool isHard;
 
-    [Tooltip("클리어 여부")]
-    public bool isClear;
-
     [Tooltip("미션 종류")]
     public MissionType missionType;
 
@@ -34,7 +31,6 @@ public class MissionData : ScriptableObject
     public float timeLimitSeconds;
 
     public bool IsHard => isHard;
-    public bool IsClear => isClear;
     public MissionType MissionType => missionType;
     public int TargetScore => targetScore;
 

@@ -80,7 +80,6 @@ classDiagram
     +int boardSize
     +List~FilledCellData~ filledCells
     +bool isHard
-    +bool isClear
     +MissionType missionType
     +int targetScore
     +CountIceCells()
@@ -115,9 +114,10 @@ classDiagram
 
 ## Mission Maker
 
-`MissionMaker`는 보드 채움 + 미션 메타(`isHard` / `isClear` / `missionType`)를
+`MissionMaker`는 보드 채움 + 미션 메타(`isHard` / `missionType`)를
 `MissionData` ScriptableObject로 저장한다.
 ScoreGoal일 때만 `targetScore`를 편집한다 (시간 제한 없음).
+해금/클리어 진행도는 `LevelProgressManager.currentLevel`이 담당한다.
 
 ## 인스펙터 설정
 

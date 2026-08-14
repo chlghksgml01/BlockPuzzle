@@ -21,8 +21,11 @@ public class LevelMissionTableData : ScriptableObject
         return _missions[levelIndex];
     }
 
-    /// <summary>레벨 1부터 연속으로 IsClear인 마지막 레벨 (1-base). 없으면 -1.</summary>
-    public int GetLastConsecutiveClearLevel()
+    /// <summary>
+    /// 레벨 1부터 연속으로 해금된 마지막 레벨 (1-base). 없으면 -1.
+    /// currentLevel은 1-base 현재 플레이 레벨이며, 인덱스 i는 i &lt; currentLevel 이면 해금.
+    /// </summary>
+    public int GetLastConsecutiveClearLevel(int currentLevel)
     {
         if (_missions == null)
             return -1;
@@ -30,7 +33,7 @@ public class LevelMissionTableData : ScriptableObject
         for (int i = 0; i < _missions.Length; i++)
         {
             MissionData mission = _missions[i];
-            if (mission == null || !mission.IsClear)
+            if (mission == null || i >= currentLevel)
                 return i;
         }
 
@@ -38,12 +41,12 @@ public class LevelMissionTableData : ScriptableObject
     }
 
     /// <summary>
-    /// 실제 클리어 완료된 마지막 레벨 (1-base).
-    /// IsClear는 '플레이 가능'까지 포함하므로, 연속 구간 끝(현재 플레이 레벨)은 제외한다.
+    /// 실제 클리어 완료된 마지막 레벨 인덱스 (0-base).
+    /// 해금 구간은 '플레이 가능'까지 포함하므로, 연속 구간 끝(현재 플레이 레벨)은 제외한다.
     /// </summary>
-    public int GetLastCompletedLevelIndex()
+    public int GetLastCompletedLevelIndex(int currentLevel)
     {
-        int lastConsecutiveClearLevel = GetLastConsecutiveClearLevel();
+        int lastConsecutiveClearLevel = GetLastConsecutiveClearLevel(currentLevel);
 
         if (lastConsecutiveClearLevel <= 0)
             return -1;
@@ -60,12 +63,12 @@ public class LevelMissionTableData : ScriptableObject
     /// 다음에 플레이할 레벨(해금되었지만 아직 완료되지 않음)의 인덱스 (0-base).
     /// 전체 레벨을 모두 클리어해 다음 레벨이 없으면 -1.
     /// </summary>
-    public int GetCurrentPlayableLevelIndex()
+    public int GetCurrentPlayableLevelIndex(int currentLevel)
     {
         if (_missions == null || _missions.Length == 0)
             return -1;
 
-        int lastConsecutiveClearLevel = GetLastConsecutiveClearLevel();
+        int lastConsecutiveClearLevel = GetLastConsecutiveClearLevel(currentLevel);
         int consecutiveClearIndex = lastConsecutiveClearLevel - 1;
 
         if (consecutiveClearIndex < 0)

@@ -50,14 +50,13 @@ public sealed class LevelNodeView : MonoBehaviour
         OnClicked?.Invoke(NodeIndex);
     }
 
-    public void Bind(int nodeIndex, Vector2 anchoredPosition, MissionData missionData, bool isCurrent)
+    public void Bind(int nodeIndex, Vector2 anchoredPosition, MissionData missionData, bool isCurrent, bool isUnlocked)
     {
         NodeIndex = nodeIndex;
         RectTransform.anchoredPosition = anchoredPosition;
         gameObject.name = $"LevelNode_{nodeIndex + 1}";
 
-        bool isClear = missionData != null && missionData.IsClear;
-        bool isCompleted = isClear && !isCurrent;
+        bool isCompleted = isUnlocked && !isCurrent;
 
         if (_levelText != null)
         {
@@ -65,14 +64,14 @@ public sealed class LevelNodeView : MonoBehaviour
             _levelText.color = isCompleted ? _clearTextColor : _defaultTextColor;
         }
 
-        ApplyNodeVisual(missionData, isClear, isCurrent);
+        ApplyNodeVisual(missionData, isUnlocked, isCurrent);
     }
 
     /// <summary>
     /// 노드 상태를 3단계(잠김 → 현재(해금됨, 미완료) → 완료)로 시각화한다.
     /// isCurrent가 우선하며, 그 다음 완료 여부, 마지막으로 잠김 상태를 적용한다.
     /// </summary>
-    private void ApplyNodeVisual(MissionData missionData, bool isClear, bool isCurrent)
+    private void ApplyNodeVisual(MissionData missionData, bool isUnlocked, bool isCurrent)
     {
         if (_hardIcon != null)
             _hardIcon.SetActive(missionData != null && missionData.IsHard);
@@ -83,7 +82,7 @@ public sealed class LevelNodeView : MonoBehaviour
         Sprite sprite;
         if (isCurrent && _currentSprite != null)
             sprite = _currentSprite;
-        else if (isClear)
+        else if (isUnlocked)
             sprite = _clearSprite;
         else
             sprite = _defaultSprite;

@@ -70,8 +70,6 @@ public class LevelMapManager : MonoBehaviour
 
     private void Awake()
     {
-        ApplyProgressToMissionTable();
-
         int totalLevelCount = _missionTable != null ? _missionTable.LevelCount : 0;
 
         _layout = new LevelMapLayout(_patternData);
@@ -99,7 +97,6 @@ public class LevelMapManager : MonoBehaviour
     {
         _scrollRect.onValueChanged.AddListener(OnScrollChanged);
         LevelProgressManager.OnProgressChanged += OnLevelProgressChanged;
-        ApplyProgressToMissionTable();
         _virtualizer.Refresh();
     }
 
@@ -111,17 +108,8 @@ public class LevelMapManager : MonoBehaviour
 
     private void OnLevelProgressChanged()
     {
-        ApplyProgressToMissionTable();
         if (_virtualizer != null)
             _virtualizer.Refresh();
-    }
-
-    private void ApplyProgressToMissionTable()
-    {
-        if (_missionTable == null)
-            return;
-
-        LevelProgressManager.Instance.ApplyToMissionTable(_missionTable);
     }
 
     private void OnScrollChanged(Vector2 _)
@@ -135,7 +123,7 @@ public class LevelMapManager : MonoBehaviour
         if (mission == null)
             return;
 
-        if (!mission.IsClear)
+        if (!LevelProgressManager.IsLevelUnlocked(levelIndex))
             return;
 
         if (_levelUIButtonController != null)

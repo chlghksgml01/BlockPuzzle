@@ -75,7 +75,7 @@ classDiagram
         +RectTransform RectTransform
         +int NodeIndex
         +event Action~int~ OnClicked
-        +Bind(nodeIndex, anchoredPosition, missionData, isCurrent)
+        +Bind(nodeIndex, anchoredPosition, missionData, isCurrent, isUnlocked)
     }
 
     class LevelRoadView {
@@ -100,13 +100,13 @@ classDiagram
 
 ### 노드 시각 상태 (3단계)
 
-`MissionData.isClear`는 "완료"와 "해금(다음 플레이 가능)"을 모두 `true`로 나타내는 단일 플래그이므로, 노드 스프라이트만으로는 이 둘을 구분할 수 없다. 이를 구분하기 위해 `LevelMissionTableData.GetCurrentPlayableLevelIndex()`로 "해금되었지만 아직 완료하지 않은" 단일 인덱스를 별도로 계산하고, `LevelMapVirtualizer.Refresh()`가 매 바인딩마다 `isCurrent` 여부를 함께 넘긴다.
+해금 여부는 `MissionData`가 아니라 `LevelProgressManager`의 `effectiveCurrentLevel`에서 파생한다 (`levelIndex < currentLevel`). 완료와 현재 위치를 구분하기 위해 `LevelMissionTableData.GetCurrentPlayableLevelIndex(currentLevel)`로 "해금되었지만 아직 완료하지 않은" 단일 인덱스를 계산하고, `LevelMapVirtualizer.Refresh()`가 매 바인딩마다 `isCurrent` / `isUnlocked`를 함께 넘긴다.
 
 | 상태 | 조건 | 스프라이트 |
 |------|------|-----------|
-| 잠김 | `isClear == false` | `_defaultSprite` |
-| 현재(해금, 미완료) | 해당 인덱스가 `GetCurrentPlayableLevelIndex()`와 일치 | `_currentSprite` |
-| 완료 | `isClear == true` 이고 현재 위치가 아님 | `_clearSprite` |
+| 잠김 | `isUnlocked == false` | `_defaultSprite` |
+| 현재(해금, 미완료) | 해당 인덱스가 `GetCurrentPlayableLevelIndex(currentLevel)`와 일치 | `_currentSprite` |
+| 완료 | `isUnlocked == true` 이고 현재 위치가 아님 | `_clearSprite` |
 
 `_currentSprite`가 비어 있으면(미할당) 기존처럼 완료 스프라이트로 대체된다.
 
@@ -121,7 +121,6 @@ classDiagram
         +int boardSize
         +List~FilledCellData~ filledCells
         +bool isHard
-        +bool isClear
         +MissionType missionType
         +int targetScore
         +CountIceCells() int
@@ -154,9 +153,9 @@ classDiagram
         -MissionData[] _missions
         +int LevelCount
         +GetMission(levelIndex) MissionData
-        +GetLastConsecutiveClearLevel() int
-        +GetLastCompletedLevelIndex() int
-        +GetCurrentPlayableLevelIndex() int
+        +GetLastConsecutiveClearLevel(int currentLevel) int
+        +GetLastCompletedLevelIndex(int currentLevel) int
+        +GetCurrentPlayableLevelIndex(int currentLevel) int
     }
 
     class MissionPopupUI {

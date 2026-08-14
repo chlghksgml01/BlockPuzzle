@@ -18,7 +18,7 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
     public static event Action OnProgressChanged;
 
     [Header("Debug/Test")]
-    [Tooltip("체크하면 실제 저장된 진행도 대신 아래 Current Level을 기준으로 isClear를 강제 적용한다. 테스트 종료 후 반드시 해제할 것")]
+    [Tooltip("체크하면 실제 저장된 진행도 대신 아래 Current Level을 사용한다. 테스트 종료 후 반드시 해제할 것")]
     [SerializeField] private bool _useDebugCurrentLevel = false;
 
     [Tooltip("테스트용 현재 플레이 레벨 (1-base). N 입력 시 1~(N-1) 클리어, N이 현재 위치. _useDebugCurrentLevel이 체크된 경우에만 사용됨")]
@@ -75,38 +75,34 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
     }
 
     /// <summary>
-    /// 유효 진행도 기준으로 MissionData.isClear를 재적용한다.
-    /// isClear = (levelIndex &lt; effectiveCurrentLevel) → 완료 레벨 + 다음 플레이 가능 레벨 해금.
-    /// Debug 오버라이드가 켜져 있으면 저장된 진행도 대신 그 기준을 쓴다.
-    /// </summary>
-    public void ApplyToMissionTable(LevelMissionTableData table)
-    {
-        if (table == null)
-            return;
-
-        int currentLevel = GetEffectiveCurrentLevel();
-
-        int levelCount = table.LevelCount;
-        for (int i = 0; i < levelCount; i++)
-        {
-            MissionData mission = table.GetMission(i);
-            if (mission == null)
-                continue;
-
-            mission.isClear = i < currentLevel;
-        }
-    }
-
-    /// <summary>
-    /// Apply에 사용할 currentLevel.
+    /// 해금 판정에 쓸 currentLevel (1-base).
     /// Debug ON이면 인스펙터 Current Level, OFF면 실제 저장값.
+    /// 레벨 인덱스 i는 i &lt; EffectiveCurrentLevel 이면 해금(완료 + 현재 플레이 가능).
     /// </summary>
-    private int GetEffectiveCurrentLevel()
+    public int GetEffectiveCurrentLevel()
     {
         if (!_useDebugCurrentLevel)
             return _currentLevel;
 
         return Mathf.Max(DefaultCurrentLevel, _debugCurrentLevel);
+    }
+
+    /// <summary>인스턴스가 없으면 기본값(1). 있으면 GetEffectiveCurrentLevel.</summary>
+    public static int PeekEffectiveCurrentLevel()
+    {
+        if (!HasInstance)
+            return DefaultCurrentLevel;
+
+        return Instance.GetEffectiveCurrentLevel();
+    }
+
+    /// <summary>levelIndex(0-base)가 해금되었는지. 인스턴스가 없으면 기본 진행도(레벨 1) 기준.</summary>
+    public static bool IsLevelUnlocked(int levelIndex)
+    {
+        if (levelIndex < 0)
+            return false;
+
+        return levelIndex < PeekEffectiveCurrentLevel();
     }
 
     private void SyncWithServer(bool isSucceed)
