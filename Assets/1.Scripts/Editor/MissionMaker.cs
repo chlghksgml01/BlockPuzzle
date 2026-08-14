@@ -247,8 +247,13 @@ public sealed class MissionMaker : EditorWindow
 
         EditorGUI.DrawRect(cellRect, new Color(1f, 1f, 1f, isFilled ? 0.04f : 0.08f));
 
-        if (isFilled && TryGetSpriteByName(spriteName, out Sprite sprite))
-            DrawSprite(InsetRect(cellRect, 2f), sprite);
+        if (isFilled)
+        {
+            if (TryGetSpriteByName(spriteName, out Sprite sprite))
+                DrawSprite(InsetRect(cellRect, 2f), sprite);
+            else
+                EditorGUI.DrawRect(InsetRect(cellRect, 2f), new Color(0.85f, 0.35f, 0.2f, 0.75f));
+        }
 
         Handles.color = new Color(0f, 0f, 0f, 0.25f);
         Handles.DrawWireCube(cellRect.center, cellRect.size);
@@ -405,6 +410,10 @@ public sealed class MissionMaker : EditorWindow
         return blockSprites[_selectedSpriteIndex];
     }
 
+    /// <summary>
+    /// 에셋의 spriteName(stone03)과 팔레트 스프라이트 이름(stone03_0)을 매칭한다.
+    /// 런타임 MissionBoardController.ResolveSprite와 동일한 규칙.
+    /// </summary>
     private bool TryGetSpriteByName(string spriteName, out Sprite sprite)
     {
         sprite = null;
@@ -412,17 +421,31 @@ public sealed class MissionMaker : EditorWindow
         if (string.IsNullOrEmpty(spriteName) || blockSprites == null)
             return false;
 
+        Sprite prefixMatch = null;
         for (int i = 0; i < blockSprites.Length; i++)
         {
             Sprite candidate = blockSprites[i];
-            if (candidate != null && candidate.name == spriteName)
+            if (candidate == null)
+                continue;
+
+            if (candidate.name == spriteName)
             {
                 sprite = candidate;
                 return true;
             }
+
+            if (prefixMatch == null &&
+                candidate.name.StartsWith(spriteName, System.StringComparison.OrdinalIgnoreCase))
+            {
+                prefixMatch = candidate;
+            }
         }
 
-        return false;
+        if (prefixMatch == null)
+            return false;
+
+        sprite = prefixMatch;
+        return true;
     }
 
     private void ClearAllCells()
