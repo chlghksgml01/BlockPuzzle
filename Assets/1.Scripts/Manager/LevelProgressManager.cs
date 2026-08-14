@@ -18,10 +18,10 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
     public static event Action OnProgressChanged;
 
     [Header("Debug/Test")]
-    [Tooltip("체크하면 실제 저장된 진행도 대신 아래 Current Level을 사용한다. 테스트 종료 후 반드시 해제할 것")]
+    [Tooltip("에디터 전용. 체크하면 실제 저장된 진행도 대신 아래 Current Level을 사용한다. 테스트 종료 후 반드시 해제할 것")]
     [SerializeField] private bool _useDebugCurrentLevel = false;
 
-    [Tooltip("테스트용 현재 플레이 레벨 (1-base). N 입력 시 1~(N-1) 클리어, N이 현재 위치. _useDebugCurrentLevel이 체크된 경우에만 사용됨")]
+    [Tooltip("에디터 전용 현재 플레이 레벨 (1-base). N 입력 시 1~(N-1) 클리어, N이 현재 위치. _useDebugCurrentLevel이 체크된 경우에만 사용됨")]
     [SerializeField] private int _debugCurrentLevel = 1;
 
     private int _currentLevel;
@@ -29,6 +29,17 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
 
     /// <summary>현재 플레이 레벨 번호 (1-base). 미진행은 1. Debug 오버라이드는 포함하지 않는다.</summary>
     public int CurrentLevel => _currentLevel;
+
+    protected override void Awake()
+    {
+#if UNITY_EDITOR
+        // DDOL 싱글톤이 이미 있으면 이 오브젝트는 파괴된다.
+        // 현재 씬에 지정한 Debug/Test 값을 살아있는 인스턴스로 넘긴다.
+        if (HasInstance && Instance != this)
+            Instance.ApplyIncomingDebugOverride(_useDebugCurrentLevel, _debugCurrentLevel);
+#endif
+        base.Awake();
+    }
 
     protected override void OnAwake()
     {
@@ -81,20 +92,42 @@ public class LevelProgressManager : Singleton<LevelProgressManager>
     /// </summary>
     public int GetEffectiveCurrentLevel()
     {
-        if (!_useDebugCurrentLevel)
-            return _currentLevel;
-
-        return Mathf.Max(DefaultCurrentLevel, _debugCurrentLevel);
+#if UNITY_EDITOR
+        if (_useDebugCurrentLevel)
+            return Mathf.Max(DefaultCurrentLevel, _debugCurrentLevel);
+#endif
+        return _currentLevel;
     }
 
     /// <summary>인스턴스가 없으면 기본값(1). 있으면 GetEffectiveCurrentLevel.</summary>
     public static int PeekEffectiveCurrentLevel()
     {
-        if (!HasInstance)
+        LevelProgressManager manager = HasInstance
+            ? Instance
+            : FindFirstObjectByType<LevelProgressManager>();
+
+        if (manager == null)
             return DefaultCurrentLevel;
 
-        return Instance.GetEffectiveCurrentLevel();
+        return manager.GetEffectiveCurrentLevel();
     }
+
+#if UNITY_EDITOR
+    /// <summary>
+    /// 씬에 배치된 중복 인스턴스가 파괴되기 전에 Debug/Test 값을 넘긴다.
+    /// Lobby DDOL 인스턴스가 살아 있어도 Level 씬 오버라이드가 적용되게 한다.
+    /// </summary>
+    private void ApplyIncomingDebugOverride(bool useDebug, int debugLevel)
+    {
+        int clamped = Mathf.Max(DefaultCurrentLevel, debugLevel);
+        if (_useDebugCurrentLevel == useDebug && _debugCurrentLevel == clamped)
+            return;
+
+        _useDebugCurrentLevel = useDebug;
+        _debugCurrentLevel = clamped;
+        OnProgressChanged?.Invoke();
+    }
+#endif
 
     /// <summary>levelIndex(0-base)가 해금되었는지. 인스턴스가 없으면 기본 진행도(레벨 1) 기준.</summary>
     public static bool IsLevelUnlocked(int levelIndex)

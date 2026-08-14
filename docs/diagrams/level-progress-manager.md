@@ -21,10 +21,12 @@
 
 ## 테스트용 진행도 오버라이드
 
-- Debug 설정은 `LevelProgressManager` 인스펙터의 `Debug/Test` 섹션(`_useDebugCurrentLevel`, `_debugCurrentLevel`)에 둔다.
-- UI/맵 조회는 항상 `PeekEffectiveCurrentLevel()`을 사용하므로, `LevelMapManager` / `LevelUIButtonController` / `MissionManager`가 같은 기준을 공유한다.
+- Debug 설정은 `LevelProgressManager` 인스펙터의 `Debug/Test` 섹션(`_useDebugCurrentLevel`, `_debugCurrentLevel`)에 둔다. **에디터 전용**이며 빌드에는 적용되지 않는다.
+- UI/맵 조회는 항상 `PeekEffectiveCurrentLevel()` → `GetEffectiveCurrentLevel()`을 사용한다.
 - `_debugCurrentLevel`은 현재 플레이 레벨(1-base)이며, 저장값 변환 없이 그대로 적용한다. (예: Current Level=4 → 1~3 클리어, 4가 현재 위치)
-- 실제 저장 데이터(PlayerPrefs/서버)는 변경되지 않는다. DDOL 싱글톤이므로 Lobby에서 진입하면 Lobby 인스턴스 값이 유지되고, Level 씬을 직접 열면 해당 씬 오버라이드가 적용된다. 테스트 후 반드시 체크박스를 해제할 것.
+- 실제 저장 데이터(PlayerPrefs/서버)는 변경되지 않는다.
+- DDOL 싱글톤이 이미 있어도, 새로 로드된 씬의 Debug/Test 값은 파괴 전에 살아있는 인스턴스로 복사된다. (Lobby → Level이어도 Level 씬에 켠 오버라이드가 적용됨)
+- 플레이 모드에서 값을 바꿀 때는 Hierarchy의 `DontDestroyOnLoad` 인스턴스를 수정해야 즉시 반영된다. 테스트 후 반드시 체크박스를 해제할 것.
 
 ## 동기화 흐름
 
@@ -79,6 +81,8 @@ classDiagram
     +GetEffectiveCurrentLevel() int
     +PeekEffectiveCurrentLevel() int$
     +IsLevelUnlocked(int levelIndex) bool$
+    #Awake()
+    -ApplyIncomingDebugOverride(bool useDebug, int debugLevel)
     -SyncWithServer(bool isSucceed)
     -FetchGameData()
     -TrySyncProgressToServer()

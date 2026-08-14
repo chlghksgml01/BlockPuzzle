@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: 1fa452f854e7d6d498bc6ebd8fc69cc6
+guid: e44a023c66dbdbb459792ea2b8802317
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 138497922071592890
-    second: TimeIcon_Mission_0
+      213: -7158602188489396529
+    second: free-icon-star-5451843_0
+  - first:
+      213: -3153816438176834828
+    second: free-icon-star-5451843_1
+  - first:
+      213: -1073559604468208357
+    second: free-icon-star-5451843_2
+  - first:
+      213: -5231804986676295359
+    second: free-icon-star-5451843_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +122,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: TimeIcon_Mission_0
+      name: free-icon-star-5451843_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 94
-        height: 120
+        x: 31
+        y: 175
+        width: 64
+        height: 37
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +137,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: abff437502b0ce100800000000000000
-      internalID: 138497922071592890
+      spriteID: fce61cacc3987ac90800000000000000
+      internalID: -7158602188489396529
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free-icon-star-5451843_1
+      rect:
+        serializedVersion: 2
+        x: 63
+        y: 81
+        width: 386
+        height: 370
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4fa9eabb8a46b34d0800000000000000
+      internalID: -3153816438176834828
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free-icon-star-5451843_2
+      rect:
+        serializedVersion: 2
+        x: 416
+        y: 175
+        width: 65
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1da67a4a33f911f0800000000000000
+      internalID: -1073559604468208357
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: free-icon-star-5451843_3
+      rect:
+        serializedVersion: 2
+        x: 244
+        y: 20
+        width: 24
+        height: 67
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 149ca0b7515e467b0800000000000000
+      internalID: -5231804986676295359
       vertices: []
       indices: 
       edges: []
@@ -148,7 +223,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      TimeIcon_Mission_0: 138497922071592890
+      free-icon-star-5451843_0: -7158602188489396529
+      free-icon-star-5451843_1: -3153816438176834828
+      free-icon-star-5451843_2: -1073559604468208357
+      free-icon-star-5451843_3: -5231804986676295359
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -883,12 +883,12 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6938410572846193025, guid: e5b8c1a9472f4d6e8a0b3c5d7e9f1a2b, type: 3}
-      propertyPath: _useDebugCurrentLevel
-      value: 1
+      propertyPath: _debugCurrentLevel
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 6938410572846193025, guid: e5b8c1a9472f4d6e8a0b3c5d7e9f1a2b, type: 3}
-      propertyPath: _debugCurrentLevel
-      value: 3
+      propertyPath: _useDebugCurrentLevel
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1397,7 +1397,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Level 1
+  m_text: Level 5
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 10247029dae368345b52f90975544dce, type: 2}
   m_sharedMaterial: {fileID: -8401363481842351713, guid: 10247029dae368345b52f90975544dce, type: 2}
@@ -1943,8 +1943,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -100.90051, y: -44.633087}
-  m_SizeDelta: {x: 107.39011, y: 139.3786}
+  m_AnchoredPosition: {x: -91.6, y: -44.633}
+  m_SizeDelta: {x: 117.3618, y: 117.3619}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1057943812
 MonoBehaviour:
@@ -1966,7 +1966,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: d3f02ac77a7673d459de9414e734a152, type: 3}
+  m_Sprite: {fileID: 21300000, guid: e44a023c66dbdbb459792ea2b8802317, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4259,7 +4259,7 @@ GameObject:
   - component: {fileID: 2104157809}
   - component: {fileID: 2104157808}
   m_Layer: 5
-  m_Name: Time
+  m_Name: Score
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4304,7 +4304,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 0:00
+  m_text: 100
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ade2fda866e746643b50b58f5b36a689, type: 2}
   m_sharedMaterial: {fileID: -8401363481842351713, guid: ade2fda866e746643b50b58f5b36a689, type: 2}
