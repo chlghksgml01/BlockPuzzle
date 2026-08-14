@@ -10,43 +10,37 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ba71b0134e7ecb049b6db5f04a391c86, type: 3}
-  m_Name: Mission_ice
+  m_Name: MissionData4
   m_EditorClassIdentifier: Assembly-CSharp::MissionData
   boardSize: 9
   filledCells:
-  - x: 6
-    y: 4
-    spriteName: ice01
+  - x: 3
+    y: 2
+    spriteName: stone03
+  - x: 5
+    y: 2
+    spriteName: stone03
   - x: 2
-    y: 7
-    spriteName: ice01
+    y: 2
+    spriteName: stone03
+  - x: 3
+    y: 6
+    spriteName: stone03
+  - x: 6
+    y: 2
+    spriteName: stone03
   - x: 2
     y: 6
-    spriteName: ice01
-  - x: 2
-    y: 5
-    spriteName: ice01
-  - x: 2
-    y: 4
-    spriteName: ice01
-  - x: 6
-    y: 5
-    spriteName: ice01
+    spriteName: stone03
   - x: 6
     y: 6
-    spriteName: ice01
-  - x: 6
-    y: 7
-    spriteName: ice01
-  - x: 2
-    y: 8
-    spriteName: ice01
-  - x: 6
-    y: 8
-    spriteName: ice01
-  isHard: 1
+    spriteName: stone03
+  - x: 5
+    y: 6
+    spriteName: stone03
+  isHard: 0
   isClear: 0
-  missionType: 2
+  missionType: 1
   gemTargets: []
-  targetScore: 0
+  targetScore: 700
   timeLimitSeconds: 0

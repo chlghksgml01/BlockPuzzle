@@ -10,19 +10,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ba71b0134e7ecb049b6db5f04a391c86, type: 3}
-  m_Name: Mission_Gem
+  m_Name: MissionData7
   m_EditorClassIdentifier: Assembly-CSharp::MissionData
   boardSize: 9
-  filledCells: []
+  filledCells:
+  - x: 4
+    y: 4
+    spriteName: grass01
+  - x: 4
+    y: 3
+    spriteName: grass01
+  - x: 3
+    y: 4
+    spriteName: grass01
+  - x: 4
+    y: 5
+    spriteName: grass01
+  - x: 5
+    y: 4
+    spriteName: grass01
   isHard: 0
-  isClear: 1
-  missionType: 4
-  gemTargets:
-  - gemType: 0
-    count: 2
-  - gemType: 1
-    count: 3
-  - gemType: 2
-    count: 5
-  targetScore: 0
+  isClear: 0
+  missionType: 3
+  gemTargets: []
+  targetScore: 1000
   timeLimitSeconds: 0

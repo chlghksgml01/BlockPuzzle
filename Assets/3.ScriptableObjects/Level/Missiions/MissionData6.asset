@@ -10,37 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ba71b0134e7ecb049b6db5f04a391c86, type: 3}
-  m_Name: Mission_Grass
+  m_Name: MissionData6
   m_EditorClassIdentifier: Assembly-CSharp::MissionData
   boardSize: 9
   filledCells:
-  - x: 6
+  - x: 4
     y: 4
     spriteName: grass01
-  - x: 2
-    y: 7
-    spriteName: grass01
-  - x: 2
-    y: 6
-    spriteName: grass01
-  - x: 2
-    y: 5
-    spriteName: grass01
-  - x: 2
-    y: 4
-    spriteName: grass01
-  - x: 6
-    y: 5
-    spriteName: grass01
-  - x: 6
-    y: 6
-    spriteName: grass01
-  - x: 6
-    y: 7
-    spriteName: grass01
-  isHard: 1
+  isHard: 0
   isClear: 0
   missionType: 3
   gemTargets: []
-  targetScore: 0
+  targetScore: 1000
   timeLimitSeconds: 0
