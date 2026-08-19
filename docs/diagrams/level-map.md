@@ -206,17 +206,15 @@ sequenceDiagram
     participant Ctx as LevelSessionContext
     participant Init as InGameInitializer
     participant IGM as InGameManager
-    participant BM as BoardManager
 
     UI->>Ctx: BeginLevel(levelIndex, missionTable)
     UI->>UI: LoadScene(LevelInGame)
     Init->>IGM: Initialize(context)
-    IGM->>BM: PlayIntro(HandleIntroCompleted)
-    BM->>BM: PlayIntroDominoEffect
+    IGM->>IGM: StartLevelGame (인트로 생략)
     IGM->>IGM: ApplyLevelBoardLayout / BeginMissionProgressTracking
     IGM->>IGM: SpawnBlocksInSlots()
 ```
 
 - `MissionData`가 보드 크기와 초기 채움 칸을 정의한다.
-- 인트로 도미노 연출이 끝난 뒤(`HandleIntroCompleted`) 슬롯 블록을 스폰한다.
+- LevelInGame은 Classic과 달리 `PlayIntro`를 건너뛰고 바로 미션 보드와 슬롯을 준비한다.
 - 레벨 모드에서는 Classic 저장(`InGameSaveStorage`)을 사용하지 않는다.

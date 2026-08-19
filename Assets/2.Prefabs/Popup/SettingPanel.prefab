@@ -235,14 +235,14 @@ MonoBehaviour:
       - m_Target: {fileID: 3535347366334861255}
         m_TargetAssemblyTypeName: SettingPanel, Assembly-CSharp
         m_MethodName: Home
-        m_Mode: 1
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 0
+          m_BoolArgument: 1
         m_CallState: 2
 --- !u!114 &3699675700956164842
 MonoBehaviour:
@@ -1265,6 +1265,7 @@ MonoBehaviour:
   _duration: 0.3
   _soundSlider: {fileID: 8093050983908631662}
   _vibrateSlider: {fileID: 2519288288001139262}
+  _scoreUI: {fileID: 0}
 --- !u!225 &7149487964676852906
 CanvasGroup:
   m_ObjectHideFlags: 0

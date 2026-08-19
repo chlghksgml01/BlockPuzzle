@@ -569,7 +569,9 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     private void StartLevelGame()
     {
         ClearAllSlots();
-        BeginIntroThenSpawnBlocks();
+        // LevelInGame은 도미노 인트로 없이 바로 미션 보드와 슬롯을 준비한다.
+        _spawnBlocksAfterIntro = true;
+        HandleIntroCompleted();
     }
 
     private void BeginIntroThenSpawnBlocks()

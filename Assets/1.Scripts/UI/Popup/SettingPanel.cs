@@ -40,10 +40,11 @@ public class SettingPanel : BaseOptionUI, IInitializable
         LeaderboardManager.Instance.UpdateBestScore(_scoreSystem.CurrentScore);
     }
 
-    public override void Home()
+    public override void Home(bool isLobby)
     {
-        base.Home();
-        LeaderboardManager.Instance.UpdateBestScore(_scoreSystem.CurrentScore);
+        base.Home(isLobby);
+        if (LeaderboardManager.HasInstance)
+            LeaderboardManager.Instance.UpdateBestScore(_scoreSystem.CurrentScore);
     }
 
     // UI에서 호출

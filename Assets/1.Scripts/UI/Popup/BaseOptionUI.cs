@@ -8,11 +8,14 @@ public class BaseOptionUI : BasePopupUI
         Close();
     }
 
-    public virtual void Home()
+    public virtual void Home(bool isLobby)
     {
-        InGameManager.Instance.ResetGame();
+        if (InGameManager.HasInstance)
+        {
+            InGameManager.Instance.ResetGame();
+        }
         Close();
-        SceneLoadManager.LoadScene(SceneName.Lobby);
+        SceneLoadManager.LoadScene(isLobby ? SceneName.Lobby : SceneName.Level);
     }
 
     public override void Close()

@@ -33,8 +33,7 @@ MonoBehaviour:
     y: 5
     spriteName: stone03
   isHard: 0
-  isClear: 0
   missionType: 1
   gemTargets: []
-  targetScore: 500
+  targetScore: 300
   timeLimitSeconds: 0
