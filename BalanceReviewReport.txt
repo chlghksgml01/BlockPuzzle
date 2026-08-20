@@ -1,13 +1,76 @@
 검수 시작...
-[Mission_Gem]
-(검수 실패 — Console 로그 확인)
+[MissionData1]
+```json
+{"missionName":"MissionData1","riskLevel":"low","issues":[],"suggestion":"No issues found. A 9x9 board with targetScore 300 is very modest (a single line clear yields ~45 points, so a handful of clears suffice), making this an appropriate non-hard mission."}
+```
 
-[Mission_Grass]
-(검수 실패 — Console 로그 확인)
+[MissionData2]
+```json
+{"missionName":"MissionData2","riskLevel":"medium","issues":["targetScore of 300 is extremely low for a 9x9 board; a single line clear yields approximately 45 points, so the goal can be reached within just a few line clears, making this mission trivially easy for a non-hard mission and barely distinguishable from having no score goal at all","isHard is false, which is consistent with an easy target, but the target is so low it may not provide meaningful gameplay engagement"],"suggestion":"Raise targetScore to a value that requires sustained play on a 9x9 board; a range of 1500–3000 would better reflect a normal (non-hard) ScoreGoal mission, ensuring players must clear multiple lines across several turns to succeed."}
+```
 
-[Mission_ice]
-(검수 실패 — Console 로그 확인)
+[MissionData3]
+```json
+{"missionName":"MissionData3","riskLevel":"high","issues":["targetScore of 500 is extremely low for a 10x10 board; a single line clear yields approximately 50 points (boardSize * 5), meaning only ~10 line clears are needed to win, making this trivially easy","isHard is flagged true but the target score is far too low to constitute a hard difficulty"],"suggestion":"Increase targetScore significantly to match hard difficulty on a 10x10 board; a hard ScoreGoal on this board size should target several thousand points (e.g., 5000–10000+) to require sustained play and combo efficiency"}
+```
 
-[Mission_Score]
-(검수 실패 — Console 로그 확인)
+[MissionData4]
+```json
+{"missionName":"MissionData4","riskLevel":"low","issues":[],"suggestion":"No issues found. A 10x10 board with targetScore 700 is modest and attainable; each line clear yields approximately 50 base points, so roughly 14 line clears suffice, which is reasonable for a non-hard mission."}
+```
+
+[MissionData5]
+```json
+{"missionName":"MissionData5","riskLevel":"high","issues":["targetScore of 1000 is extremely low for an 8x8 board; a single line clear yields approximately 40 base points, and basic placement scores accumulate quickly, making 1000 reachable within very few moves","isHard is flagged true but the target score is trivially achievable, indicating a difficulty mismatch"],"suggestion":"Raise targetScore significantly (e.g., 8000–15000 or higher) to reflect a genuinely hard difficulty on an 8x8 board, or set isHard to false if the intent is an easy introductory ScoreGoal mission."}
+```
+
+[MissionData6]
+```json
+{"missionName":"MissionData6","riskLevel":"low","issues":[],"suggestion":"Mission appears balanced. A single grass cell on a 9x9 board with 1 pre-filled cell is a very easy clear condition, consistent with isHard: false. No issues detected."}
+```
+
+[MissionData7]
+```json
+{"missionName":"MissionData7","riskLevel":"low","issues":[],"suggestion":"Mission looks well-balanced. A 9x9 board with 5 grass cells and low initial fill (5 filled cells) presents a manageable early-game clear with minimal spreading risk. isHard=false is appropriate for this light configuration."}
+```
+
+[MissionData8]
+```json
+{"missionName":"MissionData8","riskLevel":"medium","issues":["grassCellCount is only 4 on an 8x8 board with filledCellCount of 4, resulting in very low initial density (4/64 ≈ 6.25%). The board has a large number of empty spaces, which means grass can spread extensively over time if lines are not cleared promptly, potentially making the late game harder than intended for a straightforward mission.","isHard is flagged true, but with only 4 grass cells on a 64-cell board, the initial clear condition is trivially small. The difficulty would only justify isHard if grass spreading is intended to be the primary challenge, but the low starting count and low board density make it likely easier than a hard mission should be."],"suggestion":"Either increase grassCellCount and/or filledCellCount to raise initial board pressure and better justify the isHard flag, or set isHard to false to accurately reflect the low starting difficulty. If the intent is to challenge players through spreading mechanics, consider increasing grassCellCount to at least 10–15 cells on an 8x8 board."}
+```
+
+[MissionData9]
+```json
+{"missionName":"MissionData9","riskLevel":"medium","issues":["grassCellCount of 9 on a 9x9 board (81 cells) with only 9 pre-filled cells leaves a large amount of empty space, increasing the risk of grass spreading significantly over multiple turns if lines are not cleared promptly, which could escalate difficulty beyond a typical hard mission","isHard is marked true, but with only 9 grass cells on a 9x9 board the initial target count is low; the spread mechanic is the primary difficulty driver, making the early game feel easy and only becoming hard if the player fails to clear lines — this creates inconsistent difficulty perception"],"suggestion":"Either increase grassCellCount to better reflect a consistently hard experience from the start (e.g., 20+ cells spread across the board), or increase filledCellCount to reduce empty spreading space, ensuring the hard difficulty flag is warranted throughout the mission rather than only conditionally."}
+```
+
+[MissionData10]
+```json
+{"missionName": "MissionData10", "riskLevel": "medium", "issues": ["grassCellCount of 8 on a 10x10 board (100 cells) with only 8 pre-filled cells leaves a large number of empty spaces, which increases the risk of grass spreading significantly if lines are not cleared promptly, potentially making the late game harder than intended", "isHard is true, but the initial grassCellCount of 8 is relatively low; however, the large empty board amplifies spreading risk, making the hard flag a borderline match — spreading mechanics may justify isHard, but initial density alone does not clearly support it"], "suggestion": "Consider increasing grassCellCount or filledCellCount to raise initial board pressure and better justify isHard. Alternatively, if the intent is to create difficulty through spreading mechanics on a sparse board, the design is valid but should be verified through playtesting to confirm the spread pressure consistently produces hard-level difficulty."}
+```
+
+[MissionData11]
+```json
+{"missionName":"MissionData11","riskLevel":"low","issues":[],"suggestion":"No issues found. A single ice cell on a 9x9 board with minimal pre-filled density is a straightforward, easy mission that correctly matches isHard=false."}
+```
+
+[MissionData12]
+```json
+{"missionName":"MissionData12","riskLevel":"low","issues":[],"suggestion":"No issues found. 8 ice cells on a 10x10 board with 8 pre-filled cells is a straightforward, easy mission that correctly matches isHard: false."}
+```
+
+[MissionData13]
+```json
+{"missionName":"MissionData13","riskLevel":"medium","issues":["iceCellCount is only 4 on an 8x8 board with filledCellCount of 4, meaning all filled cells are ice cells with no additional pre-filled pressure. This is a very low target count for a hard-flagged mission.","With only 4 ice cells and a largely empty board, the player has ample space to maneuver and clear lines easily, making this mission unlikely to feel hard.","isHard flag appears mismatched: the low ice cell count and low board density suggest an easy-to-medium difficulty, not a hard one."],"suggestion":"Either increase iceCellCount (and corresponding filledCellCount) to raise board density and clearing difficulty, or set isHard to false to correctly reflect the easy nature of this mission."}
+```
+
+[MissionData14]
+```json
+{"missionName":"MissionData14","riskLevel":"low","issues":[],"suggestion":"No issues found. 9 ice cells on a 9x9 board with 9 pre-filled cells is a reasonable, straightforward mission. isHard=false is consistent with the low ice cell count and low board density."}
+```
+
+[MissionData15]
+```json
+{"missionName":"MissionData15","riskLevel":"medium","issues":["isHard is true, but with only 12 ice cells on a 10x10 board and 12 pre-filled cells, the mission is relatively straightforward — the ice cells likely coincide with or are near the filled cells, offering limited spread and complexity that does not justify a hard designation."],"suggestion":"Either increase iceCellCount (e.g., 25+ cells, preferably with higher-stage ice) to warrant the isHard flag, or set isHard to false to accurately reflect the low-complexity clear condition."}
+```
 

@@ -9,6 +9,11 @@ public class GoogleLoginManager : Singleton<GoogleLoginManager>
 
     public static event Action<bool> OnLoginSucceed;
 
+    private bool _isLoggingIn;
+
+    /// <summary>뒤끝 페더레이션 로그인 완료 여부.</summary>
+    public bool IsLoggedIn => Backend.IsLogin;
+
     public void StartGoogleLogin()
     {
         if (Backend.IsLogin)
@@ -18,12 +23,21 @@ public class GoogleLoginManager : Singleton<GoogleLoginManager>
             return;
         }
 
+        if (_isLoggingIn)
+        {
+            UpdateStatus("Login already in progress.");
+            return;
+        }
+
+        _isLoggingIn = true;
         UpdateStatus("Starting Google Login...");
         TheBackend.ToolKit.GoogleLogin.Android.GoogleLogin(true, GoogleLoginCallback);
     }
 
     private void GoogleLoginCallback(bool isSuccess, string errorMessage, string token)
     {
+        _isLoggingIn = false;
+
         if (isSuccess == false)
         {
             UpdateStatus("<color=red>Google Login Failed:</color>\n" + errorMessage);

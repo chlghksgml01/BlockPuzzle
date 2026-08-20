@@ -42,6 +42,32 @@ flowchart LR
   UI -->|"PeekEffectiveCurrentLevel"| LPM
 ```
 
+## Lobby Level 버튼 로그인 게이트
+
+레벨 진행도는 서버와 Max 병합하므로, Lobby의 Level 버튼은 미로그인 시 구글 로그인을 먼저 수행한다. 에디터는 Android 구글 로그인을 쓸 수 없어 바로 Level 씬으로 진입한다.
+
+```mermaid
+sequenceDiagram
+  participant Lobby as MainUIButtonController
+  participant Login as GoogleLoginManager
+  participant LPM as LevelProgressManager
+  participant Scene as SceneLoadManager
+
+  Lobby->>Login: Level 버튼 클릭
+  alt 이미 로그인됨
+    Lobby->>Scene: LoadScene(Level)
+  else 미로그인
+    Lobby->>Login: StartGoogleLogin()
+    Login-->>Lobby: OnLoginSucceed(true/false)
+    Login-->>LPM: OnLoginSucceed(true) 시 SyncWithServer
+    alt 성공
+      Lobby->>Scene: LoadScene(Level)
+    else 실패
+      Lobby-->>Lobby: 로비 유지
+    end
+  end
+```
+
 ## 로그인 시 Max 병합
 
 ```mermaid

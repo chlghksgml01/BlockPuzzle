@@ -18,8 +18,7 @@ MonoBehaviour:
     y: 4
     spriteName: ice01
   isHard: 0
-  isClear: 0
   missionType: 2
   gemTargets: []
-  targetScore: 1000
+  targetScore: 0
   timeLimitSeconds: 0

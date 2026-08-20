@@ -1655,7 +1655,7 @@ GameObject:
   - component: {fileID: 1710385351}
   - component: {fileID: 1710385352}
   m_Layer: 5
-  m_Name: Main
+  m_Name: MainUIButtonController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

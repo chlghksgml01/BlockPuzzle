@@ -51,7 +51,6 @@ MonoBehaviour:
     y: 7
     spriteName: ice01
   isHard: 1
-  isClear: 0
   missionType: 2
   gemTargets: []
   targetScore: 0

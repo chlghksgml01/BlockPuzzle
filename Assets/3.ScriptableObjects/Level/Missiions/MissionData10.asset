@@ -12,26 +12,70 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba71b0134e7ecb049b6db5f04a391c86, type: 3}
   m_Name: MissionData10
   m_EditorClassIdentifier: Assembly-CSharp::MissionData
-  boardSize: 9
+  boardSize: 10
   filledCells:
+  - x: 5
+    y: 5
+    spriteName: grass01
+  - x: 8
+    y: 1
+    spriteName: grass01
+  - x: 1
+    y: 8
+    spriteName: grass01
+  - x: 8
+    y: 8
+    spriteName: grass01
+  - x: 1
+    y: 1
+    spriteName: grass01
   - x: 4
     y: 4
     spriteName: grass01
-  - x: 7
+  - x: 4
+    y: 5
+    spriteName: grass01
+  - x: 5
+    y: 4
+    spriteName: grass01
+  - x: 0
+    y: 0
+    spriteName: grass01
+  - x: 0
     y: 1
     spriteName: grass01
   - x: 1
-    y: 7
+    y: 0
     spriteName: grass01
-  - x: 7
-    y: 7
+  - x: 0
+    y: 8
+    spriteName: grass01
+  - x: 0
+    y: 9
     spriteName: grass01
   - x: 1
+    y: 9
+    spriteName: grass01
+  - x: 8
+    y: 9
+    spriteName: grass01
+  - x: 9
+    y: 9
+    spriteName: grass01
+  - x: 9
+    y: 8
+    spriteName: grass01
+  - x: 8
+    y: 0
+    spriteName: grass01
+  - x: 9
+    y: 0
+    spriteName: grass01
+  - x: 9
     y: 1
     spriteName: grass01
   isHard: 1
-  isClear: 0
   missionType: 3
   gemTargets: []
-  targetScore: 1000
+  targetScore: 0
   timeLimitSeconds: 0

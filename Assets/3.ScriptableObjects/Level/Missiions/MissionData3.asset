@@ -17,5 +17,5 @@ MonoBehaviour:
   isHard: 1
   missionType: 1
   gemTargets: []
-  targetScore: 500
+  targetScore: 800
   timeLimitSeconds: 0

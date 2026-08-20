@@ -12,23 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba71b0134e7ecb049b6db5f04a391c86, type: 3}
   m_Name: MissionData8
   m_EditorClassIdentifier: Assembly-CSharp::MissionData
-  boardSize: 9
+  boardSize: 8
   filledCells:
   - x: 0
-    y: 8
+    y: 7
     spriteName: grass01
-  - x: 8
-    y: 8
+  - x: 7
+    y: 7
     spriteName: grass01
-  - x: 8
+  - x: 7
     y: 0
     spriteName: grass01
   - x: 0
     y: 0
     spriteName: grass01
-  isHard: 1
-  isClear: 0
+  isHard: 0
   missionType: 3
   gemTargets: []
-  targetScore: 1000
+  targetScore: 0
   timeLimitSeconds: 0

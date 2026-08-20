@@ -12,13 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba71b0134e7ecb049b6db5f04a391c86, type: 3}
   m_Name: MissionData5
   m_EditorClassIdentifier: Assembly-CSharp::MissionData
-  boardSize: 9
+  boardSize: 8
   filledCells:
   - x: 4
     y: 4
     spriteName: stone03
-  isHard: 1
-  isClear: 0
+  - x: 3
+    y: 4
+    spriteName: stone03
+  - x: 3
+    y: 3
+    spriteName: stone03
+  - x: 4
+    y: 3
+    spriteName: stone03
+  isHard: 0
   missionType: 1
   gemTargets: []
   targetScore: 1000
