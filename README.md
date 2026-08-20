@@ -54,6 +54,7 @@
 - `ScoreSystem`(ScriptableObject)에서 배치 점수, 라인 클리어 점수, 멀티라인 보너스, 콤보 보너스 계산
 - 점수 변경 이벤트(`OnScoreChanged`)로 UI를 갱신하고 보너스 이벤트(`OnBonusScore`)로 연출 트리거 분리
 - 최고 점수 갱신 여부를 이벤트로 전달해 게임오버 배너 표시를 제어
+- 최고 점수(`BestScore`)는 Classic에서만 저장한다. LevelInGame 점수는 리더보드에 반영하지 않음
 
 ### 4. 저장/로드
 - `InGameManager`: 보드 채움 상태, 슬롯 블록(sprite/offset), 점수 상태를 `InGameSaveData`로 직렬화

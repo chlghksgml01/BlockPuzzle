@@ -252,7 +252,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
             ApplyLevelBoardLayout();
             BeginMissionProgressTracking();
         }
-        _scoreSystem.ResetScore();
+        _scoreSystem.ResetScore(!IsLevelMissionActive());
         SaveGame();
         ScheduleGameOverIfNeeded();
         _boardManger.ActivateGrayscale(false);
@@ -618,7 +618,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         MissionManager.Instance.BeginProgressTracking();
     }
 
-    private static bool IsLevelMissionActive()
+    public static bool IsLevelMissionActive()
     {
         if (MissionManager.Instance != null)
             return MissionManager.Instance.IsActive;

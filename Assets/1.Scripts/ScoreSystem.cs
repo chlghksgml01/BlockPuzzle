@@ -123,9 +123,12 @@ public class ScoreSystem : ScriptableObject
         OnScoreChanged?.Invoke(prevScore, CurrentScore);
     }
 
-    public void ResetScore()
+    public void ResetScore(bool recordHighScore = true)
     {
-        CheckHighScore(LeaderboardManager.Instance.BestScore);
+        // Classic만 최고점을 기록한다. LevelInGame 리셋은 recordHighScore=false로 호출한다.
+        if (recordHighScore)
+            CheckHighScore(LeaderboardManager.Instance.BestScore);
+
         int previousScore = CurrentScore;
         _currentPlaceCount = 0;
         _currentComboCount = 0;
