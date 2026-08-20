@@ -7,6 +7,7 @@ public class LevelUIButtonController : MonoBehaviour
     [Header("References")]
     [SerializeField] private Button _levelButton;
     [SerializeField] private Button _startButton;
+    [SerializeField] private Button _backButton;
     [SerializeField] private TextMeshProUGUI _currentLevelText;
     [SerializeField] private MissionPopupUI _missionPopupUI;
 
@@ -18,35 +19,55 @@ public class LevelUIButtonController : MonoBehaviour
 
     private void OnEnable()
     {
-        RefreshHighestClearedLevelDisplay();
+        LevelProgressManager.OnProgressChanged += OnLevelProgressChanged;
+        RefreshCurrentLevelDisplay();
+    }
+
+    private void OnDisable()
+    {
+        LevelProgressManager.OnProgressChanged -= OnLevelProgressChanged;
     }
 
     private void OnValidate()
     {
-        RefreshHighestClearedLevelDisplay();
+        RefreshCurrentLevelDisplay();
     }
 
     private void Start()
     {
         _levelButton.onClick.AddListener(MissionPopup);
         _startButton.onClick.AddListener(LoadScene);
+        _backButton.onClick.AddListener(() => SceneLoadManager.LoadScene(SceneName.Lobby));
     }
 
-    /// <summary>LevelButton에 클리어 진행 레벨을 표시한다.</summary>
-    private void RefreshHighestClearedLevelDisplay()
+    private void OnLevelProgressChanged()
+    {
+        RefreshCurrentLevelDisplay();
+    }
+
+    /// <summary>LevelButton에 현재 플레이 가능 레벨을 표시한다.</summary>
+    private void RefreshCurrentLevelDisplay()
     {
         if (_currentLevelText == null)
             return;
 
-        int nextLevel = _missionTable != null
-            ? _missionTable.GetLastConsecutiveClearLevel() + 1
-            : 0;
+        int playableLevel = 1;
+        if (_missionTable != null)
+        {
+            int consecutiveClear = _missionTable.GetLastConsecutiveClearLevel(
+                LevelProgressManager.PeekEffectiveCurrentLevel());
+            int levelCount = _missionTable.LevelCount;
+            if (consecutiveClear <= 0)
+                playableLevel = 1;
+            else if (levelCount > 0 && consecutiveClear >= levelCount)
+                playableLevel = levelCount;
+            else
+                playableLevel = consecutiveClear;
+        }
 
-        int displayLevel = nextLevel > 0 ? nextLevel : 1;
-
-        _currentLevelText.text = $"Level {displayLevel}";
-        _selectedLevel = displayLevel;
-        _nextLevel = displayLevel;
+        _currentLevelText.text = $"Level {playableLevel}";
+        _selectedLevel = playableLevel;
+        _nextLevel = playableLevel;
     }
 
     /// <summary>레벨 노드 선택 시 호출. levelIndex는 0-base. LevelButton 텍스트는 변경하지 않는다.</summary>

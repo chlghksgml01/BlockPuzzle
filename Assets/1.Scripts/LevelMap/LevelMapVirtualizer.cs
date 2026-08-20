@@ -120,13 +120,20 @@ public sealed class LevelMapVirtualizer
         else
             maxPairIndex = minPairIndex - 1;
 
+        int currentLevel = LevelProgressManager.PeekEffectiveCurrentLevel();
+        int currentPlayableLevelIndex = _missionTable != null
+            ? _missionTable.GetCurrentPlayableLevelIndex(currentLevel)
+            : -1;
+
         SyncActive(_activeNodes, _nodePool, minNodeIndex, maxNodeIndex,
             (index, view) =>
             {
                 MissionData mission = _missionTable != null
                     ? _missionTable.GetMission(index)
                     : null;
-                view.Bind(index, _layout.GetNodePosition(index), mission);
+                bool isCurrent = index == currentPlayableLevelIndex;
+                bool isUnlocked = mission != null && index < currentLevel;
+                view.Bind(index, _layout.GetNodePosition(index), mission, isCurrent, isUnlocked);
             });
 
         SyncActive(_activeRoads, _roadPool, minPairIndex, maxPairIndex,
@@ -149,8 +156,9 @@ public sealed class LevelMapVirtualizer
         if (_clearRoadPool == null)
             return;
 
+        int currentLevel = LevelProgressManager.PeekEffectiveCurrentLevel();
         int lastCompletedLevelIndex = _missionTable != null
-            ? _missionTable.GetLastCompletedLevelIndex()
+            ? _missionTable.GetLastCompletedLevelIndex(currentLevel)
             : -1;
 
         if (lastCompletedLevelIndex < 0)

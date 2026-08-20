@@ -97,7 +97,11 @@ public class MissionCollectFlyEffect : MonoBehaviour
         });
     }
 
-    private void OnDisable()
+    /// <summary>
+    /// 진행 중인 비행 연출을 즉시 중단한다.
+    /// onComplete는 호출하지 않아 Retry 시 이전 수집이 반영되지 않는다.
+    /// </summary>
+    public void CancelAll()
     {
         for (int i = 0; i < _activeFlies.Count; i++)
         {
@@ -109,5 +113,10 @@ public class MissionCollectFlyEffect : MonoBehaviour
         }
 
         _activeFlies.Clear();
+    }
+
+    private void OnDisable()
+    {
+        CancelAll();
     }
 }

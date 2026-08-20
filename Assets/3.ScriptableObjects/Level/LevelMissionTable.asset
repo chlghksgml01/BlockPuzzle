@@ -13,7 +13,18 @@ MonoBehaviour:
   m_Name: LevelMissionTable
   m_EditorClassIdentifier: Assembly-CSharp::LevelMissionTableData
   _missions:
-  - {fileID: 11400000, guid: a78b5a28edaae014aaffbcffffef3eb2, type: 2}
-  - {fileID: 11400000, guid: 297fd4af50674ec41bb167962d377025, type: 2}
-  - {fileID: 11400000, guid: 06a3c5041065f3842a8a25557c66085a, type: 2}
-  - {fileID: 11400000, guid: 7817c6d1cfea2bd4b9668b22640ca976, type: 2}
+  - {fileID: 11400000, guid: 635000a61b647da42bade3d1dac438fb, type: 2}
+  - {fileID: 11400000, guid: 6c156dca6328e2b47a68122428a7b80d, type: 2}
+  - {fileID: 11400000, guid: db32e08c7b66ebb4eabf74bede0151e0, type: 2}
+  - {fileID: 11400000, guid: 08b79923014b47e468089f2310fbda63, type: 2}
+  - {fileID: 11400000, guid: 875fadadbce8cc641a6892e9974e0d66, type: 2}
+  - {fileID: 11400000, guid: 0be59749f308a9d4bb38edd1ec3b4701, type: 2}
+  - {fileID: 11400000, guid: 1b6fc614f13ddd540a395e04ae72d222, type: 2}
+  - {fileID: 11400000, guid: 74f66a8617218a843b6b2482b55a15ad, type: 2}
+  - {fileID: 11400000, guid: 4d0114612edff334f9eabacc3aeadfc9, type: 2}
+  - {fileID: 11400000, guid: d570caccba0930941a4ab37da627a655, type: 2}
+  - {fileID: 11400000, guid: 30e211a70542f8d4385a7fb0af472338, type: 2}
+  - {fileID: 11400000, guid: bfcddcc16649b9b43ac2d9e5ee4c4ffe, type: 2}
+  - {fileID: 11400000, guid: aa8c7107da64e4449af714d142e77835, type: 2}
+  - {fileID: 11400000, guid: e4096a50b4e43a346975e171bacac7a5, type: 2}
+  - {fileID: 11400000, guid: 37b477028cf54f247836fd1ba93a2b69, type: 2}

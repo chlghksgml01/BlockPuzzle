@@ -36,13 +36,25 @@ public class SettingPanel : BaseOptionUI, IInitializable
     public override void Replay()
     {
         _scoreUI?.ResetScore();
+        TryRecordBestScore();
         base.Replay();
-        LeaderboardManager.Instance.UpdateBestScore(_scoreSystem.CurrentScore);
     }
 
-    public override void Home()
+    public override void Home(bool isLobby)
     {
-        base.Home();
+        TryRecordBestScore();
+        base.Home(isLobby);
+    }
+
+    private void TryRecordBestScore()
+    {
+        // LevelInGame 점수는 리더보드/최고점에 반영하지 않는다.
+        if (InGameManager.IsLevelMissionActive())
+            return;
+
+        if (!LeaderboardManager.HasInstance || _scoreSystem == null)
+            return;
+
         LeaderboardManager.Instance.UpdateBestScore(_scoreSystem.CurrentScore);
     }
 

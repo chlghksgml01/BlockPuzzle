@@ -1,0 +1,135 @@
+# LevelProgressManager 구조
+
+레벨 진행도(현재 플레이 레벨)의 로컬 영속화와 뒤끝 서버 동기화.
+
+## 책임 분리
+
+| 클래스 | 책임 |
+|--------|------|
+| `LevelProgressManager` | `currentLevel` 로컬/서버 동기화, Debug 오버라이드, 해금 판정 제공 |
+| `MissionManager` | 클리어 시 `NotifyLevelCleared` 호출 |
+| `LevelMapManager` / `LevelUIButtonController` | 맵 진입·진행 변경 시 UI refresh |
+| `LeaderboardManager` | 점수/랭킹만 담당 (레벨 진행과 분리) |
+
+## 저장 의미
+
+- `currentLevel`: 현재 플레이 레벨 번호 (1-base). 미진행 = `1`
+- 레벨 N 클리어 시 `currentLevel = N + 1`
+- 해금 판정: `levelIndex < effectiveCurrentLevel` (완료 레벨 + 다음 플레이 가능 레벨)
+  - 예: `effectiveCurrentLevel=4` → 레벨 1~3 완료, 레벨 4까지 해금
+- 해금 여부는 `MissionData`에 쓰지 않고 `GetEffectiveCurrentLevel()` / `IsLevelUnlocked()`로 조회한다.
+
+## 테스트용 진행도 오버라이드
+
+- Debug 설정은 `LevelProgressManager` 인스펙터의 `Debug/Test` 섹션(`_useDebugCurrentLevel`, `_debugCurrentLevel`)에 둔다. **에디터 전용**이며 빌드에는 적용되지 않는다.
+- UI/맵 조회는 항상 `PeekEffectiveCurrentLevel()` → `GetEffectiveCurrentLevel()`을 사용한다.
+- `_debugCurrentLevel`은 현재 플레이 레벨(1-base)이며, 저장값 변환 없이 그대로 적용한다. (예: Current Level=4 → 1~3 클리어, 4가 현재 위치)
+- 실제 저장 데이터(PlayerPrefs/서버)는 변경되지 않는다.
+- DDOL 싱글톤이 이미 있어도, 새로 로드된 씬의 Debug/Test 값은 파괴 전에 살아있는 인스턴스로 복사된다. (Lobby → Level이어도 Level 씬에 켠 오버라이드가 적용됨)
+- 플레이 모드에서 값을 바꿀 때는 Hierarchy의 `DontDestroyOnLoad` 인스턴스를 수정해야 즉시 반영된다. 테스트 후 반드시 체크박스를 해제할 것.
+
+## 동기화 흐름
+
+```mermaid
+flowchart LR
+  MM[MissionManager] -->|"NotifyLevelCleared"| LPM[LevelProgressManager]
+  LPM -->|PlayerPrefs| Local[CurrentLevel]
+  LPM -->|"GetMyData Insert UpdateV2"| BE[LEVEL_PROGRESS]
+  Login[GoogleLoginManager.OnLoginSucceed] --> LPM
+  LPM -->|OnProgressChanged| Map[LevelMapManager]
+  LPM -->|OnProgressChanged| UI[LevelUIButtonController]
+  Map -->|"PeekEffectiveCurrentLevel"| LPM
+  UI -->|"PeekEffectiveCurrentLevel"| LPM
+```
+
+## Lobby Level 버튼 로그인 게이트
+
+레벨 진행도는 서버와 Max 병합하므로, Lobby의 Level 버튼은 미로그인 시 구글 로그인을 먼저 수행한다. 에디터는 Android 구글 로그인을 쓸 수 없어 바로 Level 씬으로 진입한다.
+
+```mermaid
+sequenceDiagram
+  participant Lobby as MainUIButtonController
+  participant Login as GoogleLoginManager
+  participant LPM as LevelProgressManager
+  participant Scene as SceneLoadManager
+
+  Lobby->>Login: Level 버튼 클릭
+  alt 이미 로그인됨
+    Lobby->>Scene: LoadScene(Level)
+  else 미로그인
+    Lobby->>Login: StartGoogleLogin()
+    Login-->>Lobby: OnLoginSucceed(true/false)
+    Login-->>LPM: OnLoginSucceed(true) 시 SyncWithServer
+    alt 성공
+      Lobby->>Scene: LoadScene(Level)
+    else 실패
+      Lobby-->>Lobby: 로비 유지
+    end
+  end
+```
+
+## 로그인 시 Max 병합
+
+```mermaid
+sequenceDiagram
+  participant Login as GoogleLoginManager
+  participant LPM as LevelProgressManager
+  participant Prefs as PlayerPrefs
+  participant BE as Backend_LEVEL_PROGRESS
+
+  Login->>LPM: OnLoginSucceed(true)
+  LPM->>BE: GetMyData
+  alt row exists
+    BE-->>LPM: serverCurrentLevel
+    LPM->>LPM: merged = Max(local, server)
+    LPM->>Prefs: Save merged
+    LPM->>BE: UpdateV2(merged)
+    LPM-->>MapUI: OnProgressChanged
+  else no row
+    LPM->>BE: Insert(local)
+  end
+```
+
+## 클래스
+
+```mermaid
+classDiagram
+  class LevelProgressManager {
+    -string PrefsKey$
+    -string TableName$
+    -bool _useDebugCurrentLevel
+    -int _debugCurrentLevel
+    -int _currentLevel
+    -string _userIndate
+    +OnProgressChanged Action$
+    +int CurrentLevel
+    +NotifyLevelCleared(int levelNumber)
+    +GetEffectiveCurrentLevel() int
+    +PeekEffectiveCurrentLevel() int$
+    +IsLevelUnlocked(int levelIndex) bool$
+    #Awake()
+    -ApplyIncomingDebugOverride(bool useDebug, int debugLevel)
+    -SyncWithServer(bool isSucceed)
+    -FetchGameData()
+    -TrySyncProgressToServer()
+  }
+
+  class MissionManager {
+    -UnlockNextLevel()
+  }
+
+  class LevelMissionTableData {
+    +GetMission(int levelIndex)
+    +GetLastConsecutiveClearLevel(int currentLevel)
+    +GetLastCompletedLevelIndex(int currentLevel)
+  }
+
+  MissionManager --> LevelProgressManager : NotifyLevelCleared
+  LevelMissionTableData ..> LevelProgressManager : currentLevel 인자
+```
+
+## 뒤끝 테이블
+
+| 테이블 | 컬럼 | 타입 |
+|--------|------|------|
+| `LEVEL_PROGRESS` | `currentLevel` | Number (int) |

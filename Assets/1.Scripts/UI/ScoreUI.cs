@@ -30,26 +30,25 @@ public class ScoreUI : MonoBehaviour, IInitializable
 
     private void UpdateBestScore()
     {
-        if (LeaderboardManager.HasInstance)
-        {
-            _bestScore = LeaderboardManager.Instance.BestScore;
-            if (_bestScore != 0)
-            {
-                _bestScoreDisplay.UpdateDisplay(LeaderboardManager.Instance.BestScore);
-            }
-        }
+        if (!LeaderboardManager.HasInstance)
+            return;
+
+        _bestScore = LeaderboardManager.Instance.BestScore;
+        if (_bestScore != 0 && _bestScoreDisplay != null)
+            _bestScoreDisplay.UpdateDisplay(_bestScore);
     }
 
     private void RollUpdateScoreUI(int currentScore, int newScore)
     {
-        if (_scoreDisplay == null || _bestScoreDisplay == null)
+        if (_scoreDisplay == null)
             return;
 
         _scoreDisplay.ScoreRollUpdate(currentScore, newScore, _animationDuration);
         if (newScore > _bestScore)
         {
             _bestScore = newScore;
-            _bestScoreDisplay.UpdateDisplay(_bestScore);
+            if (_bestScoreDisplay != null)
+                _bestScoreDisplay.UpdateDisplay(_bestScore);
         }
     }
 

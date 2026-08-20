@@ -54,6 +54,7 @@
 - `ScoreSystem`(ScriptableObject)에서 배치 점수, 라인 클리어 점수, 멀티라인 보너스, 콤보 보너스 계산
 - 점수 변경 이벤트(`OnScoreChanged`)로 UI를 갱신하고 보너스 이벤트(`OnBonusScore`)로 연출 트리거 분리
 - 최고 점수 갱신 여부를 이벤트로 전달해 게임오버 배너 표시를 제어
+- 최고 점수(`BestScore`)는 Classic에서만 저장한다. LevelInGame 점수는 리더보드에 반영하지 않음
 
 ### 4. 저장/로드
 - `InGameManager`: 보드 채움 상태, 슬롯 블록(sprite/offset), 점수 상태를 `InGameSaveData`로 직렬화
@@ -68,6 +69,7 @@
 ### 6. 로비/리더보드/로그인 구성
 - `GoogleLoginManager`에서 구글 로그인 후 BackEnd 페더레이션 로그인 수행
 - `LeaderboardManager`가 로컬 최고점(PlayerPrefs)과 서버 데이터(`BEST_SCORE` 테이블) 동기화
+- `LevelProgressManager`가 현재 플레이 레벨(`currentLevel`)을 PlayerPrefs와 서버(`LEVEL_PROGRESS` 테이블)에 Max 병합 동기화
 - 랭킹 조회 결과를 `LeaderboardUI`에서 보여줌
 - 유저 고유 UUID의 앞 4자리를 조합한 기본 닉네임(Player_XXXX) 자동 생성, 닉네임 변경 가능
 
@@ -90,6 +92,8 @@ flowchart TB
     IGM -->|"save/load"| SAVE["InGameSaveStorage (PlayerPrefs JSON)"]
     IGM -->|"query/place"| BM
     SS -->|"new best"| LM
+
+    LPM["LevelProgressManager"] -->|"currentLevel"| LPSAVE["PlayerPrefs + LEVEL_PROGRESS"]
 ```
 
 ### 보드 도메인 구조

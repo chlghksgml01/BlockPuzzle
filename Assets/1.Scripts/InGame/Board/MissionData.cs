@@ -15,9 +15,6 @@ public class MissionData : ScriptableObject
     [Tooltip("하드 미션 여부")]
     public bool isHard;
 
-    [Tooltip("클리어 여부")]
-    public bool isClear;
-
     [Tooltip("미션 종류")]
     public MissionType missionType;
 
@@ -29,14 +26,13 @@ public class MissionData : ScriptableObject
     [Tooltip("클리어에 필요한 목표 점수 (ScoreGoal 미션용)")]
     public int targetScore;
 
-    [Tooltip("클리어 제한 시간 초 (ScoreGoal 미션용)")]
+    [HideInInspector]
+    [Tooltip("레거시 필드. ScoreGoal은 시간 제한 없이 목표 점수만 사용한다.")]
     public float timeLimitSeconds;
 
     public bool IsHard => isHard;
-    public bool IsClear => isClear;
     public MissionType MissionType => missionType;
     public int TargetScore => targetScore;
-    public float TimeLimitSeconds => timeLimitSeconds;
 
     /// <summary>보드에 배치된 ice 셀 개수.</summary>
     public int CountIceCells()

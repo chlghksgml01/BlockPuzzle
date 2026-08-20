@@ -69,10 +69,13 @@ classDiagram
     class LevelNodeView {
         -TMP_Text _levelText
         -Button _nodeButton
+        -Sprite _defaultSprite
+        -Sprite _clearSprite
+        -Sprite _currentSprite
         +RectTransform RectTransform
         +int NodeIndex
         +event Action~int~ OnClicked
-        +Bind(nodeIndex, anchoredPosition)
+        +Bind(nodeIndex, anchoredPosition, missionData, isCurrent, isUnlocked)
     }
 
     class LevelRoadView {
@@ -95,10 +98,22 @@ classDiagram
 
 노드 클릭 시 `LevelNodeView.OnClicked(nodeIndex)` 이벤트가 발생하고, `LevelMapVirtualizer`가 노드 생성 시점(풀링되므로 1회만)에 이를 `LevelMapManager.OpenMissionPopup`으로 구독시켜 전달한다. `LevelNodeView`는 `LevelMapManager`를 직접 참조하지 않는다(Action 기반 설계).
 
+### 노드 시각 상태 (3단계)
+
+해금 여부는 `MissionData`가 아니라 `LevelProgressManager`의 `effectiveCurrentLevel`에서 파생한다 (`levelIndex < currentLevel`). 완료와 현재 위치를 구분하기 위해 `LevelMissionTableData.GetCurrentPlayableLevelIndex(currentLevel)`로 "해금되었지만 아직 완료하지 않은" 단일 인덱스를 계산하고, `LevelMapVirtualizer.Refresh()`가 매 바인딩마다 `isCurrent` / `isUnlocked`를 함께 넘긴다.
+
+| 상태 | 조건 | 스프라이트 |
+|------|------|-----------|
+| 잠김 | `isUnlocked == false` | `_defaultSprite` |
+| 현재(해금, 미완료) | 해당 인덱스가 `GetCurrentPlayableLevelIndex(currentLevel)`와 일치 | `_currentSprite` |
+| 완료 | `isUnlocked == true` 이고 현재 위치가 아님 | `_clearSprite` |
+
+`_currentSprite`가 비어 있으면(미할당) 기존처럼 완료 스프라이트로 대체된다.
+
 ## 레벨 클리어 미션 데이터
 
 레벨마다 클리어 조건이 다르므로, `MissionData` 하나로 보드 배치와 미션 메타를 담는다.
-Ice/Grass/Gem 목표 개수는 `filledCells`에서 산출하고, ScoreGoal만 `targetScore` / `timeLimitSeconds`를 별도 필드로 둔다.
+Ice/Grass/Gem 목표 개수는 `filledCells`에서 산출하고, ScoreGoal만 `targetScore`를 별도 필드로 둔다 (시간 제한 없음).
 
 ```mermaid
 classDiagram
@@ -106,10 +121,8 @@ classDiagram
         +int boardSize
         +List~FilledCellData~ filledCells
         +bool isHard
-        +bool isClear
         +MissionType missionType
         +int targetScore
-        +float timeLimitSeconds
         +CountIceCells() int
         +CountGrassCells() int
         +BuildGemTargets() List~GemTargetInfo~
@@ -140,6 +153,9 @@ classDiagram
         -MissionData[] _missions
         +int LevelCount
         +GetMission(levelIndex) MissionData
+        +GetLastConsecutiveClearLevel(int currentLevel) int
+        +GetLastCompletedLevelIndex(int currentLevel) int
+        +GetCurrentPlayableLevelIndex(int currentLevel) int
     }
 
     class MissionPopupUI {
@@ -190,16 +206,15 @@ sequenceDiagram
     participant Ctx as LevelSessionContext
     participant Init as InGameInitializer
     participant IGM as InGameManager
-    participant BM as BoardManager
 
     UI->>Ctx: BeginLevel(levelIndex, missionTable)
     UI->>UI: LoadScene(LevelInGame)
     Init->>IGM: Initialize(context)
-    IGM->>BM: PrepareBoardSizeFromLayout(layout)
-    BM->>BM: GenerateBoard()
-    IGM->>BM: ApplyBoardLayout(layout, spriteResolver)
+    IGM->>IGM: StartLevelGame (인트로 생략)
+    IGM->>IGM: ApplyLevelBoardLayout / BeginMissionProgressTracking
     IGM->>IGM: SpawnBlocksInSlots()
 ```
 
 - `MissionData`가 보드 크기와 초기 채움 칸을 정의한다.
+- LevelInGame은 Classic과 달리 `PlayIntro`를 건너뛰고 바로 미션 보드와 슬롯을 준비한다.
 - 레벨 모드에서는 Classic 저장(`InGameSaveStorage`)을 사용하지 않는다.

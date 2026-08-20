@@ -100,9 +100,10 @@ public class ScoreSystem : ScriptableObject
 
     public void AddScore(int score)
     {
-        int newScore = CurrentScore + score;
-        OnScoreChanged?.Invoke(CurrentScore, newScore);
-        CurrentScore = newScore;
+        int previousScore = CurrentScore;
+        CurrentScore = previousScore + score;
+        // 구독자가 이벤트 시점에 CurrentScore를 읽어도 최신값이 되도록 먼저 반영한다.
+        OnScoreChanged?.Invoke(previousScore, CurrentScore);
     }
 
     public void ExportState(out int score, out int currentPlaceCount, out int currentComboCount)
@@ -122,12 +123,18 @@ public class ScoreSystem : ScriptableObject
         OnScoreChanged?.Invoke(prevScore, CurrentScore);
     }
 
-    public void ResetScore()
+    public void ResetScore(bool recordHighScore = true)
     {
-        CheckHighScore(LeaderboardManager.Instance.BestScore);
+        // Classic만 최고점을 기록한다. LevelInGame 리셋은 recordHighScore=false로 호출한다.
+        if (recordHighScore)
+            CheckHighScore(LeaderboardManager.Instance.BestScore);
+
+        int previousScore = CurrentScore;
         _currentPlaceCount = 0;
         _currentComboCount = 0;
         CurrentScore = 0;
+        // Retry/리셋 시 ScoreGoal HUD·ScoreUI가 0으로 동기화되도록 이벤트를 보낸다.
+        OnScoreChanged?.Invoke(previousScore, CurrentScore);
     }
 
     public void CheckHighScore(int bestScore)

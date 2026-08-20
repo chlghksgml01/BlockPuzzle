@@ -24,10 +24,8 @@ public sealed class MissionMaker : EditorWindow
     [SerializeField] private MissionData _missionAsset;
     [SerializeField] private bool _eraseMode;
     [SerializeField] private bool _isHard;
-    [SerializeField] private bool _isClear;
     [SerializeField] private MissionType _missionType = MissionType.ScoreGoal;
     [SerializeField] private int _targetScore;
-    [SerializeField] private float _timeLimitSeconds;
 
     [Header("Gem Targets")]
     [SerializeField] private int _gemPentagonCount;
@@ -92,10 +90,7 @@ public sealed class MissionMaker : EditorWindow
             typeof(MissionData),
             false);
 
-        EditorGUILayout.BeginHorizontal();
         _isHard = EditorGUILayout.ToggleLeft("Is Hard", _isHard, GUILayout.Width(80f));
-        _isClear = EditorGUILayout.ToggleLeft("Is Clear", _isClear, GUILayout.Width(80f));
-        EditorGUILayout.EndHorizontal();
 
         EditorGUI.BeginDisabledGroup(true);
         EditorGUILayout.EnumPopup("Mission Type (Auto)", _missionType);
@@ -104,7 +99,6 @@ public sealed class MissionMaker : EditorWindow
         if (_missionType == MissionType.ScoreGoal)
         {
             _targetScore = EditorGUILayout.IntField("Target Score", _targetScore);
-            _timeLimitSeconds = EditorGUILayout.FloatField("Time Limit (sec)", _timeLimitSeconds);
         }
 
         if (_missionType == MissionType.Gem)
@@ -253,8 +247,13 @@ public sealed class MissionMaker : EditorWindow
 
         EditorGUI.DrawRect(cellRect, new Color(1f, 1f, 1f, isFilled ? 0.04f : 0.08f));
 
-        if (isFilled && TryGetSpriteByName(spriteName, out Sprite sprite))
-            DrawSprite(InsetRect(cellRect, 2f), sprite);
+        if (isFilled)
+        {
+            if (TryGetSpriteByName(spriteName, out Sprite sprite))
+                DrawSprite(InsetRect(cellRect, 2f), sprite);
+            else
+                EditorGUI.DrawRect(InsetRect(cellRect, 2f), new Color(0.85f, 0.35f, 0.2f, 0.75f));
+        }
 
         Handles.color = new Color(0f, 0f, 0f, 0.25f);
         Handles.DrawWireCube(cellRect.center, cellRect.size);
@@ -411,6 +410,10 @@ public sealed class MissionMaker : EditorWindow
         return blockSprites[_selectedSpriteIndex];
     }
 
+    /// <summary>
+    /// 에셋의 spriteName(stone03)과 팔레트 스프라이트 이름(stone03_0)을 매칭한다.
+    /// 런타임 MissionBoardController.ResolveSprite와 동일한 규칙.
+    /// </summary>
     private bool TryGetSpriteByName(string spriteName, out Sprite sprite)
     {
         sprite = null;
@@ -418,17 +421,31 @@ public sealed class MissionMaker : EditorWindow
         if (string.IsNullOrEmpty(spriteName) || blockSprites == null)
             return false;
 
+        Sprite prefixMatch = null;
         for (int i = 0; i < blockSprites.Length; i++)
         {
             Sprite candidate = blockSprites[i];
-            if (candidate != null && candidate.name == spriteName)
+            if (candidate == null)
+                continue;
+
+            if (candidate.name == spriteName)
             {
                 sprite = candidate;
                 return true;
             }
+
+            if (prefixMatch == null &&
+                candidate.name.StartsWith(spriteName, System.StringComparison.OrdinalIgnoreCase))
+            {
+                prefixMatch = candidate;
+            }
         }
 
-        return false;
+        if (prefixMatch == null)
+            return false;
+
+        sprite = prefixMatch;
+        return true;
     }
 
     private void ClearAllCells()
@@ -463,9 +480,7 @@ public sealed class MissionMaker : EditorWindow
 
         _boardSize = Mathf.Clamp(_missionAsset.boardSize, MinBoardSize, MaxBoardSize);
         _isHard = _missionAsset.isHard;
-        _isClear = _missionAsset.isClear;
         _targetScore = _missionAsset.targetScore;
-        _timeLimitSeconds = _missionAsset.timeLimitSeconds;
         LoadGemTargetsFromAsset(_missionAsset);
         _filledCells.Clear();
 
@@ -556,10 +571,9 @@ public sealed class MissionMaker : EditorWindow
         _missionAsset.boardSize = _boardSize;
         _missionAsset.filledCells = ExportFilledCells();
         _missionAsset.isHard = _isHard;
-        _missionAsset.isClear = _isClear;
         _missionAsset.missionType = _missionType;
         _missionAsset.targetScore = _targetScore;
-        _missionAsset.timeLimitSeconds = _timeLimitSeconds;
+        _missionAsset.timeLimitSeconds = 0f;
         _missionAsset.gemTargets = ExportGemTargets();
 
         EditorUtility.SetDirty(_missionAsset);
@@ -593,10 +607,9 @@ public sealed class MissionMaker : EditorWindow
         temp.boardSize = _boardSize;
         temp.filledCells = ExportFilledCells();
         temp.isHard = _isHard;
-        temp.isClear = _isClear;
         temp.missionType = _missionType;
         temp.targetScore = _targetScore;
-        temp.timeLimitSeconds = _timeLimitSeconds;
+        temp.timeLimitSeconds = 0f;
         EditorGUIUtility.systemCopyBuffer = JsonUtility.ToJson(temp, true);
         Debug.Log("Board mission JSON copied to clipboard.");
         DestroyImmediate(temp);

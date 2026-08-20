@@ -33,6 +33,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     private Coroutine _gameOverCoroutine;
     private bool _isGameOverTriggered;
     private bool _subscriptionsBound;
+    private bool _spawnBlocksAfterIntro;
     private int _previousBestScore;
 
     private BoardManager _boardManger;
@@ -92,16 +93,15 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
         if (!hasData || isNewGame)
         {
-            if (!hasData)
-                SpawnBlocksInSlots();
-
-            EnableInteraction(false);
-            _boardManger.PlayIntro(HandleIntroCompleted);
+            // 점수 0 세이브 복원 시 슬롯 블록이 인트로보다 먼저 보이지 않도록 비운다.
+            ClearAllSlots();
+            BeginIntroThenSpawnBlocks();
         }
         else
+        {
             EnableInteraction(true);
-
-        ScheduleGameOverIfNeeded();
+            ScheduleGameOverIfNeeded();
+        }
     }
 
     private void HandleBlockPlaced(int blockShapeCount)
@@ -180,8 +180,12 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
         if (IsLevelMissionActive())
         {
+            // GameOverDelayCoroutine에서 그레이스케일 연출이 끝난 뒤 호출된다.
             if (MissionManager.Instance != null)
+            {
                 MissionManager.Instance.FailMission();
+                MissionManager.Instance.ShowFailResultPopup();
+            }
             return;
         }
 
@@ -190,6 +194,39 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         _gameOverUI.Open();
         SoundManager.Instance.PlaySFX(SFXType.Score);
         ResetGame();
+    }
+
+    /// <summary>
+    /// 미션 실패 연출: 그레이스케일 후 ResultPopup.
+    /// 배치 불가 등 GameOverDelayCoroutine을 거치지 않는 경로에서 사용한다.
+    /// </summary>
+    public void PresentMissionFailure()
+    {
+        if (_isGameOverTriggered)
+            return;
+
+        _isGameOverTriggered = true;
+        EnableInteraction(false);
+
+        if (_gameOverCoroutine != null)
+        {
+            StopCoroutine(_gameOverCoroutine);
+            _gameOverCoroutine = null;
+        }
+
+        if (MissionManager.Instance != null)
+            MissionManager.Instance.FailMission();
+
+        _gameOverCoroutine = StartCoroutine(MissionFailPresentationCoroutine());
+    }
+
+    private IEnumerator MissionFailPresentationCoroutine()
+    {
+        yield return PlayGameOverGrayscaleRoutine();
+        _gameOverCoroutine = null;
+
+        if (MissionManager.Instance != null)
+            MissionManager.Instance.ShowFailResultPopup();
     }
 
     public void ResetGame()
@@ -215,7 +252,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
             ApplyLevelBoardLayout();
             BeginMissionProgressTracking();
         }
-        _scoreSystem.ResetScore();
+        _scoreSystem.ResetScore(!IsLevelMissionActive());
         SaveGame();
         ScheduleGameOverIfNeeded();
         _boardManger.ActivateGrayscale(false);
@@ -243,14 +280,20 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         Debug.Log("wait gameOverDelaySeconds");
         yield return new WaitForSeconds(_gameOverDelaySeconds);
 
-        Debug.Log("wait grayEffectDuration");
-        SoundManager.Instance.PlaySFX(SFXType.GameOver);
-        _boardManger.ActivateGrayscale(true, _grayEffectDuration);
-        yield return new WaitForSeconds(_grayEffectDuration + 1f);
+        yield return PlayGameOverGrayscaleRoutine();
 
         _gameOverCoroutine = null;
 
         TriggerGameOverIfAllBlocksCannotPlace();
+    }
+
+    /// <summary>게임오버/미션 실패 공통: SFX + 보드 그레이스케일 연출 대기.</summary>
+    private IEnumerator PlayGameOverGrayscaleRoutine()
+    {
+        Debug.Log("wait grayEffectDuration");
+        SoundManager.Instance.PlaySFX(SFXType.GameOver);
+        _boardManger.ActivateGrayscale(true, _grayEffectDuration);
+        yield return new WaitForSeconds(_grayEffectDuration + 1f);
     }
 
     private void SetNewBest(int newBestScore)
@@ -525,10 +568,17 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
     private void StartLevelGame()
     {
-        SpawnBlocksInSlots();
+        ClearAllSlots();
+        // LevelInGame은 도미노 인트로 없이 바로 미션 보드와 슬롯을 준비한다.
+        _spawnBlocksAfterIntro = true;
+        HandleIntroCompleted();
+    }
+
+    private void BeginIntroThenSpawnBlocks()
+    {
+        _spawnBlocksAfterIntro = true;
         EnableInteraction(false);
         _boardManger.PlayIntro(HandleIntroCompleted);
-        ScheduleGameOverIfNeeded();
     }
 
     private void HandleIntroCompleted()
@@ -537,6 +587,12 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         {
             ApplyLevelBoardLayout();
             BeginMissionProgressTracking();
+        }
+
+        if (_spawnBlocksAfterIntro)
+        {
+            _spawnBlocksAfterIntro = false;
+            SpawnBlocksInSlots();
         }
 
         EnableInteraction(true);
@@ -562,7 +618,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         MissionManager.Instance.BeginProgressTracking();
     }
 
-    private static bool IsLevelMissionActive()
+    public static bool IsLevelMissionActive()
     {
         if (MissionManager.Instance != null)
             return MissionManager.Instance.IsActive;

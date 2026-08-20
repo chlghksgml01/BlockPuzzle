@@ -96,12 +96,20 @@ public class LevelMapManager : MonoBehaviour
     private void OnEnable()
     {
         _scrollRect.onValueChanged.AddListener(OnScrollChanged);
+        LevelProgressManager.OnProgressChanged += OnLevelProgressChanged;
         _virtualizer.Refresh();
     }
 
     private void OnDisable()
     {
         _scrollRect.onValueChanged.RemoveListener(OnScrollChanged);
+        LevelProgressManager.OnProgressChanged -= OnLevelProgressChanged;
+    }
+
+    private void OnLevelProgressChanged()
+    {
+        if (_virtualizer != null)
+            _virtualizer.Refresh();
     }
 
     private void OnScrollChanged(Vector2 _)
@@ -113,6 +121,9 @@ public class LevelMapManager : MonoBehaviour
     {
         MissionData mission = _missionTable.GetMission(levelIndex);
         if (mission == null)
+            return;
+
+        if (!LevelProgressManager.IsLevelUnlocked(levelIndex))
             return;
 
         if (_levelUIButtonController != null)

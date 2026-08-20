@@ -34,6 +34,10 @@ public class DraggableBlock : MonoBehaviour
     public Vector2Int GemTileOffset { get; private set; }
 
     public Sprite BlockSprite => _blockSprite;
+
+    /// <summary>보드에 실제로 보이는 대표 색 스프라이트. Gem 타일이 있으면 몸통 칸의 색(_gemBodySprite)을, 없으면 원본 블럭 색을 반환한다.</summary>
+    public Sprite VisibleBodySprite => HasGemTile && _gemBodySprite != null ? _gemBodySprite : _blockSprite;
+
     public RectTransform RectTransform => _rectTransform;
     private readonly Dictionary<Vector2Int, RectTransform> _tileByOffset = new Dictionary<Vector2Int, RectTransform>();
 

@@ -17,17 +17,27 @@ public class MissionHUD : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _levelText;
 
     [Header("Content")]
-    [Tooltip("아이콘/카운트/시간이 배치되는 HorizontalLayoutGroup 루트")]
+    [Tooltip("아이콘/카운트가 배치되는 HorizontalLayoutGroup 루트")]
     [SerializeField] private Transform _contentRoot;
 
     [Tooltip("목표 아이콘 프리팹 (루트에 Image)")]
     [SerializeField] private GameObject _iconPrefab;
 
-    [Tooltip("남은 개수 텍스트 프리팹 (루트에 TextMeshProUGUI)")]
+    [Tooltip("남은 개수/목표 점수 텍스트 프리팹 (루트에 TextMeshProUGUI)")]
     [SerializeField] private GameObject _countPrefab;
 
-    [Tooltip("남은 시간 텍스트 프리팹 (루트에 TextMeshProUGUI). 비우면 Count 프리팹을 재사용")]
-    [SerializeField] private GameObject _timePrefab;
+    [Tooltip("목표 점수 텍스트 프리팹 (ScoreGoal LayoutGroup용)")]
+    [SerializeField] private GameObject _scorePrefab;
+
+    [Header("ScoreGoal Current Score")]
+    [Tooltip("ScoreGoal 미션일 때만 활성화하는 현재 점수 루트 (Mission/Score)")]
+    [SerializeField] private GameObject _currentScoreRoot;
+
+    [Tooltip("현재 점수를 표시하는 NumberDisplay")]
+    [SerializeField] private NumberDisplay _currentScoreDisplay;
+
+    [Tooltip("점수 롤 애니메이션 시간(초)")]
+    [SerializeField] private float _scoreRollDuration = 0.5f;
 
     [Header("Icons")]
     [Tooltip("Ice 미션 아이콘")]
@@ -36,7 +46,7 @@ public class MissionHUD : MonoBehaviour
     [Tooltip("Grass 미션 아이콘")]
     [SerializeField] private Sprite _grassIcon;
 
-    [Tooltip("시간 제한 아이콘")]
+    [Tooltip("ScoreGoal 미션 아이콘")]
     [SerializeField] private Sprite _timeIcon;
 
     [Tooltip("Pentagon 보석 아이콘")]
@@ -49,20 +59,22 @@ public class MissionHUD : MonoBehaviour
     [SerializeField] private Sprite _starIcon;
 
     private readonly List<GameObject> _spawnedViews = new List<GameObject>();
-    private TextMeshProUGUI _timeText;
+    private TextMeshProUGUI _scoreGoalText;
     private TextMeshProUGUI _collectCountText;
     private RectTransform _collectIcon;
     private readonly Dictionary<GemType, TextMeshProUGUI> _gemCountTexts = new Dictionary<GemType, TextMeshProUGUI>();
     private readonly Dictionary<GemType, RectTransform> _gemIcons = new Dictionary<GemType, RectTransform>();
     private MissionType _builtForType = MissionType.None;
     private bool _isBuilt;
+    private int _displayedScore;
 
     private void OnEnable()
     {
+        EnsureCurrentScoreDisplay();
         MissionManager.OnMissionBound += HandleMissionBound;
         MissionManager.OnMissionCleared += HandleMissionCleared;
         MissionManager.OnProgressChanged += HandleProgressChanged;
-        MissionManager.OnTimeChanged += HandleTimeChanged;
+        MissionManager.OnScoreGoalProgressChanged += HandleScoreGoalProgressChanged;
         RefreshAll();
     }
 
@@ -71,7 +83,16 @@ public class MissionHUD : MonoBehaviour
         MissionManager.OnMissionBound -= HandleMissionBound;
         MissionManager.OnMissionCleared -= HandleMissionCleared;
         MissionManager.OnProgressChanged -= HandleProgressChanged;
-        MissionManager.OnTimeChanged -= HandleTimeChanged;
+        MissionManager.OnScoreGoalProgressChanged -= HandleScoreGoalProgressChanged;
+    }
+
+    private void EnsureCurrentScoreDisplay()
+    {
+        if (_currentScoreDisplay != null)
+            return;
+
+        if (_currentScoreRoot != null)
+            _currentScoreDisplay = _currentScoreRoot.GetComponent<NumberDisplay>();
     }
 
     /// <summary>Ice/Grass 수집 아이콘의 월드 좌표.</summary>
@@ -105,17 +126,24 @@ public class MissionHUD : MonoBehaviour
     {
         SetRootActive(false);
         ClearContent();
+        SetCurrentScoreActive(false);
     }
 
     private void HandleProgressChanged()
     {
         EnsureContentBuilt();
         UpdateProgressTexts();
+        RebuildLayout();
     }
 
-    private void HandleTimeChanged()
+    private void HandleScoreGoalProgressChanged(int previousScore, int newScore)
     {
-        UpdateTimeText();
+        EnsureContentBuilt();
+        if (_scoreGoalText != null && MissionManager.Instance != null)
+            _scoreGoalText.text = MissionManager.Instance.TargetScore.ToString();
+
+        RollCurrentScoreDisplay(previousScore, newScore);
+        RebuildLayout();
     }
 
     private void RefreshAll()
@@ -125,6 +153,7 @@ public class MissionHUD : MonoBehaviour
         {
             SetRootActive(false);
             ClearContent();
+            SetCurrentScoreActive(false);
             return;
         }
 
@@ -132,7 +161,7 @@ public class MissionHUD : MonoBehaviour
         UpdateLevelText(manager.CurrentLevelNumber);
         RebuildContent(manager);
         UpdateProgressTexts();
-        UpdateTimeText();
+        RebuildLayout();
     }
 
     private void UpdateLevelText(int levelNumber)
@@ -159,11 +188,16 @@ public class MissionHUD : MonoBehaviour
         _builtForType = manager.CurrentMissionType;
         _isBuilt = true;
 
+        bool isScoreGoal = manager.CurrentMissionType == MissionType.ScoreGoal;
+        SetCurrentScoreActive(isScoreGoal);
+        if (isScoreGoal)
+            ResetCurrentScoreDisplay(manager.CurrentScore);
+
         switch (manager.CurrentMissionType)
         {
             case MissionType.ScoreGoal:
                 SpawnIcon(_timeIcon);
-                _timeText = SpawnText(GetTimePrefab());
+                _scoreGoalText = SpawnText(_scorePrefab);
                 break;
 
             case MissionType.Ice:
@@ -229,21 +263,47 @@ public class MissionHUD : MonoBehaviour
                 break;
 
             case MissionType.ScoreGoal:
-                UpdateTimeText();
+                if (_scoreGoalText != null)
+                    _scoreGoalText.text = manager.TargetScore.ToString();
+                // 현재 점수는 OnScoreGoalProgressChanged에서 롤 갱신한다.
+                // 여기선 바인드/리셋 직후 표시값만 맞춘다.
+                if (_displayedScore != manager.CurrentScore)
+                    ResetCurrentScoreDisplay(manager.CurrentScore);
                 break;
         }
     }
 
-    private void UpdateTimeText()
+    private void SetCurrentScoreActive(bool active)
     {
-        if (_timeText == null)
+        if (_currentScoreRoot != null)
+            _currentScoreRoot.SetActive(active);
+
+        if (active)
+            EnsureCurrentScoreDisplay();
+    }
+
+    private void ResetCurrentScoreDisplay(int score)
+    {
+        EnsureCurrentScoreDisplay();
+        _displayedScore = score;
+        if (_currentScoreDisplay != null)
+            _currentScoreDisplay.UpdateDisplay(score);
+    }
+
+    private void RollCurrentScoreDisplay(int previousScore, int newScore)
+    {
+        EnsureCurrentScoreDisplay();
+        if (_currentScoreDisplay == null)
             return;
 
-        MissionManager manager = MissionManager.Instance;
-        if (manager == null)
+        _displayedScore = newScore;
+        if (previousScore == newScore)
+        {
+            _currentScoreDisplay.UpdateDisplay(newScore);
             return;
+        }
 
-        _timeText.text = FormatTime(manager.RemainingTimeSeconds);
+        _currentScoreDisplay.ScoreRollUpdate(previousScore, newScore, _scoreRollDuration);
     }
 
     private RectTransform SpawnIcon(Sprite sprite)
@@ -279,11 +339,6 @@ public class MissionHUD : MonoBehaviour
         return text;
     }
 
-    private GameObject GetTimePrefab()
-    {
-        return _timePrefab != null ? _timePrefab : _countPrefab;
-    }
-
     private Sprite GetGemSprite(GemType gemType)
     {
         switch (gemType)
@@ -308,11 +363,12 @@ public class MissionHUD : MonoBehaviour
         _spawnedViews.Clear();
         _gemCountTexts.Clear();
         _gemIcons.Clear();
-        _timeText = null;
+        _scoreGoalText = null;
         _collectCountText = null;
         _collectIcon = null;
         _builtForType = MissionType.None;
         _isBuilt = false;
+        _displayedScore = 0;
     }
 
     private void SetRootActive(bool active)
@@ -321,9 +377,12 @@ public class MissionHUD : MonoBehaviour
             _root.SetActive(active);
     }
 
-    private static string FormatTime(float timeSeconds)
+    /// <summary>
+    /// ContentSizeFitter 텍스트 너비가 LayoutGroup spacing에 반영되도록 즉시 재배치한다.
+    /// </summary>
+    private void RebuildLayout()
     {
-        int totalSeconds = Mathf.Max(0, Mathf.CeilToInt(timeSeconds));
-        return $"{totalSeconds / 60}:{totalSeconds % 60:00}";
+        if (_contentRoot is RectTransform contentRect)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
     }
 }

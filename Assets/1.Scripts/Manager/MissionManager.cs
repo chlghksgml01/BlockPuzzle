@@ -39,16 +39,13 @@ public class MissionManager : MonoBehaviour, IInitializable
     /// <summary>남은 목표/점수 등 진행도가 바뀌었을 때.</summary>
     public static event Action OnProgressChanged;
 
-    /// <summary>남은 시간이 바뀌었을 때 (표시용).</summary>
-    public static event Action OnTimeChanged;
+    /// <summary>ScoreGoal 점수 변경 시 (previous, new).</summary>
+    public static event Action<int, int> OnScoreGoalProgressChanged;
 
     /// <summary>목표를 모두 달성했을 때.</summary>
     public static event Action OnObjectiveCompleted;
 
-    /// <summary>제한 시간 소진 시.</summary>
-    public static event Action OnTimeExpired;
-
-    /// <summary>미션 실패(시간 초과·게임오버 등) 시.</summary>
+    /// <summary>미션 실패(배치 불가 게임오버 등) 시.</summary>
     public static event Action OnMissionFailed;
 
     private int _currentLevelIndex = -1;
@@ -62,16 +59,13 @@ public class MissionManager : MonoBehaviour, IInitializable
     private readonly List<GemTargetInfo> _remainingGems = new List<GemTargetInfo>(3);
     private readonly List<GemTargetInfo> _gemTargetSnapshot = new List<GemTargetInfo>(3);
     private readonly Dictionary<GemType, int> _collectedGemCounts = new Dictionary<GemType, int>();
-    private float _remainingTimeSeconds;
     private bool _isTracking;
     private bool _objectiveCompleted;
-    private bool _timeExpired;
     private bool _resultResolved;
 
     private int _pendingCollectFlyCount;
     private readonly Dictionary<GemType, int> _pendingGemFlyCounts = new Dictionary<GemType, int>();
 
-    private Coroutine _timerCoroutine;
     private Coroutine _grassSpreadSyncCoroutine;
     private bool _subscriptionsBound;
     private bool _usingTestMission;
@@ -176,17 +170,11 @@ public class MissionManager : MonoBehaviour, IInitializable
         return Mathf.Max(0, target - collected - onBoard - pending - inSlot);
     }
 
-    /// <summary>ScoreGoal 미션의 남은 시간(초).</summary>
-    public float RemainingTimeSeconds => _remainingTimeSeconds;
-
     /// <summary>ScoreGoal 목표 점수.</summary>
     public int TargetScore => _currentMission != null ? _currentMission.TargetScore : 0;
 
     /// <summary>현재 점수 (ScoreSystem).</summary>
     public int CurrentScore => _scoreSystem != null ? _scoreSystem.CurrentScore : 0;
-
-    /// <summary>제한 시간이 소진되었으면 true.</summary>
-    public bool IsTimeExpired => _timeExpired;
 
     /// <summary>목표를 달성했으면 true.</summary>
     public bool IsObjectiveCompleted => _objectiveCompleted;
@@ -247,6 +235,7 @@ public class MissionManager : MonoBehaviour, IInitializable
             _usingTestMission = false;
             _currentLevelIndex = LevelSessionContext.SelectedLevelIndex;
             _missionTable = LevelSessionContext.GetMissionTable();
+
             _currentMission = _missionTable != null
                 ? _missionTable.GetMission(_currentLevelIndex)
                 : null;
@@ -277,7 +266,7 @@ public class MissionManager : MonoBehaviour, IInitializable
         RaiseProgressChanged();
     }
 
-    /// <summary>인트로/레이아웃 적용 후 호출. 보드 기준으로 진행도를 맞추고 타이머를 시작한다.</summary>
+    /// <summary>인트로/레이아웃 적용 후 호출. 보드 기준으로 진행도를 맞추고 추적을 시작한다.</summary>
     public void BeginProgressTracking()
     {
         if (!IsActive || _currentMission == null)
@@ -285,35 +274,27 @@ public class MissionManager : MonoBehaviour, IInitializable
 
         StopProgressTracking();
         _objectiveCompleted = false;
-        _timeExpired = false;
         _resultResolved = false;
+
+        // Retry 시 이전 수집·비행이 남지 않도록 런타임 진행도를 비운다.
+        if (_flyEffect != null)
+            _flyEffect.CancelAll();
+
+        _collectedGemCounts.Clear();
         ClearPendingFlies();
         _isTracking = true;
 
         RefreshDisplayedRemaining();
-
-        if (CurrentMissionType == MissionType.ScoreGoal)
-        {
-            _remainingTimeSeconds = Mathf.Max(0f, _currentMission.TimeLimitSeconds);
-            RaiseTimeChanged();
-            _timerCoroutine = StartCoroutine(TimerCoroutine());
-        }
 
         TryBindSubscriptions();
         RaiseProgressChanged();
         EvaluateObjective();
     }
 
-    /// <summary>진행 추적·타이머를 중단한다.</summary>
+    /// <summary>진행 추적을 중단한다.</summary>
     public void StopProgressTracking()
     {
         _isTracking = false;
-
-        if (_timerCoroutine != null)
-        {
-            StopCoroutine(_timerCoroutine);
-            _timerCoroutine = null;
-        }
 
         if (_grassSpreadSyncCoroutine != null)
         {
@@ -338,9 +319,7 @@ public class MissionManager : MonoBehaviour, IInitializable
         _remainingGems.Clear();
         _gemTargetSnapshot.Clear();
         _collectedGemCounts.Clear();
-        _remainingTimeSeconds = 0f;
         _objectiveCompleted = false;
-        _timeExpired = false;
 
         if (_currentMission == null)
             return;
@@ -358,9 +337,6 @@ public class MissionManager : MonoBehaviour, IInitializable
                 _gemTargetSnapshot.AddRange(_currentMission.BuildGemTargets());
                 _remainingGems.AddRange(_gemTargetSnapshot);
                 _collectedGemCounts.Clear();
-                break;
-            case MissionType.ScoreGoal:
-                _remainingTimeSeconds = Mathf.Max(0f, _currentMission.TimeLimitSeconds);
                 break;
         }
     }
@@ -462,6 +438,7 @@ public class MissionManager : MonoBehaviour, IInitializable
         if (!_isTracking || CurrentMissionType != MissionType.ScoreGoal)
             return;
 
+        OnScoreGoalProgressChanged?.Invoke(previousScore, newScore);
         RaiseProgressChanged();
         EvaluateObjective();
     }
@@ -546,7 +523,8 @@ public class MissionManager : MonoBehaviour, IInitializable
 
     private void OnCollectFlyCompleted(MissionCollectInfo info)
     {
-        if (_resultResolved)
+        // 실패/Retry로 추적이 끊긴 뒤 도착한 이전 비행은 무시한다.
+        if (!_isTracking || _resultResolved)
             return;
 
         RemovePendingFly(info);
@@ -606,29 +584,6 @@ public class MissionManager : MonoBehaviour, IInitializable
         _grassSpreadSyncCoroutine = null;
     }
 
-    private IEnumerator TimerCoroutine()
-    {
-        while (_isTracking && _remainingTimeSeconds > 0f)
-        {
-            yield return null;
-            _remainingTimeSeconds -= Time.deltaTime;
-            if (_remainingTimeSeconds < 0f)
-                _remainingTimeSeconds = 0f;
-
-            RaiseTimeChanged();
-
-            if (_remainingTimeSeconds <= 0f)
-            {
-                _timeExpired = true;
-                FailMission();
-                OnTimeExpired?.Invoke();
-                break;
-            }
-        }
-
-        _timerCoroutine = null;
-    }
-
     private void EvaluateObjective()
     {
         if (!_isTracking || _objectiveCompleted || _currentMission == null)
@@ -671,7 +626,10 @@ public class MissionManager : MonoBehaviour, IInitializable
         TryShowResultPopup(success: true);
     }
 
-    /// <summary>블록을 더 이상 배치할 수 없을 때 등 외부에서 미션 실패를 알린다.</summary>
+    /// <summary>
+    /// 미션 실패를 확정한다 (진행 추적 중지·이벤트).
+    /// ResultPopup은 <see cref="ShowFailResultPopup"/>으로 따로 연다.
+    /// </summary>
     public void FailMission()
     {
         if (!IsActive || _resultResolved)
@@ -680,6 +638,11 @@ public class MissionManager : MonoBehaviour, IInitializable
         _resultResolved = true;
         StopProgressTracking();
         OnMissionFailed?.Invoke();
+    }
+
+    /// <summary>실패 ResultPopup을 연다. 그레이스케일 연출 이후에 호출한다.</summary>
+    public void ShowFailResultPopup()
+    {
         TryShowResultPopup(success: false);
     }
 
@@ -696,14 +659,11 @@ public class MissionManager : MonoBehaviour, IInitializable
 
     private void UnlockNextLevel()
     {
-        if (_missionTable == null || _currentLevelIndex < 0)
+        if (_usingTestMission || _currentLevelIndex < 0)
             return;
 
-        MissionData nextMission = _missionTable.GetMission(_currentLevelIndex + 1);
-        if (nextMission == null)
-            return;
-
-        nextMission.isClear = true;
+        int clearedLevelNumber = _currentLevelIndex + 1;
+        LevelProgressManager.Instance.NotifyLevelCleared(clearedLevelNumber);
     }
 
     private bool AreAllGemsCleared()
@@ -725,11 +685,6 @@ public class MissionManager : MonoBehaviour, IInitializable
         OnProgressChanged?.Invoke();
     }
 
-    private void RaiseTimeChanged()
-    {
-        OnTimeChanged?.Invoke();
-    }
-
     private void ClearPendingFlies()
     {
         _pendingCollectFlyCount = 0;
@@ -746,9 +701,7 @@ public class MissionManager : MonoBehaviour, IInitializable
         _remainingGems.Clear();
         _gemTargetSnapshot.Clear();
         _collectedGemCounts.Clear();
-        _remainingTimeSeconds = 0f;
         _objectiveCompleted = false;
-        _timeExpired = false;
         _resultResolved = false;
         ClearPendingFlies();
     }
