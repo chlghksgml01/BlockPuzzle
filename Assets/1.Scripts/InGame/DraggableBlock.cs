@@ -1,22 +1,15 @@
 using DG.Tweening;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class DraggableBlock : MonoBehaviour
 {
     [Header("Block Data & Shapes")]
     [SerializeField] private BlockShape[] _blockShapes;
-    [Tooltip("이 칸 수 이상이면 고점유 시 대형으로 보고 출현 가중치를 낮춘다")]
-    [SerializeField, Min(1)] private int _largeShapeCellThreshold = 5;
-    [Tooltip("이 칸 수 이하면 고점유 시 소형으로 보고 출현 가중치를 높인다")]
-    [SerializeField, Min(1)] private int _smallShapeCellThreshold = 3;
-    [Tooltip("보드 점유율이 높을 때 대형 블록 가중치에 곱하는 값")]
-    [SerializeField, Range(0f, 1f)] private float _highFillLargeShapeWeightMultiplier = 0.7f;
-    [FormerlySerializedAs("_lowFillSmallShapeWeightMultiplier")]
-    [Tooltip("보드 점유율이 높을 때 소형 블록 가중치에 곱하는 값")]
-    [SerializeField, Range(1f, 2f)] private float _highFillSmallShapeWeightMultiplier = 1.3f;
+
+    /// <summary>InGameManager가 넘겨준 값이 없을 때 쓰는 기본 감쇠 설정(테스트 슬롯 등 대비).</summary>
+    private static readonly HighFillShapeWeightSettings _defaultWeightSettings = new HighFillShapeWeightSettings();
 
     public Vector2Int[] CurrentOffsets { get; private set; }
     private Sprite _blockSprite;
@@ -54,7 +47,7 @@ public class DraggableBlock : MonoBehaviour
         _rectTransform = GetComponent<RectTransform>();
     }
 
-    public void InitializeBlock(Sprite blockSprite, BlockShape blockshape = null, bool reduceLargeShapeSpawnRate = false)
+    public void InitializeBlock(Sprite blockSprite, BlockShape blockshape = null, bool reduceLargeShapeSpawnRate = false, HighFillShapeWeightSettings weightSettings = null)
     {
         ClearGemTile();
         _blockSprite = blockSprite;
@@ -66,7 +59,7 @@ public class DraggableBlock : MonoBehaviour
 
         else if (_blockShapes != null && _blockShapes.Length > 0)
         {
-            int index = PickShapeIndexWeighted(_blockShapes, reduceLargeShapeSpawnRate);
+            int index = PickShapeIndexWeighted(_blockShapes, reduceLargeShapeSpawnRate, weightSettings ?? _defaultWeightSettings);
             CurrentOffsets = (Vector2Int[])_blockShapes[index].CellOffsets.Clone();
         }
         else
@@ -154,7 +147,7 @@ public class DraggableBlock : MonoBehaviour
         }
     }
 
-    private int PickShapeIndexWeighted(BlockShape[] shapes, bool reduceLargeShapeSpawnRate)
+    private int PickShapeIndexWeighted(BlockShape[] shapes, bool reduceLargeShapeSpawnRate, HighFillShapeWeightSettings weightSettings)
     {
         if (shapes == null || shapes.Length == 0)
             return 0;
@@ -165,7 +158,7 @@ public class DraggableBlock : MonoBehaviour
             if (shapes[i] == null)
                 continue;
 
-            float weight = GetAdjustedShapeWeight(shapes[i], reduceLargeShapeSpawnRate);
+            float weight = GetAdjustedShapeWeight(shapes[i], reduceLargeShapeSpawnRate, weightSettings);
             if (weight > 0f)
                 total += weight;
         }
@@ -181,7 +174,7 @@ public class DraggableBlock : MonoBehaviour
             if (shapes[i] == null)
                 continue;
 
-            float w = GetAdjustedShapeWeight(shapes[i], reduceLargeShapeSpawnRate);
+            float w = GetAdjustedShapeWeight(shapes[i], reduceLargeShapeSpawnRate, weightSettings);
             if (w <= 0f || float.IsNaN(w) || float.IsInfinity(w))
                 continue;
 
@@ -192,14 +185,14 @@ public class DraggableBlock : MonoBehaviour
 
         for (int i = shapes.Length - 1; i >= 0; i--)
         {
-            if (shapes[i] != null && GetAdjustedShapeWeight(shapes[i], reduceLargeShapeSpawnRate) > 0f)
+            if (shapes[i] != null && GetAdjustedShapeWeight(shapes[i], reduceLargeShapeSpawnRate, weightSettings) > 0f)
                 return i;
         }
 
         return Random.Range(0, shapes.Length);
     }
 
-    private float GetAdjustedShapeWeight(BlockShape shape, bool reduceLargeShapeSpawnRate)
+    private float GetAdjustedShapeWeight(BlockShape shape, bool reduceLargeShapeSpawnRate, HighFillShapeWeightSettings weightSettings)
     {
         if (shape == null)
             return 0f;
@@ -210,10 +203,10 @@ public class DraggableBlock : MonoBehaviour
 
         Vector2Int[] offsets = shape.CellOffsets;
         int cellCount = offsets != null ? offsets.Length : 0;
-        if (cellCount >= _largeShapeCellThreshold)
-            weight *= _highFillLargeShapeWeightMultiplier;
-        else if (cellCount <= _smallShapeCellThreshold)
-            weight *= _highFillSmallShapeWeightMultiplier;
+        if (cellCount >= weightSettings.LargeShapeCellThreshold)
+            weight *= weightSettings.HighFillLargeShapeWeightMultiplier;
+        else if (cellCount <= weightSettings.SmallShapeCellThreshold)
+            weight *= weightSettings.HighFillSmallShapeWeightMultiplier;
 
         return weight;
     }

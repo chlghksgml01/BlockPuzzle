@@ -23,7 +23,8 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
     [Header("Block")]
     [Tooltip("플레이어가 슬롯에서 놓고 배치하는 블록 스프라이트")]
     [SerializeField] private Sprite[] _blockSprites;
-    [SerializeField, Range(0f, 1f)] private float _largeShapeSpawnReduceStartFillRatio = 0.5f;
+    [Tooltip("보드 점유율이 높을 때 블록 형태 출현 가중치를 조절하는 설정")]
+    [SerializeField] private HighFillShapeWeightSettings _highFillShapeWeightSettings = new HighFillShapeWeightSettings();
     private readonly Dictionary<string, Sprite> _playerSpriteByName = new Dictionary<string, Sprite>();
 
     public static event Action<int> OnBlockSettled;
@@ -323,7 +324,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
         {
             if (i < spriteList.Count)
             {
-                _slots[i].SpawnNewBlock(spriteList[i], reduceLargeShapeSpawnRate);
+                _slots[i].SpawnNewBlock(spriteList[i], reduceLargeShapeSpawnRate, _highFillShapeWeightSettings);
 
                 if (hasGemSpawns && gemSpawns[i].HasGem &&
                     _slots[i].Block != null &&
@@ -419,7 +420,7 @@ public class InGameManager : Singleton<InGameManager>, IInitializable
 
         int filledCellCount = _boardManger.ExportFilledCells().Count;
         float filledRatio = (float)filledCellCount / totalCells;
-        return filledRatio >= _largeShapeSpawnReduceStartFillRatio;
+        return filledRatio >= _highFillShapeWeightSettings.StartFillRatio;
     }
 
     private void OnApplicationPause(bool pauseStatus)

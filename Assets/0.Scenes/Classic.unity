@@ -244,9 +244,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GridLayoutGroup
   m_Padding:
-    m_Left: 12
+    m_Left: 23
     m_Right: 0
-    m_Top: 9
+    m_Top: 24
     m_Bottom: 2
   m_ChildAlignment: 0
   m_StartCorner: 0
@@ -1363,9 +1363,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GridLayoutGroup
   m_Padding:
-    m_Left: 12
+    m_Left: 23
     m_Right: 0
-    m_Top: 9
+    m_Top: 24
     m_Bottom: 2
   m_ChildAlignment: 0
   m_StartCorner: 0

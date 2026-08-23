@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InGameManager
   _dontDestroyOnLoad: 0
+  _slotsCanvasGroup: {fileID: 0}
   _slots:
   - {fileID: 0}
   - {fileID: 0}
@@ -61,3 +62,9 @@ MonoBehaviour:
   - {fileID: 21300000, guid: b6df37c038aec1e459a2c0dde0a91e18, type: 3}
   - {fileID: 21300000, guid: 4e895517949329a4d918aa915dde9a3d, type: 3}
   - {fileID: 21300000, guid: e8904c168f2967e41aadf98d0e67f0a5, type: 3}
+  _highFillShapeWeightSettings:
+    _startFillRatio: 0.5
+    _largeShapeCellThreshold: 5
+    _smallShapeCellThreshold: 3
+    _highFillLargeShapeWeightMultiplier: 0.5
+    _highFillSmallShapeWeightMultiplier: 1.5

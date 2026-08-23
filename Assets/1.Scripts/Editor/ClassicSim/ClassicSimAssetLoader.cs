@@ -3,11 +3,12 @@ using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// Classic 런타임과 같은 BlockShape / ScoreSystem / DraggableBlock 감쇠 값을 에디터에서 읽는다.
+/// Classic 런타임과 같은 BlockShape / ScoreSystem / InGameManager 감쇠 값을 에디터에서 읽는다.
 /// </summary>
 public static class ClassicSimAssetLoader
 {
     private const string DraggableBlockPrefabPath = "Assets/2.Prefabs/DraggableBlock.prefab";
+    private const string InGameManagerPrefabPath = "Assets/2.Prefabs/Manager/InGameManager.prefab";
     private const string ScoreSystemPath = "Assets/3.ScriptableObjects/ScoreSystem.asset";
 
     public static string TryLoadInto(ClassicSimConfig config)
@@ -15,6 +16,7 @@ public static class ClassicSimAssetLoader
         if (!TryLoadShapes(config, out string shapeError))
             return shapeError;
 
+        LoadHighFillWeightSettings(config);
         LoadScoreSettings(config);
         return null;
     }
@@ -39,22 +41,6 @@ public static class ClassicSimAssetLoader
                         shapes.Add(def);
                 }
             }
-
-            SerializedProperty largeThreshold = so.FindProperty("_largeShapeCellThreshold");
-            if (largeThreshold != null)
-                config.LargeShapeCellThreshold = Mathf.Max(1, largeThreshold.intValue);
-
-            SerializedProperty smallThreshold = so.FindProperty("_smallShapeCellThreshold");
-            if (smallThreshold != null)
-                config.SmallShapeCellThreshold = Mathf.Max(1, smallThreshold.intValue);
-
-            SerializedProperty largeMultiplier = so.FindProperty("_highFillLargeShapeWeightMultiplier");
-            if (largeMultiplier != null)
-                config.HighFillLargeShapeWeightMultiplier = largeMultiplier.floatValue;
-
-            SerializedProperty smallMultiplier = so.FindProperty("_highFillSmallShapeWeightMultiplier");
-            if (smallMultiplier != null)
-                config.HighFillSmallShapeWeightMultiplier = smallMultiplier.floatValue;
         }
 
         if (shapes.Count == 0)
@@ -78,6 +64,35 @@ public static class ClassicSimAssetLoader
 
         config.Shapes = shapes.ToArray();
         return true;
+    }
+
+    private static void LoadHighFillWeightSettings(ClassicSimConfig config)
+    {
+        InGameManager inGameManager = AssetDatabase.LoadAssetAtPath<InGameManager>(InGameManagerPrefabPath);
+        if (inGameManager == null)
+            return;
+
+        SerializedObject so = new SerializedObject(inGameManager);
+
+        SerializedProperty startFillRatio = so.FindProperty("_highFillShapeWeightSettings._startFillRatio");
+        if (startFillRatio != null)
+            config.LargeShapeSpawnReduceStartFillRatio = startFillRatio.floatValue;
+
+        SerializedProperty largeThreshold = so.FindProperty("_highFillShapeWeightSettings._largeShapeCellThreshold");
+        if (largeThreshold != null)
+            config.LargeShapeCellThreshold = Mathf.Max(1, largeThreshold.intValue);
+
+        SerializedProperty smallThreshold = so.FindProperty("_highFillShapeWeightSettings._smallShapeCellThreshold");
+        if (smallThreshold != null)
+            config.SmallShapeCellThreshold = Mathf.Max(1, smallThreshold.intValue);
+
+        SerializedProperty largeMultiplier = so.FindProperty("_highFillShapeWeightSettings._highFillLargeShapeWeightMultiplier");
+        if (largeMultiplier != null)
+            config.HighFillLargeShapeWeightMultiplier = largeMultiplier.floatValue;
+
+        SerializedProperty smallMultiplier = so.FindProperty("_highFillShapeWeightSettings._highFillSmallShapeWeightMultiplier");
+        if (smallMultiplier != null)
+            config.HighFillSmallShapeWeightMultiplier = smallMultiplier.floatValue;
     }
 
     private static void LoadScoreSettings(ClassicSimConfig config)
