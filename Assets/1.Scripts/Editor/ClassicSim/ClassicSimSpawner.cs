@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// BlockShape 가중치 + 랜덤 회전 + 점유율 감쇠를 DraggableBlock / InGameManager와 같은 규칙으로 복제한다.
+/// BlockShape 가중치 + 랜덤 회전 + 고점유 시 대형 감쇠/소형 증가를 DraggableBlock / InGameManager와 같은 규칙으로 복제한다.
 /// </summary>
 public sealed class ClassicSimSpawner
 {
@@ -81,6 +81,8 @@ public sealed class ClassicSimSpawner
 
         if (shape.CellCount >= _config.LargeShapeCellThreshold)
             weight *= _config.HighFillLargeShapeWeightMultiplier;
+        else if (shape.CellCount <= _config.SmallShapeCellThreshold)
+            weight *= _config.HighFillSmallShapeWeightMultiplier;
 
         return weight;
     }

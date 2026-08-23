@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// Classic 헤드리스 시뮬 설정. 런타임 기본값(9x9, 슬롯 3, 50% 점유 시 큰 블록 감쇠)을 따른다.
+/// Classic 헤드리스 시뮬 설정. 런타임 기본값(9x9, 슬롯 3, 50% 점유 시 대형 감쇠·소형 증가)을 따른다.
 /// </summary>
 public sealed class ClassicSimConfig
 {
@@ -13,7 +13,9 @@ public sealed class ClassicSimConfig
     public int Seed;
 
     public int LargeShapeCellThreshold = 5;
+    public int SmallShapeCellThreshold = 3;
     public float HighFillLargeShapeWeightMultiplier = 0.7f;
+    public float HighFillSmallShapeWeightMultiplier = 1.3f;
     public float LargeShapeSpawnReduceStartFillRatio = 0.5f;
 
     public float LineScoreMultiplier = 5f;

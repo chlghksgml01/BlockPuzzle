@@ -40,13 +40,21 @@ public static class ClassicSimAssetLoader
                 }
             }
 
-            SerializedProperty threshold = so.FindProperty("_largeShapeCellThreshold");
-            if (threshold != null)
-                config.LargeShapeCellThreshold = Mathf.Max(1, threshold.intValue);
+            SerializedProperty largeThreshold = so.FindProperty("_largeShapeCellThreshold");
+            if (largeThreshold != null)
+                config.LargeShapeCellThreshold = Mathf.Max(1, largeThreshold.intValue);
 
-            SerializedProperty multiplier = so.FindProperty("_highFillLargeShapeWeightMultiplier");
-            if (multiplier != null)
-                config.HighFillLargeShapeWeightMultiplier = multiplier.floatValue;
+            SerializedProperty smallThreshold = so.FindProperty("_smallShapeCellThreshold");
+            if (smallThreshold != null)
+                config.SmallShapeCellThreshold = Mathf.Max(1, smallThreshold.intValue);
+
+            SerializedProperty largeMultiplier = so.FindProperty("_highFillLargeShapeWeightMultiplier");
+            if (largeMultiplier != null)
+                config.HighFillLargeShapeWeightMultiplier = largeMultiplier.floatValue;
+
+            SerializedProperty smallMultiplier = so.FindProperty("_highFillSmallShapeWeightMultiplier");
+            if (smallMultiplier != null)
+                config.HighFillSmallShapeWeightMultiplier = smallMultiplier.floatValue;
         }
 
         if (shapes.Count == 0)

@@ -14,7 +14,7 @@ Classic 모드 스폰 가중치를 검수하는 에디터 전용 시뮬레이터
 | `ClassicSimAssetLoader` | `DraggableBlock` 프리팹·`ScoreSystem` 에셋에서 가중치/점수 공식 로드 |
 | `ClassicSimRunner` | N판 루프, 통계 집계, 리포트 문자열 |
 | `ClassicSimBoard` | 점유 그리드, 배치 가능, 줄 클리어 |
-| `ClassicSimSpawner` | 가중치 선택, 랜덤 회전, 50% 점유 시 큰 블록 감쇠 |
+| `ClassicSimSpawner` | 가중치 선택, 랜덤 회전, 50% 점유 시 대형 감쇠·소형 증가 |
 | `ClassicSimScore` | `ScoreSystem` 공식 복제 (SFX 없음) |
 | `ClassicSimBot` | 남은 슬롯 × 좌표 중 탐욕 최고점 선택 |
 
@@ -48,7 +48,7 @@ flowchart TD
 - 보드 `9x9`, 슬롯 3, 빈 보드 시작
 - 배치 좌표: `tx = baseX + offset.x`, `ty = baseY - offset.y` (`BoardModel`과 동일)
 - 형태 가중치 + 0~3 회전 후 정규화 (`DraggableBlock`)
-- 점유율 50% 이상이면 칸 수 5 이상 블록 가중치 × 0.7 (`InGameManager` / `DraggableBlock` 기본값)
+- 점유율 50% 이상이면 칸 수 5 이상 블록 가중치 × 0.7, 칸 수 3 이하 블록 가중치 × 1.3 (`InGameManager` / `DraggableBlock` 기본값)
 - 점수: 배치 칸 수 + 줄 점수/콤보. 호출 순서는 런타임과 같이 줄 점수 먼저, 배치 점수 나중
 - 게임오버: 남은 슬롯 블록을 하나도 놓을 수 없음
 - ice / grass / gem / VFX / 저장은 복제하지 않음
