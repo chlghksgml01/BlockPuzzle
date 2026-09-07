@@ -22,6 +22,7 @@
 | UI/Animation | UGUI, TextMeshPro, DOTween |
 | Data | PlayerPrefs + JSON Serialization (`JsonUtility`) |
 | Backend | BackEnd SDK (구글 페더레이션 로그인, 랭킹/게임데이터) |
+| AI Tooling | Anthropic Messages API (에디터 미션 밸런스 검수) |
 
 
 ---
@@ -33,6 +34,54 @@
 | **인게임 기본 조작** | 블록 클릭/드래그/드롭으로 보드에 배치 |
 | **프리뷰** | 드래그 중 배치 가능한 칸에 미리보기 표시 |
 | **힌트** | 블록 선택 후 5초 후배치 가능한 위치에 힌트 표시 |
+
+---
+## AI 밸런스 검수 (Claude API)
+
+미션(`MissionData`) 에셋의 난이도 밸런스를 **Anthropic Messages API**로 검수하는 Unity 에디터 툴
+(`Assets/1.Scripts/Editor/AIBalanceReview/`)
+
+### 흐름
+
+```mermaid
+flowchart LR
+    W["BalanceReviewWindow<br/>(EditorWindow)"] -->|"t:MissionData 전체 조회"| A["AssetDatabase"]
+    W -->|"미션별 순차 호출"| EX["MissionSummaryExtractor"]
+    EX -->|"요약 JSON"| R["ClaudeBalanceReviewer"]
+    R -->|"POST /v1/messages"| API["api.anthropic.com"]
+    API -->|"content[0].text (JSON)"| R
+    R --> W
+    W -->|"누적 출력 + 저장"| TXT["BalanceReviewReport.txt"]
+```
+
+### 구성
+
+| 클래스 | 역할 |
+|--------|------|
+| `MissionSummaryExtractor` | `MissionData` ScriptableObject에서 검수에 필요한 필드(`boardSize`, `missionType`, `isHard`, `filledCellCount`, `iceCellCount`, `grassCellCount`, `targetScore`, `gemTargets`)만 뽑아 요약 JSON 생성<br>에셋 전체를 넘기지 않아 토큰과 노이즈를 줄임 |
+| `ClaudeBalanceReviewer` | Messages API 호출 담당. 프롬프트 구성 → 요청 → 응답에서 `content[0].text` 추출 |
+| `BalanceReviewWindow` | 메뉴 `BlockPuzzle/AI 밸런스 검수`<br>모든 미션을 순회하며 검수하고 결과를 창에 누적 출력 + `BalanceReviewReport.txt`로 저장 |
+
+### 구현 노트
+
+- API 키는 `ANTHROPIC_API_KEY` 환경변수에서 로드: 소스에 하드코딩하지 않음
+- `static readonly HttpClient` 재사용: 매 호출마다 생성 시 소켓 고갈(포트 소진) 위험이 있어 인스턴스 하나를 공유, `Timeout` 60초
+- 비동기 순차 처리 — `RunReviewAll`이 `MissionData` 에셋을 for 루프로 돌며 `await ReviewMissionAsync`를 순차 호출, `_isRunning` 플래그로 중복 실행 차단해 에디터 UI 스레드를 막지 않음
+- 도메인 규칙을 주입한 프롬프트(`BuildReviewPrompt`) — "밸런스 봐줘" 한 줄이 아니라
+  - 게임 룰(라인 클리어 / Game Over 조건) 명시
+  - Ice / Grass / Gem / ScoreGoal 미션 타입별로 클리어 조건·관련 필드·무시할 필드·판단 기준을 분리 서술
+  - `DO NOTs` 목록으로 모델이 흔히 저지르는 오탐(예: Ice 셀 수가 적다고 목적 불분명 지적, ScoreGoal 아닌데 `targetScore` 0을 문제 삼기)을 사전 차단
+  - 응답을 `{missionName, riskLevel, issues[], suggestion}` JSON 스키마로 강제
+- 에디터 전용 툴이라 런타임 게임 로직과는 분리되어 있음
+
+### 출력 예시 (`BalanceReviewReport.txt`)
+
+```json
+[MissionData3]
+{"missionName":"MissionData3","riskLevel":"high",
+ "issues":["targetScore of 800 is extremely low for a 10x10 board. A single line clear yields approximately 50 points (boardSize * 5) ... inconsistent with isHard=true."],
+ "suggestion":"Increase targetScore significantly (e.g., 5000-10000) to match the isHard flag, or set isHard to false."}
+```
 
 ---
 
