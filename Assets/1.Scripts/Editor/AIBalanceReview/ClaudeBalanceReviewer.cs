@@ -33,7 +33,7 @@ public static class ClaudeBalanceReviewer
 
         object requestBody = new
         {
-            model = "claude-sonnet-5",
+            model = "claude-sonnet-4-6",
             max_tokens = 700,
             messages = new[] { new { role = "user", content = prompt } }
         };
