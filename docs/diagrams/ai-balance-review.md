@@ -9,8 +9,8 @@
 | 클래스 | 책임 |
 |--------|------|
 | `BalanceReviewWindow` | EditorWindow UI, 미션 순회, 결과 표시/파일 저장 |
-| `MissionSummaryExtractor` | `MissionData` → 검수용 요약 JSON (DTO 직렬화) |
-| `ClaudeBalanceReviewer` | Messages API 호출, `content[0].text` 추출 |
+| `MissionSummaryExtractor` | `MissionData` → 검수용 요약 JSON. **미션 타입에 필요한 필드만** 담고, 무관한 필드에 값이 남아 있으면 `warnings`로 옮김 (null 필드는 직렬화 제외) |
+| `ClaudeBalanceReviewer` | Messages API 호출, `content[0].text` 추출. **해당 타입 규칙 섹션만** 프롬프트에 조립 |
 
 ## 흐름
 
@@ -28,8 +28,9 @@ flowchart TD
   MENU --> WIN
   WIN -->|"RunReviewAll"| ADB
   ADB -->|"각 MissionData"| EXT
-  EXT -->|"summary JSON"| API
-  API -->|"HTTP POST"| CLAUDE
+  EXT -->|"타입별 요약 JSON (+warnings)"| API
+  WIN -->|"mission.MissionType"| API
+  API -->|"HTTP POST (타입 규칙만)"| CLAUDE
   CLAUDE -->|"assistant text"| API
   API --> LOG
   WIN --> FILE
@@ -37,21 +38,24 @@ flowchart TD
 
 ## 검수 기준 (프롬프트)
 
-`ClaudeBalanceReviewer.BuildReviewPrompt`가 미션 타입별 클리어 규칙을 먼저 알려 준 뒤 JSON만 요청한다.
-무관한 필드(Ice에서 `targetScore` 등)는 검수하지 않는다.
+`ClaudeBalanceReviewer.BuildReviewPrompt(MissionType, missionJson)`는 **검수 대상 타입의 규칙 섹션 하나만** 프롬프트에 넣는다.
+다른 타입 규칙은 아예 전달하지 않으므로, "무관한 필드를 무시하라"는 지시가 필요 없다.
 
-| MissionType | 클리어 조건 | 관련 필드 |
+| MissionType | 클리어 조건 | JSON에 담기는 타입 필드 |
 |-------------|-------------|-----------|
-| Ice | 줄 제거로 ice 칸을 전부 제거 | `iceCellCount`, `filledCellCount`, `boardSize`, `isHard` |
-| Grass | 줄 제거로 grass 칸을 전부 제거. 잔디 줄 3연속 미스 시 인접 칸으로 1칸 전파 | `grassCellCount`, `filledCellCount`, `boardSize`, `isHard` |
-| Gem | 슬롯에서 스폰된 젬 블록을 줄 제거로 목표 개수 수집 | `gemTargets`, `filledCellCount`, `boardSize`, `isHard` |
-| ScoreGoal | `targetScore` 도달 (시간 제한 없음) | `targetScore`, `filledCellCount`, `boardSize`, `isHard` |
+| Ice | 줄 제거로 ice 칸을 전부 제거 | `iceCellCount` |
+| Grass | 줄 제거로 grass 칸을 전부 제거. 잔디 줄 3연속 미스 시 인접 칸으로 1칸 전파 | `grassCellCount` |
+| Gem | 슬롯에서 스폰된 젬 블록을 줄 제거로 목표 개수 수집 | `gemTargets[]` |
+| ScoreGoal | `targetScore` 도달 (시간 제한 없음) | `targetScore` |
+
+공통 필드(`missionName`, `missionType`, `boardSize`, `isHard`, `filledCellCount`)는 모든 타입에 포함된다.
 
 공통 검수:
 
-1. 해당 타입의 클리어 필드가 유효한가 (0/빈 값이면 high)
-2. `isHard`와 실제 난이도 일치 여부 (관련 필드만)
+1. 해당 타입의 클리어 필드가 유효한가 (0/빈 값/누락이면 high)
+2. `isHard`와 실제 난이도 일치 여부 (전달된 필드만으로 판단)
 3. 타입별 현실성 (Ice/Grass 칸 수, Gem 목표량, ScoreGoal 점수)
+4. `warnings[]` 항목은 모두 데이터 오염 → `issues`에 포함하고 riskLevel 상향
 
 예상 응답 스키마:
 
@@ -66,18 +70,23 @@ flowchart TD
 
 ## 요약 JSON 필드
 
-`MissionSummaryExtractor`가 보내는 필드:
+`MissionSummaryExtractor`가 보내는 필드 (null 필드는 직렬화에서 제외):
 
-| 필드 | 출처 |
-|------|------|
-| `missionName` | 에셋 이름 |
-| `boardSize` | `MissionData.boardSize` |
-| `missionType` | `MissionType` |
-| `isHard` | `IsHard` |
-| `filledCellCount` | `filledCells.Count` |
-| `iceCellCount` / `grassCellCount` | `CountIceCells` / `CountGrassCells` |
-| `targetScore` | `TargetScore` |
-| `gemTargets[]` | `BuildGemTargets()` → `{ type, count }` |
+| 필드 | 출처 | 포함 조건 |
+|------|------|-----------|
+| `missionName` | 에셋 이름 | 항상 |
+| `missionType` | `MissionType` | 항상 |
+| `boardSize` | `MissionData.boardSize` | 항상 |
+| `isHard` | `IsHard` | 항상 |
+| `filledCellCount` | `filledCells.Count` | 항상 |
+| `targetScore` | `TargetScore` | `ScoreGoal`일 때만 |
+| `iceCellCount` | `CountIceCells()` | `Ice`일 때만 |
+| `grassCellCount` | `CountGrassCells()` | `Grass`일 때만 |
+| `gemTargets[]` | `BuildGemTargets()` → `{ type, count }` | `Gem`일 때만 |
+| `warnings[]` | 오염 검사 | 타입과 무관한 필드에 값이 남아 있을 때만 |
+
+예: `iceCellCount > 0`인데 `missionType != Ice` → `warnings`에 `"N ice cells exist on a Gem mission (unused)."` 추가.
+필드를 JSON에서 뺐기 때문에, 이 `warnings`가 없으면 AI는 오염을 볼 수 없다.
 
 보드 셀 좌표·스프라이트 전체 목록은 보내지 않는다 (토큰/프라이버시 최소화).
 
@@ -95,19 +104,23 @@ classDiagram
   }
 
   class MissionSummaryExtractor {
+    -JsonSerializerSettings SerializerSettings$
     +ToSummaryJson(MissionData)$ string
+    -BuildGemTargetDtos(MissionData)$ List~GemTargetDto~
+    -BuildContaminationWarnings(MissionType, int, int, int, List~GemTargetDto~)$ List~string~
   }
 
   class MissionSummaryDto {
     +string missionName
-    +int boardSize
     +string missionType
+    +int boardSize
     +bool isHard
     +int filledCellCount
-    +int iceCellCount
-    +int grassCellCount
-    +int targetScore
+    +int? targetScore
+    +int? iceCellCount
+    +int? grassCellCount
     +List~GemTargetDto~ gemTargets
+    +List~string~ warnings
   }
 
   class GemTargetDto {
@@ -118,8 +131,10 @@ classDiagram
   class ClaudeBalanceReviewer {
     -HttpClient Client$
     -CreateClient()$ HttpClient
-    +ReviewMissionAsync(string)$ Task~string~
-    -BuildReviewPrompt(string)$ string
+    +ReviewMissionAsync(string, MissionType)$ Task~string~
+    -BuildReviewPrompt(MissionType, string)$ string
+    -BuildMissionTypeSection(MissionType)$ string
+    -BuildRealismCriterion(MissionType)$ string
     -ExtractAssistantText(string)$ string
   }
 

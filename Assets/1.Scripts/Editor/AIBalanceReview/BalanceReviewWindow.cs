@@ -63,7 +63,7 @@ public class BalanceReviewWindow : EditorWindow
                 }
 
                 string summary = MissionSummaryExtractor.ToSummaryJson(mission);
-                string result = await ClaudeBalanceReviewer.ReviewMissionAsync(summary);
+                string result = await ClaudeBalanceReviewer.ReviewMissionAsync(summary, mission.MissionType);
                 if (string.IsNullOrEmpty(result))
                     result = "(검수 실패 — Console 로그 확인)";
 

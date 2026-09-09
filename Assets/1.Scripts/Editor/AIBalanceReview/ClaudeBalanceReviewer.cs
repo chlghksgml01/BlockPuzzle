@@ -20,7 +20,7 @@ public static class ClaudeBalanceReviewer
         return client;
     }
 
-    public static async Task<string> ReviewMissionAsync(string missionJson)
+    public static async Task<string> ReviewMissionAsync(string missionJson, MissionType missionType)
     {
         string apiKey = Environment.GetEnvironmentVariable("ANTHROPIC_API_KEY");
         if (string.IsNullOrEmpty(apiKey))
@@ -29,11 +29,11 @@ public static class ClaudeBalanceReviewer
             return null;
         }
 
-        string prompt = BuildReviewPrompt(missionJson);
+        string prompt = BuildReviewPrompt(missionType, missionJson);
 
         object requestBody = new
         {
-            model = "claude-sonnet-4-6",
+            model = "claude-sonnet-5",
             max_tokens = 700,
             messages = new[] { new { role = "user", content = prompt } }
         };
@@ -59,69 +59,102 @@ public static class ClaudeBalanceReviewer
     }
 
     /// <summary>
-    /// 미션 타입별 클리어 규칙과 검수 기준을 포함한 프롬프트를 만든다.
+    /// 검수 대상 미션 타입의 규칙·기준만 담은 프롬프트를 만든다.
+    /// 다른 타입 규칙은 넣지 않아 토큰과 오판 여지를 줄인다.
     /// </summary>
-    private static string BuildReviewPrompt(string missionJson)
+    private static string BuildReviewPrompt(MissionType missionType, string missionJson)
     {
         return
             "You are a level balance auditor for this block puzzle game. Judge solely based on the game rules below. Do not draw from general puzzle common sense or mission rules from other games.\n\n" +
 
-            "## Game Rules\n" +
+            "## Common Game Rules\n" +
             "- Drag and place blocks onto an NxN board; filling a horizontal or vertical line clears that line.\n" +
-            "- All missions result in Game Over when there is no space on the board to place the slot blocks.\n" +
-            "- A single mission uses only ONE of Ice / Grass / Gem / ScoreGoal. Do NOT mix types.\n" +
+            "- The mission is Game Over when there is no space on the board to place the slot blocks.\n" +
             "- isHard is an intended difficulty flag. Flag any mismatch between isHard and the actual difficulty.\n" +
-            "- Do not inspect irrelevant fields, and do not suggest adding other target types.\n\n" +
+            "- The mission data below contains ONLY the fields relevant to this mission type. Do not ask for other fields or suggest adding other target types.\n" +
+            "- If a 'warnings' array is present, each entry is a data-integrity problem detected in the asset. Include every warning in 'issues' and raise riskLevel accordingly (usually 'high').\n\n" +
 
-            "### Ice\n" +
-            "- Clear Condition: Remove all ice cells on the board by clearing lines.\n" +
-            "- Ice cells have stages (01~03) and may require lines to be cleared multiple times on the same cell to disappear. Only counts are shown in the summary.\n" +
-            "- Relevant fields: iceCellCount, filledCellCount, boardSize, isHard.\n" +
-            "- Even if iceCellCount is low, the clear condition remains valid. A low count indicates an easy mission, not a design flaw.\n" +
-            "- If iceCellCount is 0, there is no clear condition.\n" +
-            "- Ignore targetScore and gemTargets.\n\n" +
-
-            "### Grass\n" +
-            "- Clear Condition: Remove all grass cells on the board by clearing lines.\n" +
-            "- If a line containing grass is not cleared for 3 consecutive turns, grass spreads by 1 cell into an adjacent empty space. This increases the remaining target count.\n" +
-            "- Relevant fields: grassCellCount, filledCellCount, boardSize, isHard.\n" +
-            "- Even if grassCellCount is low, the clear condition remains valid. A low count indicates an easy mission.\n" +
-            "- However, if the board is large with many empty spaces, spreading may make the late game difficult.\n" +
-            "- If grassCellCount is 0, there is no clear condition.\n" +
-            "- Ignore targetScore and gemTargets.\n\n" +
-
-            "### Gem\n" +
-            "- Clear Condition: Place gem blocks spawned from slots onto the board and collect target quantities of specified gem types by clearing lines.\n" +
-            "- Gems spawn from slots, not from initial board placement. Do NOT directly compare filledCellCount with gem targets.\n" +
-            "- Relevant fields: gemTargets, filledCellCount (board placement pressure), boardSize, isHard.\n" +
-            "- If gemTargets is empty or the total sum is 0, there is no clear condition.\n" +
-            "- Ignore targetScore, iceCellCount, and grassCellCount.\n\n" +
-
-            "### ScoreGoal\n" +
-            "- Clear Condition: Reach the target score (targetScore). There is no time limit.\n" +
-            "- Scoring: Block placement + Line clear. Base score for one line is approximately boardSize * 5, with multi-line/combo bonuses applied.\n" +
-            "- Relevant fields: targetScore, filledCellCount, boardSize, isHard.\n" +
-            "- filledCellCount of 0 is normal for an empty board start.\n" +
-            "- Flag if targetScore is 0 or less.\n" +
-            "- Ignore gemTargets, iceCellCount, and grassCellCount.\n\n" +
+            BuildMissionTypeSection(missionType) +
 
             "## Audit Criteria\n" +
-            "1. Is the clear condition field corresponding to missionType valid? (High risk if missing).\n" +
-            "2. Does actual difficulty match isHard? Look ONLY at relevant fields for that mission type.\n" +
-            "3. Is the clear condition unrealistically easy or difficult?\n" +
-            "   - Ice/Grass: Target cell count vs. board size and pre-filled density.\n" +
-            "   - Gem: Whether target counts are excessively high or gem types are unnecessarily varied.\n" +
-            "   - ScoreGoal: Whether targetScore is excessively low or high relative to board size.\n\n" +
+            "1. Is the clear condition field for this mission type present and valid? (High risk if missing or zero/empty.)\n" +
+            "2. Does the actual difficulty match isHard, judging only from the fields provided?\n" +
+            "3. Is the clear condition unrealistically easy or difficult? " + BuildRealismCriterion(missionType) + "\n\n" +
 
             "## DO NOTs\n" +
-            "- Do NOT ask to add gemTargets to Ice/Grass/ScoreGoal.\n" +
-            "- Do NOT point out that targetScore is 0 in Ice/Grass.\n" +
-            "- Do NOT claim 'purpose is unclear' just because Ice/Grass count is low.\n" +
+            "- Do NOT claim 'purpose is unclear' just because an Ice/Grass count is low. A low count only means an easy mission.\n" +
+            "- Do NOT request fields that are absent from the mission data.\n" +
             "- Answer ONLY in JSON without introductory or explanatory prose.\n\n" +
 
             "Response Format:\n" +
-            "{\"missionName\": string, \"riskLevel\": \"low\"|\"medium\"|\"high\", \"issues\": [string], \"suggestion\": string}\n\n" + "Mission Data:\n" +
+            "{\"missionName\": string, \"riskLevel\": \"low\"|\"medium\"|\"high\", \"issues\": [string], \"suggestion\": string}\n\n" +
+            "Mission Data:\n" +
             missionJson;
+    }
+
+    /// <summary>미션 타입별 클리어 규칙 섹션.</summary>
+    private static string BuildMissionTypeSection(MissionType missionType)
+    {
+        switch (missionType)
+        {
+            case MissionType.Ice:
+                return
+                    "## Mission Type: Ice\n" +
+                    "- Clear Condition: Remove all ice cells on the board by clearing lines.\n" +
+                    "- Ice cells have stages (01~03) and may need the same cell's line cleared multiple times to disappear. Only the count is shown.\n" +
+                    "- Relevant fields: iceCellCount, filledCellCount, boardSize, isHard.\n" +
+                    "- A low iceCellCount is a valid, easy mission - not a design flaw.\n" +
+                    "- If iceCellCount is 0 or missing, there is no clear condition (high risk).\n\n";
+
+            case MissionType.Grass:
+                return
+                    "## Mission Type: Grass\n" +
+                    "- Clear Condition: Remove all grass cells on the board by clearing lines.\n" +
+                    "- If a line containing grass is not cleared for 3 consecutive turns, grass spreads by 1 cell into an adjacent empty space, increasing the remaining target.\n" +
+                    "- Relevant fields: grassCellCount, filledCellCount, boardSize, isHard.\n" +
+                    "- A low grassCellCount is a valid, easy mission.\n" +
+                    "- A large board with many empty spaces can make the late game hard because of spreading.\n" +
+                    "- If grassCellCount is 0 or missing, there is no clear condition (high risk).\n\n";
+
+            case MissionType.Gem:
+                return
+                    "## Mission Type: Gem\n" +
+                    "- Clear Condition: Place gem blocks spawned from slots onto the board and collect the target quantities of the specified gem types by clearing lines.\n" +
+                    "- Gems spawn from slots, not from initial board placement. Do NOT compare filledCellCount directly with gem targets.\n" +
+                    "- Relevant fields: gemTargets, filledCellCount (board placement pressure), boardSize, isHard.\n" +
+                    "- If gemTargets is missing/empty or its total is 0, there is no clear condition (high risk).\n\n";
+
+            case MissionType.ScoreGoal:
+                return
+                    "## Mission Type: ScoreGoal\n" +
+                    "- Clear Condition: Reach targetScore. There is no time limit.\n" +
+                    "- Scoring: Block placement + line clear. One line is roughly boardSize * 5, with multi-line/combo bonuses.\n" +
+                    "- Relevant fields: targetScore, filledCellCount, boardSize, isHard.\n" +
+                    "- filledCellCount of 0 is normal for an empty-board start.\n" +
+                    "- Flag if targetScore is 0 or less or missing (high risk).\n\n";
+
+            default:
+                return
+                    "## Mission Type: None / Unrecognized\n" +
+                    "- This mission has no concrete type set. This is a configuration error - riskLevel must be 'high'.\n\n";
+        }
+    }
+
+    /// <summary>Audit Criteria 3번의 타입별 현실성 판단 기준.</summary>
+    private static string BuildRealismCriterion(MissionType missionType)
+    {
+        switch (missionType)
+        {
+            case MissionType.Ice:
+            case MissionType.Grass:
+                return "Compare the target cell count against board size and pre-filled density.";
+            case MissionType.Gem:
+                return "Check whether target counts are excessively high or gem types are needlessly varied.";
+            case MissionType.ScoreGoal:
+                return "Check whether targetScore is excessively low or high relative to board size.";
+            default:
+                return "Not applicable.";
+        }
     }
 
     /// <summary>
